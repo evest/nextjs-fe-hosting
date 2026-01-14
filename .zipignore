@@ -1,0 +1,62 @@
+# Optimizely Frontend Hosting - .zipignore
+# This file specifies which files and directories should be EXCLUDED from the deployment package
+
+# Build outputs (regenerated during deployment)
+.next
+out
+
+# Dependencies (reinstalled during deployment via package.json)
+node_modules
+
+# Environment files (should be configured in PaaS Portal instead)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage
+.nyc_output
+__tests__/__snapshots__
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Temporary files
+.tmp
+tmp
+temp
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Deployment artifacts (don't include old deployment packages)
+*.zip
+*.tar.gz
+
+# Claude skills (development only)
+.claude

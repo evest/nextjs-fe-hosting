@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(powershell -Command \"Expand-Archive -Path ''optimizely-cms-content-types.skill'' -DestinationPath ''.'' -Force\")",
+      "Bash(powershell -Command \"Expand-Archive -Path ''optimizely-frontend-hosting.skill'' -DestinationPath ''.'' -Force\")",
+      "Bash(copy \"optimizely-cms-content-types.skill\" \"optimizely-cms-content-types.zip\")",
+      "Bash(copy \"optimizely-frontend-hosting.skill\" \"optimizely-frontend-hosting.zip\")",
+      "Bash(powershell -Command \"Expand-Archive -Path ''optimizely-cms-content-types.zip'' -DestinationPath ''.'' -Force\")",
+      "Bash(powershell -Command \"Expand-Archive -Path ''optimizely-frontend-hosting.zip'' -DestinationPath ''.'' -Force\")",
+      "Bash(del \"*.zip\")",
+      "Bash(dir /s \"D:\\\\Dev\\\\nextjs-fe-hosting\")",
+      "Bash(dir:*)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --use-npm --yes)",
+      "Bash(npm install:*)",
+      "Bash(npx @optimizely/cms-cli@latest login:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx @optimizely/cms-cli@latest config push:*)",
+      "Bash(npm run dev:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id, ProcessName\")",
+      "Bash(powershell:*)",
+      "Bash(git -C \"D:\\\\Dev\\\\nextjs-fe-hosting\" status)"
+    ]
+  }
+}

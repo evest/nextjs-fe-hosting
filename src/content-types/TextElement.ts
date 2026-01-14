@@ -1,0 +1,15 @@
+import { contentType } from '@optimizely/cms-sdk';
+
+export const TextElementCT = contentType({
+  key: 'TextElement',
+  displayName: 'Text Element',
+  baseType: '_element',
+  properties: {
+    text: {
+      type: 'string',
+      displayName: 'Text',
+      required: true,
+      localized: true,
+    },
+  },
+});
