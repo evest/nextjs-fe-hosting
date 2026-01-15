@@ -15,7 +15,7 @@ Create properly structured content type definitions for Optimizely SaaS CMS usin
 - **Pages** (`_page`): HomePage, ArticlePage, BlogPage with unique URLs
 - **Components** (`_component`): HeroBlock, BannerBlock, CardBlock - reusable blocks
 - **Sections** (`_section`): Visual Builder sections with layout system
-- **Elements** (`_element`): Smaller Visual Builder elements
+- **Elements** (`_component` + `elementEnabled`): Smaller Visual Builder elements (use `_component` base type with `compositionBehaviors: ['elementEnabled']`)
 - **Experiences** (`_experience`): Flexible visual page building
 - **Composition**: Make components work as sections/elements with `compositionBehaviors`
 - **Media types**: Custom image, video, media types
@@ -432,14 +432,15 @@ Content types with `elementEnabled` in `compositionBehaviors` have the following
 | Base Type | Description | Use For |
 |-----------|-------------|---------|
 | `_page` | Pages with unique URLs | HomePage, ArticlePage, BlogPage |
-| `_component` | Reusable blocks/components | HeroBlock, CardBlock |
+| `_component` | Reusable blocks/components | HeroBlock, CardBlock, and **elements** (with `elementEnabled`) |
 | `_section` | Visual Builder sections with layout | Custom sections |
-| `_element` | Visual Builder elements | TitleElement, ImageElement |
 | `_experience` | Flexible visual page building | Dynamic experiences |
 | `_folder` | Organizing content | Asset panel organization |
 | `_image` | Image media types | Custom image types |
 | `_video` | Video media types | Custom video types |
 | `_media` | Generic media types | Documents, files |
+
+> **Note:** There is no `_element` base type. Elements are `_component` types with `compositionBehaviors: ['elementEnabled']`.
 
 ## Built-in Content Types
 
@@ -451,6 +452,8 @@ import { BlankExperienceContentType, BlankSectionContentType } from '@optimizely
 
 - **BlankExperienceContentType** - Experience with no predefined properties
 - **BlankSectionContentType** - Section with no predefined properties
+
+**Important!** Do not create a new type called `BlankExperience` as this is already defined in the CMS by default.
 
 ## Naming Conventions
 

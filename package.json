@@ -9,7 +9,10 @@
     "dev": "next dev --experimental-https",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "cms:login": "npx @optimizely/cms-cli@latest login",
+    "cms:push-config": "npx @optimizely/cms-cli@latest config push ./optimizely.config.mjs",
+    "cms:push-config-force": "npx @optimizely/cms-cli@latest config push ./optimizely.config.mjs --force"
   },
   "dependencies": {
     "@optimizely/cms-sdk": "^0.1.0-alpha.16",

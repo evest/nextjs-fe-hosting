@@ -376,6 +376,8 @@ export const CardBlockCT = contentType({
 
 ## Element Types
 
+> **Important:** Elements use `_component` as the base type with `compositionBehaviors: ['elementEnabled']`. There is no `_element` base type in Optimizely CMS.
+
 ### TitleElement
 
 ```typescript
@@ -384,7 +386,8 @@ import { contentType } from '@optimizely/cms-sdk';
 export const TitleElementCT = contentType({
   key: 'TitleElement',
   displayName: 'Title Element',
-  baseType: '_element',
+  baseType: '_component',
+  compositionBehaviors: ['elementEnabled'],
   properties: {
     text: { 
       type: 'string', 
@@ -425,7 +428,8 @@ import { contentType } from '@optimizely/cms-sdk';
 export const ImageElementCT = contentType({
   key: 'ImageElement',
   displayName: 'Image Element',
-  baseType: '_element',
+  baseType: '_component',
+  compositionBehaviors: ['elementEnabled'],
   properties: {
     image: { 
       type: 'contentReference', 
@@ -460,7 +464,8 @@ import { contentType } from '@optimizely/cms-sdk';
 export const ButtonElementCT = contentType({
   key: 'ButtonElement',
   displayName: 'Button Element',
-  baseType: '_element',
+  baseType: '_component',
+  compositionBehaviors: ['elementEnabled'],
   properties: {
     text: { 
       type: 'string', 

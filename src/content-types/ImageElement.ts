@@ -3,7 +3,8 @@ import { contentType } from '@optimizely/cms-sdk';
 export const ImageElementCT = contentType({
   key: 'ImageElement',
   displayName: 'Image Element',
-  baseType: '_element',
+  baseType: '_component',
+  compositionBehaviors: ['elementEnabled'],
   properties: {
     image: {
       type: 'contentReference',

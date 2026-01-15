@@ -2,24 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import { initContentTypeRegistry, initDisplayTemplateRegistry } from '@optimizely/cms-sdk';
-import { initReactComponentRegistry } from '@optimizely/cms-sdk/react/server';
-import * as contentTypes from '@/content-types';
-import * as displayTemplates from '@/display-templates';
-import * as components from '@/components';
-
-// Initialize Optimizely registries
-initContentTypeRegistry([...Object.values(contentTypes)]);
-initDisplayTemplateRegistry([...Object.values(displayTemplates)]);
-initReactComponentRegistry({
-  resolver: {
-    ArticlePage: components.ArticlePage,
-    TextElement: components.TextElement,
-    RichTextElement: components.RichTextElement,
-    ImageElement: components.ImageElement,
-    CardBlock: components.CardBlock,
-  },
-});
+// Initialize Optimizely SDK registries
+import "@/optimizely";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

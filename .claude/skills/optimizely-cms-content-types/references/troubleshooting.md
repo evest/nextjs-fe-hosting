@@ -4,6 +4,44 @@ Common issues and solutions when working with Optimizely CMS content types and R
 
 ## CMS Sync Errors
 
+### "The base type '_element' is not supported"
+
+**Error**: When pushing config to CMS, you get an error: `The base type '_element' is not supported.`
+
+**Cause**: There is no `_element` base type in Optimizely CMS. Elements are actually `_component` types with the `elementEnabled` composition behavior.
+
+**❌ Wrong:**
+```typescript
+export const TextElementCT = contentType({
+  key: 'TextElement',
+  displayName: 'Text Element',
+  baseType: '_element',  // ❌ This base type does not exist!
+  properties: {
+    text: { type: 'string', displayName: 'Text' },
+  },
+});
+```
+
+**✅ Correct:**
+```typescript
+export const TextElementCT = contentType({
+  key: 'TextElement',
+  displayName: 'Text Element',
+  baseType: '_component',  // ✅ Use _component
+  compositionBehaviors: ['elementEnabled'],  // ✅ Add elementEnabled behavior
+  properties: {
+    text: { type: 'string', displayName: 'Text' },
+  },
+});
+```
+
+**Key points:**
+- Elements use `baseType: '_component'`
+- Add `compositionBehaviors: ['elementEnabled']` to make it an element
+- You can also add `'sectionEnabled'` if you want the component to work as both
+
+---
+
 ### "The property 'X' is not allowed when content type has ElementEnabled"
 
 **Error**: When pushing config to CMS, you get an error about array properties not being allowed with `elementEnabled`.
