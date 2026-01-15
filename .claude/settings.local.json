@@ -23,7 +23,8 @@
       "Bash(powershell:*)",
       "Bash(git -C \"D:\\\\Dev\\\\nextjs-fe-hosting\" status)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nUpdate Optimizely SDK configuration and improve project structure\n\n- Extract SDK registry initialization into dedicated src/optimizely.ts file\n- Fix element content types to use _component base with elementEnabled behavior\n- Add comprehensive error handling UI to preview page\n- Add BlankExperience and BlankSection components\n- Update optimizely.config.mjs with explicit content type paths\n- Add CMS CLI helper scripts to package.json\n- Update skill documentation with element type corrections\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nUpdate Optimizely SDK configuration and improve project structure\n\n- Extract SDK registry initialization into dedicated src/optimizely.ts file\n- Fix element content types to use _component base with elementEnabled behavior\n- Add comprehensive error handling UI to preview page\n- Add BlankExperience and BlankSection components\n- Update optimizely.config.mjs with explicit content type paths\n- Add CMS CLI helper scripts to package.json\n- Update skill documentation with element type corrections\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)"
     ]
   }
 }
