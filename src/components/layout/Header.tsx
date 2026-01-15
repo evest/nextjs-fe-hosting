@@ -14,38 +14,38 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   {
     label: "Products",
-    href: "/products",
+    href: "/en/products",
     children: [
-      { label: "Featured", href: "/products/featured" },
-      { label: "New Arrivals", href: "/products/new" },
-      { label: "Best Sellers", href: "/products/best-sellers" },
+      { label: "Featured", href: "/en/products/featured" },
+      { label: "New Arrivals", href: "/en/products/new" },
+      { label: "Best Sellers", href: "/en/products/best-sellers" },
     ],
   },
   {
     label: "Solutions",
-    href: "/solutions",
+    href: "/en/solutions",
     children: [
-      { label: "Enterprise", href: "/solutions/enterprise" },
-      { label: "Small Business", href: "/solutions/small-business" },
-      { label: "Developers", href: "/solutions/developers" },
+      { label: "Enterprise", href: "/en/solutions/enterprise" },
+      { label: "Small Business", href: "/en/solutions/small-business" },
+      { label: "Developers", href: "/en/solutions/developers" },
     ],
   },
   {
     label: "Resources",
-    href: "/resources",
+    href: "/en/resources",
     children: [
-      { label: "Documentation", href: "/resources/docs" },
-      { label: "Blog", href: "/resources/blog" },
-      { label: "Case Studies", href: "/resources/case-studies" },
+      { label: "Documentation", href: "/en/resources/docs" },
+      { label: "Blog", href: "/en/resources/blog" },
+      { label: "Case Studies", href: "/en/resources/case-studies" },
     ],
   },
   {
     label: "About",
-    href: "/about",
+    href: "/en/about",
   },
   {
     label: "Contact",
-    href: "/contact",
+    href: "/en/contact",
   },
 ];
 
