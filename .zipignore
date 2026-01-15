@@ -60,3 +60,8 @@ desktop.ini
 
 # Claude skills (development only)
 .claude
+
+# Misc
+README.md
+deploy.ps1
+certificates
