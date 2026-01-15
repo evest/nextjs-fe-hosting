@@ -84,3 +84,8 @@ desktop.ini
 # package-lock.json  # DO NOT IGNORE - needed for npm
 # yarn.lock          # DO NOT IGNORE - needed for yarn
 # pnpm-lock.yaml     # DO NOT IGNORE - needed for pnpm
+
+# Misc
+README.md
+deploy.ps1
+certificates

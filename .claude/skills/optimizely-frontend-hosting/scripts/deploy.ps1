@@ -1,12 +1,29 @@
 # Optimizely Frontend Hosting Deployment Script
-# 
+#
 # This script automates the deployment of Next.js applications to Optimizely Frontend Hosting
 # Supports .zipignore for excluding files from the deployment package
+
+# Load .env file if it exists
+$envFile = Join-Path (Get-Location) ".env"
+if (Test-Path $envFile) {
+    Write-Host "Loading environment variables from .env..." -ForegroundColor Cyan
+    Get-Content $envFile | ForEach-Object {
+        if ($_ -match '^\s*([^#][^=]*?)\s*=\s*(.*)$') {
+            $name = $matches[1].Trim()
+            $value = $matches[2].Trim()
+            # Remove surrounding quotes if present
+            if ($value -match '^[''"](.*)[''""]$') {
+                $value = $matches[1]
+            }
+            [Environment]::SetEnvironmentVariable($name, $value, "Process")
+        }
+    }
+}
 
 # Check required environment variables
 if (-not $env:OPTI_PROJECT_ID -or -not $env:OPTI_CLIENT_KEY -or -not $env:OPTI_CLIENT_SECRET) {
     Write-Host "Missing one or more required environment variables: OPTI_PROJECT_ID, OPTI_CLIENT_KEY, OPTI_CLIENT_SECRET" -ForegroundColor Red
-    Write-Host "Please set these environment variables before running this script." -ForegroundColor Yellow
+    Write-Host "Please set these in your .env file or as environment variables." -ForegroundColor Yellow
     Write-Host "You can find these values in the PaaS Portal > API tab for your frontend project." -ForegroundColor Yellow
     exit 1
 }
@@ -14,17 +31,23 @@ if (-not $env:OPTI_PROJECT_ID -or -not $env:OPTI_CLIENT_KEY -or -not $env:OPTI_C
 # Install and import EpiCloud module
 Write-Host "Checking EpiCloud module..." -ForegroundColor Cyan
 Install-Module -Name EpiCloud -Scope CurrentUser -Force -ErrorAction SilentlyContinue
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+
+# Set execution policy only if needed (suppress errors if overridden by group policy)
+$currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
+if ($currentPolicy -eq "Restricted" -or $currentPolicy -eq "Undefined") {
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force -ErrorAction SilentlyContinue
+}
+
 Import-Module EpiCloud
 
 # Settings
 $projectId = $env:OPTI_PROJECT_ID
 $clientKey = $env:OPTI_CLIENT_KEY
 $clientSecret = $env:OPTI_CLIENT_SECRET
-$targetEnvironment = "Test1"  # Change to Test2, Production, etc. as needed
+$targetEnvironment = if ($env:OPTI_TARGET_ENV) { $env:OPTI_TARGET_ENV } else { "Test1" }
 
-# Path to the root of your Next.js app
-$sourcePath = "."  # Current directory - update if script is run from a different location
+# Path to the root of your Next.js app (resolve to full path for reliable path calculations)
+$sourcePath = (Resolve-Path ".").Path
 
 # Generate unique zip filename
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
@@ -40,10 +63,11 @@ Write-Host "Target Environment: $targetEnvironment" -ForegroundColor White
 Write-Host "Package: $zipName" -ForegroundColor White
 Write-Host ""
 
-# Remove existing archive if present
-if (Test-Path $zipPath) { 
-    Write-Host "Removing existing archive..." -ForegroundColor Yellow
-    Remove-Item $zipPath 
+# Clean up old deployment packages
+$oldPackages = Get-ChildItem -Path $sourcePath -Filter "$projectName.head.app.*.zip" -File
+if ($oldPackages.Count -gt 0) {
+    Write-Host "Cleaning up $($oldPackages.Count) old deployment package(s)..." -ForegroundColor Yellow
+    $oldPackages | Remove-Item -Force
 }
 
 # Load .zipignore file if it exists
@@ -63,8 +87,12 @@ $rootExcludes = $excludeRoot | ForEach-Object { Join-Path $sourcePath $_ }
 # Collect files excluding those in .zipignore
 Write-Host "Collecting files..." -ForegroundColor Cyan
 $includeFiles = Get-ChildItem -Path $sourcePath -Recurse -File | Where-Object {
+    $filePath = $_.FullName
     foreach ($ex in $rootExcludes) {
-        if ($_.FullName -like "$ex\*" -or $_.FullName -eq $ex) {
+        # Use platform-agnostic separator for pattern matching
+        $exPattern = $ex -replace '\\', '/'
+        $filePathNormalized = $filePath -replace '\\', '/'
+        if ($filePathNormalized -like "$exPattern/*" -or $filePathNormalized -eq $exPattern) {
             return $false
         }
     }
