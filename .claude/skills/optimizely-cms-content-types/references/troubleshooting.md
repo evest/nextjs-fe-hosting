@@ -4,6 +4,50 @@ Common issues and solutions when working with Optimizely CMS content types and R
 
 ## CMS Sync Errors
 
+### "Cannot read properties of undefined (reading 'map')"
+
+**Error**: When running `npx optimizely-cms-cli config push`, you get: `TypeError: Cannot read properties of undefined (reading 'map')`
+
+**Cause**: The `optimizely.config.mjs` file is incorrectly structured. The config must use `components` with **file paths as strings**, not directly imported content type objects.
+
+**❌ Wrong - importing objects directly:**
+```javascript
+import { buildConfig } from '@optimizely/cms-sdk';
+import { ButtonElementCT } from './src/cms/content-types/elements/ButtonElement.ts';
+import { HeroBlockCT, HeroDisplayTemplate } from './src/cms/content-types/blocks/HeroBlock.ts';
+
+export default buildConfig({
+  contentTypes: [ButtonElementCT, HeroBlockCT],  // ❌ WRONG!
+  displayTemplates: [HeroDisplayTemplate],       // ❌ WRONG!
+  propertyGroups: [
+    { key: 'content', displayName: 'Content', sortOrder: 1 },
+  ],
+});
+```
+
+**✅ Correct - use file paths:**
+```javascript
+import { buildConfig } from '@optimizely/cms-sdk';
+
+export default buildConfig({
+  components: [
+    './src/cms/content-types/elements/ButtonElement.ts',
+    './src/cms/content-types/blocks/HeroBlock.ts',
+  ],
+  propertyGroups: [
+    { key: 'content', displayName: 'Content', sortOrder: 1 },
+  ],
+});
+```
+
+**Key points:**
+- Use `components` array with file path strings (not imports)
+- The CLI automatically discovers `contentType()` and `displayTemplate()` exports
+- Do NOT use `contentTypes` or `displayTemplates` arrays with imported objects
+- Property groups are still defined inline (not as file paths)
+
+---
+
 ### "The base type '_element' is not supported"
 
 **Error**: When pushing config to CMS, you get an error: `The base type '_element' is not supported.`
@@ -584,6 +628,247 @@ seo: {
   displayName: "SEO Settings",
 }
 ```
+
+## Visual Builder Preview Errors
+
+### "Content type 'BlankExperience' not included in the registry"
+
+**Error**: When loading preview in Visual Builder, you get: `Content type "BlankExperience" not included in the registry. Ensure that you called "initContentTypeRegistry()" with it before fetching content.`
+
+**Cause**: The SDK's built-in experience types (`BlankExperienceContentType`, `BlankSectionContentType`) are not registered.
+
+**Solution**: Create an SDK initialization file and import it in your root layout:
+
+**1. Create `src/optimizely.ts`:**
+```typescript
+import {
+  initContentTypeRegistry,
+  initDisplayTemplateRegistry,
+  BlankExperienceContentType,
+  BlankSectionContentType,
+} from '@optimizely/cms-sdk';
+import { initReactComponentRegistry } from '@optimizely/cms-sdk/react/server';
+
+// Import your content types
+import * as contentTypes from '@/src/cms/content-types';
+
+// Import your React components
+import BlankExperience from '@/components/cms/experiences/BlankExperience';
+import BlankSection from '@/components/cms/experiences/BlankSection';
+import { HeroBlock } from '@/components/cms/blocks/HeroBlock';
+// ... other component imports
+
+// Initialize content type registry - MUST include BlankExperience and BlankSection
+initContentTypeRegistry([
+  BlankExperienceContentType,  // Required for Visual Builder!
+  BlankSectionContentType,     // Required for Visual Builder!
+  ...Object.values(contentTypes),
+]);
+
+// Initialize display templates
+initDisplayTemplateRegistry([/* your display templates */]);
+
+// Initialize React component registry
+initReactComponentRegistry({
+  resolver: {
+    BlankExperience,  // Required for Visual Builder!
+    BlankSection,     // Required for Visual Builder!
+    HeroBlock,
+    // ... other components
+  },
+});
+```
+
+**2. Create experience components:**
+
+**`components/cms/experiences/BlankExperience.tsx`:**
+```typescript
+import { BlankExperienceContentType, Infer } from '@optimizely/cms-sdk';
+import {
+  ComponentContainerProps,
+  OptimizelyExperience,
+  getPreviewUtils,
+} from '@optimizely/cms-sdk/react/server';
+
+type Props = {
+  opti: Infer<typeof BlankExperienceContentType>;
+};
+
+function ComponentWrapper({ children, node }: ComponentContainerProps) {
+  const { pa } = getPreviewUtils(node);
+  return <div className="mb-8" {...pa(node)}>{children}</div>;
+}
+
+export default function BlankExperience({ opti }: Props) {
+  return (
+    <main className="blank-experience">
+      <OptimizelyExperience
+        nodes={opti.composition.nodes ?? []}
+        ComponentWrapper={ComponentWrapper}
+      />
+    </main>
+  );
+}
+```
+
+**`components/cms/experiences/BlankSection.tsx`:**
+```typescript
+import { BlankSectionContentType, Infer } from '@optimizely/cms-sdk';
+import {
+  OptimizelyGridSection,
+  getPreviewUtils,
+  StructureContainerProps,
+} from '@optimizely/cms-sdk/react/server';
+
+type BlankSectionProps = {
+  opti: Infer<typeof BlankSectionContentType>;
+};
+
+export default function BlankSection({ opti }: BlankSectionProps) {
+  const { pa } = getPreviewUtils(opti);
+  return (
+    <section className="vb:grid relative w-full py-12 px-4" {...pa(opti)}>
+      <div className="max-w-7xl mx-auto w-full">
+        <OptimizelyGridSection nodes={opti.nodes} row={Row} column={Column} />
+      </div>
+    </section>
+  );
+}
+
+function Row({ children, node }: StructureContainerProps) {
+  const { pa } = getPreviewUtils(node);
+  return <div className="vb:row flex flex-row gap-6" {...pa(node)}>{children}</div>;
+}
+
+function Column({ children, node }: StructureContainerProps) {
+  const { pa } = getPreviewUtils(node);
+  return <div className="vb:col flex-1 flex flex-col gap-4" {...pa(node)}>{children}</div>;
+}
+```
+
+**3. Import in root layout (`app/layout.tsx`):**
+```typescript
+import '@/src/optimizely';  // Initialize before any CMS content renders
+```
+
+---
+
+### Preview Returns 404
+
+**Error**: Visual Builder preview URL returns 404: `GET /preview?key=...&ver=...&loc=...&ctx=edit&preview_token=... 404`
+
+**Cause**: Missing `/app/preview/page.tsx` route.
+
+**Solution**: Create a preview page that uses the SDK's preview components:
+
+**`app/preview/page.tsx`:**
+```typescript
+import { GraphClient, type PreviewParams } from '@optimizely/cms-sdk';
+import { OptimizelyComponent } from '@optimizely/cms-sdk/react/server';
+import { PreviewComponent } from '@optimizely/cms-sdk/react/client';
+import Script from 'next/script';
+
+type Props = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function PreviewPage({ searchParams }: Props) {
+  const client = new GraphClient(process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!, {
+    graphUrl: process.env.OPTIMIZELY_GRAPH_GATEWAY,
+  });
+
+  const response = await client.getPreviewContent(
+    (await searchParams) as PreviewParams
+  );
+
+  return (
+    <div>
+      {/* Communication injector - REQUIRED for Visual Builder */}
+      <Script
+        src={`${process.env.OPTIMIZELY_CMS_URL}/util/javascript/communicationinjector.js`}
+        strategy="afterInteractive"
+      />
+      <PreviewComponent />
+      <OptimizelyComponent opti={response} />
+    </div>
+  );
+}
+```
+
+**Key components:**
+- `OptimizelyComponent` - renders content using registered components
+- `PreviewComponent` - enables Visual Builder client-side features
+- Communication injector script - enables Visual Builder ↔ preview communication
+
+---
+
+### Preview Shows Blank or Doesn't Update
+
+**Cause**: Missing communication injector script or incorrect environment variables.
+
+**Check:**
+1. Ensure `OPTIMIZELY_CMS_URL` is set (e.g., `https://app-xxx.cms.optimizely.com`)
+2. Ensure `OPTIMIZELY_GRAPH_GATEWAY` includes the full path: `https://cg.optimizely.com/content/v2`
+3. Verify the communication injector script is loaded in the preview page
+
+---
+
+### Preview Window Scrolls Indefinitely (Tailwind)
+
+**Cause**: Using viewport-based height classes like `min-h-screen` or `min-h-[90vh]` in components. The Visual Builder preview renders in an iframe with its own viewport, causing these classes to create unexpected infinite scrolling behavior.
+
+**❌ Avoid in CMS components:**
+```typescript
+// These cause issues in Visual Builder preview
+<div className="min-h-screen ...">
+<div className="min-h-[90vh] ...">
+<div className="h-screen ...">
+```
+
+**✅ Use instead:**
+```typescript
+// Let content determine height with padding
+<div className="py-20 ...">
+
+// Or use fixed minimum heights
+<div className="min-h-[400px] ...">
+<div className="min-h-96 ...">
+```
+
+**Rule**: Avoid viewport-relative units (`vh`, `vw`, `dvh`, `svh`) in CMS components that will be previewed in Visual Builder. Use fixed values or let content/padding determine sizing.
+
+---
+
+### Content Not Found (getContentByPath returns 0 items)
+
+**Cause**: The path format doesn't match how Optimizely Content Graph expects it.
+
+**Key requirements for `getContentByPath`:**
+
+1. **Trailing slash is required**: `/en/` not `/en`
+2. **Include locale in path**: Don't strip the locale segment
+3. **No variation filter needed**: Basic content fetching works without locale filtering
+
+**❌ Wrong:**
+```typescript
+// Missing trailing slash
+const content = await client.getContentByPath('/en');
+
+// Stripping locale and querying root
+const content = await client.getContentByPath('/');
+```
+
+**✅ Correct:**
+```typescript
+// Full path with trailing slash
+const content = await client.getContentByPath(`/${slug.join('/')}/`);
+
+// Examples:
+// URL /en → path "/en/"
+// URL /en/about → path "/en/about/"
+```
+
+---
 
 ## After Making Changes
 

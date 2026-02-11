@@ -12,7 +12,8 @@
     "lint": "eslint",
     "cms:login": "npx @optimizely/cms-cli@latest login",
     "cms:push-config": "npx @optimizely/cms-cli@latest config push ./optimizely.config.mjs",
-    "cms:push-config-force": "npx @optimizely/cms-cli@latest config push ./optimizely.config.mjs --force"
+    "cms:push-config-force": "npx @optimizely/cms-cli@latest config push ./optimizely.config.mjs --force",
+    "cms:pull-config": "npx @optimizely/cms-cli@latest config pull --output ./content-types.json"
   },
   "dependencies": {
     "@optimizely/cms-sdk": "^0.1.0-alpha.16",

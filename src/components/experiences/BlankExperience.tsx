@@ -18,7 +18,7 @@ export default function BlankExperience({ opti }: Props) {
   return (
     <main className="blank-experience">
       <OptimizelyExperience
-        nodes={opti.composition.nodes ?? []}
+        nodes={opti.composition?.nodes ?? []}
         ComponentWrapper={ComponentWrapper}
       />
     </main>

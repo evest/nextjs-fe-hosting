@@ -1,5 +1,3 @@
-"use client";
-
 import Logo from "./Logo";
 import Link from "next/link";
 
@@ -169,6 +167,16 @@ export default function Footer() {
               >
                 Sitemap
               </Link>
+              {process.env.OPTIMIZELY_CMS_URL && (
+                <a
+                  href={process.env.OPTIMIZELY_CMS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                >
+                  Edit
+                </a>
+              )}
             </div>
           </div>
         </div>

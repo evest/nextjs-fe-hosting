@@ -70,3 +70,36 @@ pattern: '^\\+?1?\\s*\\(?([0-9]{3})\\)?[-\\s.]?([0-9]{3})[-\\s.]?([0-9]{4})$'
 ```typescript
 pattern: '^[A-Za-z0-9]+$'
 ```
+
+## Display Template Choice Keys
+
+**⚠️ IMPORTANT:** When defining `choices` in display templates, the choice keys (object property names) must follow strict naming rules:
+
+- Must start with a non-numerical character (letter or underscore)
+- Can only contain alphanumeric characters (a-z, A-Z, 0-9) or underscores
+- **NO hyphens allowed**
+
+```typescript
+// ❌ WRONG: Will fail CMS sync
+choices: {
+  'light-grey': { displayName: 'Light Grey', sortOrder: 1 },
+  'primary-brand': { displayName: 'Primary Brand', sortOrder: 2 },
+}
+
+// ✅ CORRECT: Use underscores instead of hyphens
+choices: {
+  light_grey: { displayName: 'Light Grey', sortOrder: 1 },
+  primary_brand: { displayName: 'Primary Brand', sortOrder: 2 },
+}
+```
+
+If your component library expects hyphenated values, map them in your React component:
+
+```typescript
+const colorMap: Record<string, ComponentColor> = {
+  light_grey: 'light-grey',
+  primary_brand: 'primary-brand',
+};
+
+const color = colorMap[displaySettings?.color] || 'default';
+```

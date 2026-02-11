@@ -227,6 +227,8 @@ export const LandingPageCT = contentType({
 
 ### HeroBlock
 
+> **Note:** Visual styling options like `imageAlignment` and `height` should be defined using `displayTemplate` instead of enum properties. See [Display Templates](#display-templates) section below.
+
 ```typescript
 import { contentType } from '@optimizely/cms-sdk';
 
@@ -236,30 +238,21 @@ export const HeroBlockCT = contentType({
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled'],  // Can be used as section
   properties: {
-    title: { 
-      type: 'string', 
+    title: {
+      type: 'string',
       displayName: 'Title',
       required: true,
       localized: true,
     },
-    subtitle: { 
-      type: 'string', 
+    subtitle: {
+      type: 'string',
       displayName: 'Subtitle',
       localized: true,
     },
-    backgroundImage: { 
-      type: 'contentReference', 
+    backgroundImage: {
+      type: 'contentReference',
       displayName: 'Background Image',
       allowedTypes: ['_image'],
-    },
-    imageAlignment: { 
-      type: 'string', 
-      displayName: 'Image Alignment',
-      enum: [
-        { value: 'left', displayName: 'Left' },
-        { value: 'center', displayName: 'Center' },
-        { value: 'right', displayName: 'Right' },
-      ],
     },
     ctas: {
       type: 'array',
@@ -267,21 +260,13 @@ export const HeroBlockCT = contentType({
       items: { type: 'content' },
       maxItems: 3,
     },
-    height: { 
-      type: 'string', 
-      displayName: 'Hero Height',
-      enum: [
-        { value: 'sm', displayName: 'Small' },
-        { value: 'md', displayName: 'Medium' },
-        { value: 'lg', displayName: 'Large' },
-        { value: 'full', displayName: 'Full Screen' },
-      ],
-    },
   },
 });
 ```
 
 ### CallToActionBlock
+
+> **Note:** Visual styling options like `style` should be defined using `displayTemplate` instead of enum properties. See [Display Templates](#display-templates) section below.
 
 ```typescript
 import { contentType } from '@optimizely/cms-sdk';
@@ -292,44 +277,34 @@ export const CallToActionBlockCT = contentType({
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled', 'elementEnabled'],  // Works as both!
   properties: {
-    heading: { 
-      type: 'string', 
+    heading: {
+      type: 'string',
       displayName: 'Heading',
       required: true,
       localized: true,
     },
-    description: { 
-      type: 'richText', 
+    description: {
+      type: 'richText',
       displayName: 'Description',
       localized: true,
     },
-    primaryButtonText: { 
-      type: 'string', 
+    primaryButtonText: {
+      type: 'string',
       displayName: 'Primary Button Text',
       required: true,
     },
-    primaryButtonLink: { 
+    primaryButtonLink: {
       type: 'link',  // Rich link with text/title/target
       displayName: 'Primary Button Link',
       required: true,
     },
-    secondaryButtonText: { 
-      type: 'string', 
+    secondaryButtonText: {
+      type: 'string',
       displayName: 'Secondary Button Text',
     },
-    secondaryButtonLink: { 
+    secondaryButtonLink: {
       type: 'link',
       displayName: 'Secondary Button Link',
-    },
-    style: { 
-      type: 'string', 
-      displayName: 'CTA Style',
-      enum: [
-        { value: 'default', displayName: 'Default' },
-        { value: 'bordered', displayName: 'Bordered' },
-        { value: 'filled', displayName: 'Filled' },
-        { value: 'gradient', displayName: 'Gradient' },
-      ],
     },
   },
 });
@@ -380,6 +355,8 @@ export const CardBlockCT = contentType({
 
 ### TitleElement
 
+> **Note:** Visual styling options like `alignment` should be defined using `displayTemplate` instead of enum properties. The `level` property (h1-h6) is semantic content, so enum is appropriate there. See [Display Templates](#display-templates) section below.
+
 ```typescript
 import { contentType } from '@optimizely/cms-sdk';
 
@@ -389,14 +366,14 @@ export const TitleElementCT = contentType({
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],
   properties: {
-    text: { 
-      type: 'string', 
+    text: {
+      type: 'string',
       displayName: 'Title Text',
       required: true,
       localized: true,
     },
-    level: { 
-      type: 'string', 
+    level: {
+      type: 'string',
       displayName: 'Heading Level',
       enum: [
         { value: 'h1', displayName: 'H1' },
@@ -405,15 +382,6 @@ export const TitleElementCT = contentType({
         { value: 'h4', displayName: 'H4' },
         { value: 'h5', displayName: 'H5' },
         { value: 'h6', displayName: 'H6' },
-      ],
-    },
-    alignment: { 
-      type: 'string', 
-      displayName: 'Text Alignment',
-      enum: [
-        { value: 'left', displayName: 'Left' },
-        { value: 'center', displayName: 'Center' },
-        { value: 'right', displayName: 'Right' },
       ],
     },
   },
@@ -458,44 +426,59 @@ export const ImageElementCT = contentType({
 
 ### ButtonElement
 
-```typescript
-import { contentType } from '@optimizely/cms-sdk';
+> **Note:** Visual styling options like `style` and `size` should be defined using `displayTemplate` instead of enum properties. See [Display Templates](#display-templates) section below.
 
+```typescript
+import { contentType, displayTemplate } from '@optimizely/cms-sdk';
+
+// Content type - only content properties
 export const ButtonElementCT = contentType({
   key: 'ButtonElement',
   displayName: 'Button Element',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],
   properties: {
-    text: { 
-      type: 'string', 
+    text: {
+      type: 'string',
       displayName: 'Button Text',
       required: true,
       localized: true,
     },
-    link: { 
+    link: {
       type: 'link',  // Rich link with text/title/target
       displayName: 'Button Link',
       required: true,
     },
-    style: { 
-      type: 'string', 
+  },
+});
+
+// Display template - defines visual variations
+export const ButtonDisplayTemplate = displayTemplate({
+  key: 'ButtonDisplayTemplate',
+  isDefault: true,
+  displayName: 'Button Style',
+  contentType: 'ButtonElement',
+  settings: {
+    style: {
+      editor: 'select',
       displayName: 'Button Style',
-      enum: [
-        { value: 'primary', displayName: 'Primary' },
-        { value: 'secondary', displayName: 'Secondary' },
-        { value: 'outline', displayName: 'Outline' },
-        { value: 'text', displayName: 'Text Only' },
-      ],
+      sortOrder: 0,
+      choices: {
+        primary: { displayName: 'Primary', sortOrder: 1 },
+        secondary: { displayName: 'Secondary', sortOrder: 2 },
+        outline: { displayName: 'Outline', sortOrder: 3 },
+        text: { displayName: 'Text Only', sortOrder: 4 },
+      },
     },
-    size: { 
-      type: 'string', 
+    size: {
+      editor: 'select',
       displayName: 'Button Size',
-      enum: [
-        { value: 'sm', displayName: 'Small' },
-        { value: 'md', displayName: 'Medium' },
-        { value: 'lg', displayName: 'Large' },
-      ],
+      sortOrder: 1,
+      choices: {
+        sm: { displayName: 'Small', sortOrder: 1 },
+        md: { displayName: 'Medium', sortOrder: 2 },
+        lg: { displayName: 'Large', sortOrder: 3 },
+      },
     },
   },
 });
@@ -548,6 +531,252 @@ export const AboutExperienceCT = contentType({
 });
 ```
 
+## Display Templates
+
+Display templates define visual variations that editors can apply to components. **Use display templates for styling options instead of enum properties on content types.**
+
+### When to Use Display Templates vs Enum Properties
+
+| Use Display Template | Use Enum Property |
+|---------------------|-------------------|
+| Visual styling (colors, sizes, alignment) | Semantic content (heading level h1-h6) |
+| Layout variations (orientation, spacing) | Content categories (blog category) |
+| Component variants (primary/secondary button) | Data values (status, type) |
+| Presentation options | Business logic choices |
+
+**Key principle:** If changing the value affects how something *looks* (presentation), use `displayTemplate`. If it affects what something *means* (content/semantics), use `enum`.
+
+### Basic Display Template
+
+```typescript
+import { contentType, displayTemplate, Infer } from '@optimizely/cms-sdk';
+
+// Content type - only content properties
+export const CardBlockCT = contentType({
+  key: 'CardBlock',
+  displayName: 'Card Block',
+  baseType: '_component',
+  compositionBehaviors: ['elementEnabled'],
+  properties: {
+    title: { type: 'string', displayName: 'Title', required: true },
+    description: { type: 'string', displayName: 'Description' },
+    image: { type: 'contentReference', displayName: 'Image', allowedTypes: ['_image'] },
+  },
+});
+
+// Display template - defines visual variations
+export const CardDisplayTemplate = displayTemplate({
+  key: 'CardDisplayTemplate',
+  isDefault: true,
+  displayName: 'Card Style',
+  contentType: 'CardBlock',  // Links to specific content type
+  settings: {
+    variant: {
+      editor: 'select',
+      displayName: 'Card Variant',
+      sortOrder: 0,
+      choices: {
+        default: { displayName: 'Default', sortOrder: 1 },
+        outlined: { displayName: 'Outlined', sortOrder: 2 },
+        elevated: { displayName: 'Elevated', sortOrder: 3 },
+      },
+    },
+    imagePosition: {
+      editor: 'select',
+      displayName: 'Image Position',
+      sortOrder: 1,
+      choices: {
+        top: { displayName: 'Top', sortOrder: 1 },
+        left: { displayName: 'Left', sortOrder: 2 },
+        right: { displayName: 'Right', sortOrder: 3 },
+      },
+    },
+  },
+});
+```
+
+### Display Template with Component Variants (Tags)
+
+Use `tag` to link a display template to a specific component variant:
+
+```typescript
+// Content type
+export const HeroBlockCT = contentType({
+  key: 'HeroBlock',
+  displayName: 'Hero Block',
+  baseType: '_component',
+  compositionBehaviors: ['sectionEnabled'],
+  properties: {
+    title: { type: 'string', displayName: 'Title', required: true },
+    subtitle: { type: 'string', displayName: 'Subtitle' },
+    backgroundImage: { type: 'contentReference', displayName: 'Background', allowedTypes: ['_image'] },
+  },
+});
+
+// Default display template
+export const HeroDefaultTemplate = displayTemplate({
+  key: 'HeroDefaultTemplate',
+  isDefault: true,
+  displayName: 'Default Hero',
+  contentType: 'HeroBlock',
+  settings: {
+    height: {
+      editor: 'select',
+      displayName: 'Height',
+      sortOrder: 0,
+      choices: {
+        sm: { displayName: 'Small', sortOrder: 1 },
+        md: { displayName: 'Medium', sortOrder: 2 },
+        lg: { displayName: 'Large', sortOrder: 3 },
+        full: { displayName: 'Full Screen', sortOrder: 4 },
+      },
+    },
+  },
+});
+
+// Centered variant with different styling options
+export const HeroCenteredTemplate = displayTemplate({
+  key: 'HeroCenteredTemplate',
+  isDefault: false,
+  displayName: 'Centered Hero',
+  contentType: 'HeroBlock',
+  tag: 'Centered',  // Links to CenteredHero component variant
+  settings: {
+    textColor: {
+      editor: 'select',
+      displayName: 'Text Color',
+      sortOrder: 0,
+      choices: {
+        light: { displayName: 'Light', sortOrder: 1 },
+        dark: { displayName: 'Dark', sortOrder: 2 },
+      },
+    },
+    overlay: {
+      editor: 'checkbox',
+      displayName: 'Show Overlay',
+      sortOrder: 1,
+      choices: {
+        true: { displayName: 'Enabled', sortOrder: 1 },
+        false: { displayName: 'Disabled', sortOrder: 2 },
+      },
+    },
+  },
+});
+```
+
+### Using Display Settings in Components
+
+```typescript
+import { Infer } from '@optimizely/cms-sdk';
+import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
+
+type Props = {
+  opti: Infer<typeof CardBlockCT>;
+  displaySettings?: Infer<typeof CardDisplayTemplate>;
+};
+
+export default function CardBlock({ opti, displaySettings }: Props) {
+  const { pa } = getPreviewUtils(opti);
+
+  return (
+    <div
+      className={`card card--${displaySettings?.variant ?? 'default'}`}
+      data-image-position={displaySettings?.imagePosition ?? 'top'}
+      {...pa(opti)}
+    >
+      {opti.image?.url?.default && (
+        <img src={opti.image.url.default} alt="" {...pa('image')} />
+      )}
+      <h3 {...pa('title')}>{opti.title}</h3>
+      <p {...pa('description')}>{opti.description}</p>
+    </div>
+  );
+}
+```
+
+### Registering Display Templates
+
+```typescript
+// In your optimizely.ts setup file
+import { initDisplayTemplateRegistry } from '@optimizely/cms-sdk';
+import {
+  CardDisplayTemplate,
+  HeroDefaultTemplate,
+  HeroCenteredTemplate,
+  ButtonDisplayTemplate,
+} from '@/components';
+
+initDisplayTemplateRegistry([
+  CardDisplayTemplate,
+  HeroDefaultTemplate,
+  HeroCenteredTemplate,
+  ButtonDisplayTemplate,
+]);
+```
+
+### Display Template Properties Reference
+
+| Property | Required | Description |
+|----------|----------|-------------|
+| `key` | Yes | Unique identifier |
+| `displayName` | Yes | Name shown to editors |
+| `isDefault` | Yes | Whether this is the default template |
+| `settings` | Yes | Object defining available styling options |
+| `contentType` | One of these | Apply to specific content type |
+| `baseType` | One of these | Apply to `'_component'`, `'_experience'`, or `'_section'` |
+| `nodeType` | One of these | Apply to `'row'` or `'column'` |
+| `tag` | No | Links to a component variant |
+| `sortOrder` | No | Display order in CMS UI |
+
+### Setting Editor Types
+
+**Select** - Dropdown for single selection:
+```typescript
+color: {
+  editor: 'select',
+  displayName: 'Color',
+  choices: {
+    blue: { displayName: 'Blue', sortOrder: 1 },
+    red: { displayName: 'Red', sortOrder: 2 },
+  },
+}
+```
+
+> **⚠️ IMPORTANT: Choice Key Naming Rules**
+>
+> Choice keys (the object property names in `choices`) must follow these rules:
+> - Must start with a non-numerical character (letter or underscore)
+> - Can only contain alphanumeric characters (a-z, A-Z, 0-9) or underscores
+> - **NO hyphens allowed** - use underscores instead
+>
+> ```typescript
+> // ❌ WRONG: Hyphens in choice keys
+> choices: {
+>   'light-grey': { displayName: 'Light Grey', sortOrder: 1 },
+>   'dark-blue': { displayName: 'Dark Blue', sortOrder: 2 },
+> }
+>
+> // ✅ CORRECT: Use underscores instead
+> choices: {
+>   light_grey: { displayName: 'Light Grey', sortOrder: 1 },
+>   dark_blue: { displayName: 'Dark Blue', sortOrder: 2 },
+> }
+> ```
+>
+> If your component library expects hyphenated values (like Hedwig's `'lighter-brand'`), create a mapping in your React component to convert underscore keys to hyphenated values.
+
+**Checkbox** - Toggle for boolean values:
+```typescript
+showBorder: {
+  editor: 'checkbox',
+  displayName: 'Show Border',
+  choices: {
+    true: { displayName: 'Enabled', sortOrder: 1 },
+    false: { displayName: 'Disabled', sortOrder: 2 },
+  },
+}
+```
+
 ## Usage Tips
 
 1. **Copy entire definitions** - Ready to use
@@ -558,6 +787,7 @@ export const AboutExperienceCT = contentType({
 6. **CompositionBehaviors** - Add for Visual Builder flexibility
 7. **Property groups** - Add `group` field
 8. **Export naming** - Use "CT" suffix
+9. **Use displayTemplate for styling** - Don't put visual options in content type enums
 
 ## Component Pattern
 

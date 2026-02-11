@@ -150,12 +150,27 @@ title: {
   minLength: 5,
   maxLength: 100,
   pattern: '^[A-Za-z0-9 ]+$',
-  enum: [
-    { value: 'sm', displayName: 'Small' },
-    { value: 'lg', displayName: 'Large' },
-  ],
 }
 ```
+
+**Enum for content/semantic choices** (NOT for visual styling):
+```typescript
+// ✅ Correct: semantic content choice
+headingLevel: {
+  type: 'string',
+  displayName: 'Heading Level',
+  enum: [
+    { value: 'h1', displayName: 'H1' },
+    { value: 'h2', displayName: 'H2' },
+    { value: 'h3', displayName: 'H3' },
+  ],
+}
+
+// ❌ Wrong: visual styling - use displayTemplate instead
+// style: { type: 'string', enum: [{ value: 'primary' }, { value: 'secondary' }] }
+```
+
+> **Important:** For visual styling options (colors, sizes, alignment, variants), use `displayTemplate` instead of enum properties. See the Display Templates section.
 
 ### Rich Text
 Formatted content with rich text editing (Slate.js format).
@@ -502,6 +517,8 @@ properties: {
 **Built-in groups** (always available):
 - `Information`, `Scheduling`, `Advanced`, `Shortcut`, `Categories`, `DynamicBlocks`
 
+**Note!** The built-in group `Advanced` is named "Settings" in the CMS UI.
+
 ## Common Patterns
 
 See `references/standard-types.md` for complete examples:
@@ -514,6 +531,73 @@ See `references/composition-patterns.md` for:
 - Tab and accordion patterns
 - Card grids
 - Flexible content areas
+
+## Display Templates
+
+**IMPORTANT:** Use `displayTemplate` for visual styling options instead of enum properties on content types.
+
+### When to Use Display Templates vs Enum Properties
+
+| Use `displayTemplate` | Use `enum` property |
+|----------------------|---------------------|
+| Button style (primary/secondary) | Heading level (h1-h6) |
+| Colors and sizes | Content category |
+| Layout alignment | Status values |
+| Component variants | Semantic choices |
+
+**Rule:** If it affects *how something looks*, use `displayTemplate`. If it affects *what something means*, use `enum`.
+
+### Basic Example
+
+```typescript
+import { contentType, displayTemplate, Infer } from '@optimizely/cms-sdk';
+
+// Content type - NO visual styling properties
+export const ButtonElementCT = contentType({
+  key: 'ButtonElement',
+  baseType: '_component',
+  compositionBehaviors: ['elementEnabled'],
+  properties: {
+    text: { type: 'string', displayName: 'Button Text', required: true },
+    link: { type: 'link', displayName: 'Link', required: true },
+  },
+});
+
+// Display template - defines visual variations
+export const ButtonDisplayTemplate = displayTemplate({
+  key: 'ButtonDisplayTemplate',
+  isDefault: true,
+  displayName: 'Button Style',
+  contentType: 'ButtonElement',
+  settings: {
+    style: {
+      editor: 'select',
+      displayName: 'Style',
+      sortOrder: 0,
+      choices: {
+        primary: { displayName: 'Primary', sortOrder: 1 },
+        secondary: { displayName: 'Secondary', sortOrder: 2 },
+      },
+    },
+  },
+});
+```
+
+### Using in Components
+
+```typescript
+type Props = {
+  opti: Infer<typeof ButtonElementCT>;
+  displaySettings?: Infer<typeof ButtonDisplayTemplate>;
+};
+
+export default function ButtonElement({ opti, displaySettings }: Props) {
+  const style = displaySettings?.style ?? 'primary';
+  return <Button variant={style}>{opti.text}</Button>;
+}
+```
+
+See `references/standard-types.md` for complete display template examples.
 
 ## Best Practices
 
@@ -528,13 +612,183 @@ See `references/composition-patterns.md` for:
 9. **Control with allowedTypes** - Prevent wrong content types
 10. **Use wildcard cautiously** - `mayContainTypes: ['*']` allows all types
 11. **No nested arrays** - Arrays cannot contain array items
+12. **Use displayTemplate for styling** - Don't put visual options in content type enum properties
 
-## Sync to CMS
+## Optimizely CMS CLI
 
-After defining content types, sync them:
+The `@optimizely/cms-cli` tool is used to sync content types to your Optimizely SaaS CMS instance.
+
+### Installation
+
+**For a project (recommended):**
+```bash
+npm install @optimizely/cms-cli -D
+```
+
+**Global installation:**
+```bash
+npm install @optimizely/cms-cli -g
+```
+
+### Usage
+
+Run the CLI using npx:
+```bash
+npx optimizely-cms-cli
+```
+
+### Environment Variables
+
+The CLI requires authentication credentials to connect to your Optimizely SaaS CMS instance. Set these environment variables:
 
 ```bash
-npx @optimizely/cms-cli@latest config push optimizely.config.mjs
+OPTIMIZELY_CMS_CLIENT_ID=your-client-id
+OPTIMIZELY_CMS_CLIENT_SECRET=your-client-secret
+```
+
+Add these to your `.env` or `.env.local` file for local development.
+
+### Creating optimizely.config.mjs
+
+**CRITICAL:** The config file must use `components` with **file paths as strings**. The CLI processes the files itself - do NOT import content types directly.
+
+✅ **Correct - use file paths:**
+```javascript
+import { buildConfig } from '@optimizely/cms-sdk';
+
+export default buildConfig({
+  components: [
+    // List each file containing content types or display templates
+    './src/cms/content-types/elements/ButtonElement.ts',
+    './src/cms/content-types/elements/NavLinkElement.ts',
+    './src/cms/content-types/blocks/HeroBlock.ts',
+    './src/cms/content-types/blocks/TextBlock.ts',
+    './src/cms/content-types/pages/ArticlePage.ts',
+    './src/cms/content-types/settings/HeaderSettings.ts',
+  ],
+  propertyGroups: [
+    { key: 'content', displayName: 'Content', sortOrder: 1 },
+    { key: 'seo', displayName: 'SEO', sortOrder: 2 },
+    { key: 'settings', displayName: 'Settings', sortOrder: 3 },
+  ],
+});
+```
+
+❌ **Wrong - do NOT import objects directly:**
+```javascript
+// THIS WILL CAUSE "Cannot read properties of undefined (reading 'map')" ERROR
+import { buildConfig } from '@optimizely/cms-sdk';
+import { ButtonElementCT } from './src/cms/content-types/elements/ButtonElement.ts';
+import { HeroBlockCT } from './src/cms/content-types/blocks/HeroBlock.ts';
+
+export default buildConfig({
+  contentTypes: [ButtonElementCT, HeroBlockCT],  // ❌ WRONG!
+  displayTemplates: [ButtonDisplayTemplate],      // ❌ WRONG!
+});
+```
+
+**Key points:**
+- Use `components` array with file path strings
+- The CLI automatically discovers `contentType()` and `displayTemplate()` exports from these files
+- Display templates in the same file as content types will be found automatically
+- Property groups are defined inline in the config (not as file paths)
+
+### Sync Content Types to CMS
+
+After defining content types, sync them to your CMS:
+
+```bash
+npx optimizely-cms-cli config push optimizely.config.mjs
+```
+
+### Common Commands
+
+```bash
+# Push content type configuration to CMS
+npx optimizely-cms-cli config push optimizely.config.mjs
+
+# Pull existing configuration from CMS
+npx optimizely-cms-cli config pull
+
+# View help and available commands
+npx optimizely-cms-cli --help
+```
+
+## Visual Builder Preview Setup
+
+For Visual Builder to work, you need three things:
+
+### 1. SDK Registry Initialization
+
+Create `src/optimizely.ts` and import it in your root layout:
+
+```typescript
+import {
+  initContentTypeRegistry,
+  initDisplayTemplateRegistry,
+  BlankExperienceContentType,
+  BlankSectionContentType,
+} from '@optimizely/cms-sdk';
+import { initReactComponentRegistry } from '@optimizely/cms-sdk/react/server';
+
+// MUST include BlankExperienceContentType and BlankSectionContentType
+initContentTypeRegistry([
+  BlankExperienceContentType,
+  BlankSectionContentType,
+  // ... your content types
+]);
+
+initReactComponentRegistry({
+  resolver: {
+    BlankExperience,  // React component for experiences
+    BlankSection,     // React component for sections
+    // ... your components
+  },
+});
+```
+
+### 2. Experience Components
+
+Create `BlankExperience` and `BlankSection` React components. See `references/troubleshooting.md` for complete examples.
+
+### 3. Preview Route
+
+Create `app/preview/page.tsx`:
+
+```typescript
+import { GraphClient, type PreviewParams } from '@optimizely/cms-sdk';
+import { OptimizelyComponent } from '@optimizely/cms-sdk/react/server';
+import { PreviewComponent } from '@optimizely/cms-sdk/react/client';
+import Script from 'next/script';
+
+export default async function PreviewPage({ searchParams }: Props) {
+  const client = new GraphClient(process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!, {
+    graphUrl: process.env.OPTIMIZELY_GRAPH_GATEWAY,
+  });
+
+  const response = await client.getPreviewContent(
+    (await searchParams) as PreviewParams
+  );
+
+  return (
+    <div>
+      <Script
+        src={`${process.env.OPTIMIZELY_CMS_URL}/util/javascript/communicationinjector.js`}
+        strategy="afterInteractive"
+      />
+      <PreviewComponent />
+      <OptimizelyComponent opti={response} />
+    </div>
+  );
+}
+```
+
+### Required Environment Variables
+
+```bash
+OPTIMIZELY_CMS_URL=https://app-xxx.cms.optimizely.com
+OPTIMIZELY_GRAPH_GATEWAY=https://cg.optimizely.com/content/v2  # Include full path!
+OPTIMIZELY_GRAPH_SINGLE_KEY=your-single-key
 ```
 
 ## References
@@ -544,3 +798,4 @@ npx @optimizely/cms-cli@latest config push optimizely.config.mjs
 - `references/validation.md` - Validation patterns and regex
 - `references/composition-patterns.md` - Advanced composition patterns
 - `references/troubleshooting.md` - Common errors and solutions
+- [CMS CLI Installation Guide](https://github.com/episerver/content-js-sdk/blob/main/docs/1-installation.md) - Official CLI documentation

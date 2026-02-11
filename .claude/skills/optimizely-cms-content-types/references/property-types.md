@@ -46,6 +46,8 @@ title: {
 - `pattern?: string` - Regex pattern
 - `enum?: { value: string; displayName: string }[]`
 
+> **Important:** Only use `enum` for semantic/content choices (heading levels, categories, status values). For visual styling options (colors, sizes, button variants, alignment), use `displayTemplate` instead. See `references/standard-types.md` for display template examples.
+
 ## Rich Text Property
 
 Formatted content with rich text editing capabilities (Slate.js format).
@@ -257,7 +259,7 @@ featuredImage: {
 
 ## Content Property
 
-Embedded content (inline block).
+Reference to another content item (page, block, media), **or** or an inline block. This property allows the creation of a block for inline storage in the property. You can point to a shared block and then select to convert it to an inline block copying the content onto the page breaking the link to the original.
 
 ```typescript
 heroSection: {
@@ -274,13 +276,13 @@ heroSection: {
 
 **Use for:** Nested blocks, composed content, content areas
 
-**Difference from contentReference:** Content is embedded inline vs. referenced by ID
+**Difference from contentReference:** Content may be embedded inline vs. referenced by ID, but it can still be a reference to another content item.
 
-**Important restriction: It is not allowed to have a property of type content on an element (a component with ) **
+**Important restriction: It is not allowed to have an inline property of type content on an element **
 
 **⚠️ IMPORTANT RESTRICTION**: Content types with `elementEnabled` **CANNOT** have properties that are content items (`type: "content"`). Elements are meant to be simple, atomic components, not containers.
 
-Use `ContentReference` instead type to reference a shared block or page.
+Use `ContentReference` instead to reference a shared block or page.
 
 ## Component Property
 
@@ -428,16 +430,33 @@ relatedContent: {
 
 ### Enum with Display Names
 
+Use enum for **semantic/content choices**, not visual styling:
+
 ```typescript
+// ✅ Correct: semantic choice (heading level affects document structure)
 {
   type: 'string',
+  displayName: 'Heading Level',
   enum: [
-    { value: 'sm', displayName: 'Small' },
-    { value: 'md', displayName: 'Medium' },
-    { value: 'lg', displayName: 'Large' },
+    { value: 'h1', displayName: 'H1' },
+    { value: 'h2', displayName: 'H2' },
+    { value: 'h3', displayName: 'H3' },
+  ],
+}
+
+// ✅ Correct: content category
+{
+  type: 'string',
+  displayName: 'Article Category',
+  enum: [
+    { value: 'news', displayName: 'News' },
+    { value: 'tutorial', displayName: 'Tutorial' },
+    { value: 'review', displayName: 'Review' },
   ],
 }
 ```
+
+> **For visual styling** (sizes, colors, button variants, alignment), use `displayTemplate` instead. See `references/standard-types.md#display-templates`.
 
 ## Complete Example
 
