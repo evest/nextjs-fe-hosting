@@ -22,6 +22,8 @@ export default function BannerElement({ opti, displaySettings }: Props) {
   const horizontalAlignment = displaySettings?.horizontalAlignment ?? 'center';
   const verticalAlignment = displaySettings?.verticalAlignment ?? 'center';
   const overlayKey = displaySettings?.overlayPercentage ?? 'overlay0';
+  const ctaStyle = displaySettings?.ctaStyle ?? 'button';
+  const ctaColor = displaySettings?.ctaColor ?? 'light';
 
   // Horizontal alignment classes
   const horizontalAlignmentClasses = {
@@ -94,23 +96,27 @@ export default function BannerElement({ opti, displaySettings }: Props) {
           )}
 
           {/* CTA Link */}
-          {opti.ctaLink?.default?.href && (
+          {opti.ctaLink?.url?.default && (
             <Link
-              href={opti.ctaLink.default.href}
-              className="
-                inline-block
-                bg-white text-black
-                px-6 py-3
-                rounded-lg
-                font-semibold
-                hover:bg-gray-100
-                transition-colors
-              "
-              target={opti.ctaLink.default.target}
-              title={opti.ctaLink.default.title}
+              href={opti.ctaLink.url.default}
+              className={
+                ctaStyle === 'button'
+                  ? ctaColor === 'light'
+                    ? `inline-block bg-white text-black px-6 py-3 rounded-lg font-semibold
+                       hover:bg-gray-100 transition-colors`
+                    : `inline-block bg-black text-white px-6 py-3 rounded-lg font-semibold
+                       hover:bg-gray-800 transition-colors`
+                  : ctaColor === 'light'
+                  ? `inline-block text-white font-semibold underline underline-offset-4
+                     hover:text-gray-200 transition-colors`
+                  : `inline-block text-black font-semibold underline underline-offset-4
+                     hover:text-gray-800 transition-colors`
+              }
+              target={opti.ctaLink.target ?? undefined}
+              title={opti.ctaLink.title ?? undefined}
               {...pa('ctaLink')}
             >
-              {opti.ctaLink.default.text || 'Learn More'}
+              {opti.ctaLink.text || 'Learn More'}
             </Link>
           )}
         </div>

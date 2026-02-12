@@ -56,5 +56,23 @@ export const BannerDisplayTemplate = displayTemplate({
         overlay90: { displayName: '90%', sortOrder: 10 },
       },
     },
+    ctaStyle: {
+      editor: 'select',
+      displayName: 'CTA Style',
+      sortOrder: 4,
+      choices: {
+        button: { displayName: 'Button', sortOrder: 1 },
+        link: { displayName: 'Link', sortOrder: 2 },
+      },
+    },
+    ctaColor: {
+      editor: 'select',
+      displayName: 'CTA Color',
+      sortOrder: 5,
+      choices: {
+        light: { displayName: 'Light (for dark backgrounds)', sortOrder: 1 },
+        dark: { displayName: 'Dark (for light backgrounds)', sortOrder: 2 },
+      },
+    },
   },
 });
