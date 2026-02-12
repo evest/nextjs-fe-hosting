@@ -25,6 +25,7 @@ initReactComponentRegistry({
     TextElement: components.TextElement,
     RichTextElement: components.RichTextElement,
     ImageElement: components.ImageElement,
+    BannerElement: components.BannerElement,
     CardBlock: components.CardBlock,
     BlankExperience: components.BlankExperience,
     BlankSection: components.BlankSection,

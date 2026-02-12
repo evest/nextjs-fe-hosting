@@ -7,7 +7,9 @@ export default buildConfig({
     './src/content-types/TextElement.ts',
     './src/content-types/RichTextElement.ts',
     './src/content-types/ImageElement.ts',
+    './src/content-types/BannerElement.ts',
     './src/display-templates/TextElementDisplayTemplate.ts',
+    './src/display-templates/ImageElementDisplayTemplate.ts',
   ],
   propertyGroups: [
     { key: 'content', displayName: 'Content', sortOrder: 1 },

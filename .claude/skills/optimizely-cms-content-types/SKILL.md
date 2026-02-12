@@ -597,6 +597,85 @@ export default function ButtonElement({ opti, displaySettings }: Props) {
 }
 ```
 
+### Important Considerations for Display Templates
+
+#### Choice Keys Must Be At Least 2 Characters
+
+**CRITICAL:** Display template choice keys must be at least 2 characters long. Single-character keys will cause an error.
+
+❌ **Wrong - single character keys:**
+```typescript
+settings: {
+  overlayPercentage: {
+    editor: 'select',
+    displayName: 'Overlay Darkness',
+    choices: {
+      '0': { displayName: '0%', sortOrder: 1 },   // ❌ ERROR: minimum 2 chars
+      '10': { displayName: '10%', sortOrder: 2 },
+      '20': { displayName: '20%', sortOrder: 3 },
+    },
+  },
+}
+```
+
+**Error message:** "The choices object contains a field whose name '0' does not meet the minimum length requirement of 2 characters."
+
+✅ **Correct - descriptive keys with 2+ characters:**
+```typescript
+settings: {
+  overlayPercentage: {
+    editor: 'select',
+    displayName: 'Overlay Darkness',
+    choices: {
+      overlay0: { displayName: '0% (No Overlay)', sortOrder: 1 },  // ✅ 2+ chars
+      overlay10: { displayName: '10%', sortOrder: 2 },
+      overlay20: { displayName: '20%', sortOrder: 3 },
+      overlay50: { displayName: '50%', sortOrder: 6 },
+      overlay90: { displayName: '90%', sortOrder: 10 },
+    },
+  },
+}
+```
+
+**In your component**, extract the numeric value:
+```typescript
+const overlayKey = displaySettings?.overlayPercentage ?? 'overlay0';
+const overlayPercentage = parseInt(overlayKey.replace('overlay', '')) || 0;
+const overlayOpacity = overlayPercentage / 100;
+```
+
+#### ContentType Field Uses String Key
+
+The `contentType` field in display templates must use the **string key**, not the TypeScript variable name:
+
+✅ **Correct:**
+```typescript
+export const BannerElementCT = contentType({
+  key: 'BannerElement',  // This is the key
+  // ...
+});
+
+export const BannerDisplayTemplate = displayTemplate({
+  contentType: 'BannerElement',  // ✅ Use the key (string)
+  // ...
+});
+```
+
+❌ **Wrong:**
+```typescript
+export const BannerDisplayTemplate = displayTemplate({
+  contentType: BannerElementCT,  // ❌ TypeScript error - expects string
+  // ...
+});
+```
+
+#### Organizing New Content Types with Display Templates
+If we get errors pushing new content types and display templates at the same time, use the --force command to push the changes. This might be a bug in the CLI, and is probably because of the order of content types and display templates.
+
+```bash
+npm run cms:push-config-force
+```
+
 See `references/standard-types.md` for complete display template examples.
 
 ## Best Practices
@@ -613,6 +692,9 @@ See `references/standard-types.md` for complete display template examples.
 10. **Use wildcard cautiously** - `mayContainTypes: ['*']` allows all types
 11. **No nested arrays** - Arrays cannot contain array items
 12. **Use displayTemplate for styling** - Don't put visual options in content type enum properties
+13. **Display template choice keys must be 2+ characters** - Avoid single-character keys like `'0'`, use `'overlay0'` instead
+14. **Co-locate new content types with display templates** - Put both in the same file when creating new types to avoid push errors
+15. **Use force push for new types with templates** - First push of new content type + display template requires `--force` flag
 
 ## Optimizely CMS CLI
 
@@ -690,8 +772,18 @@ export default buildConfig({
 **Key points:**
 - Use `components` array with file path strings
 - The CLI automatically discovers `contentType()` and `displayTemplate()` exports from these files
-- Display templates in the same file as content types will be found automatically
+- **When content type and display template are in the same file**, you only need to list that file once - the CLI will discover both exports automatically
 - Property groups are defined inline in the config (not as file paths)
+
+**Example with display template in same file:**
+```javascript
+export default buildConfig({
+  components: [
+    './src/content-types/BannerElement.ts',  // Contains both BannerElementCT and BannerDisplayTemplate
+    // No need to list display template separately!
+  ],
+});
+```
 
 ### Sync Content Types to CMS
 
@@ -701,11 +793,31 @@ After defining content types, sync them to your CMS:
 npx optimizely-cms-cli config push optimizely.config.mjs
 ```
 
+#### Force Push for New Content Types with Display Templates
+
+When pushing a **NEW** content type that includes a display template for the first time, use the force push command:
+
+```bash
+npx optimizely-cms-cli config push optimizely.config.mjs --force
+```
+
+Or if defined in your `package.json`:
+```bash
+npm run cms:push-config-force
+```
+
+**Why force push?** The display template references a content type that doesn't exist in the CMS yet. The regular push will fail with: "Unable to find a content type 'YourTypeName'." Force push creates both the content type and display template together, handling the dependency properly.
+
+**After the first push**, you can use the regular push command for subsequent updates.
+
 ### Common Commands
 
 ```bash
 # Push content type configuration to CMS
 npx optimizely-cms-cli config push optimizely.config.mjs
+
+# Force push (for new types with display templates)
+npx optimizely-cms-cli config push optimizely.config.mjs --force
 
 # Pull existing configuration from CMS
 npx optimizely-cms-cli config pull
