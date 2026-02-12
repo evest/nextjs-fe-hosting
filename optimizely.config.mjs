@@ -8,6 +8,8 @@ export default buildConfig({
     './src/content-types/RichTextElement.ts',
     './src/content-types/ImageElement.ts',
     './src/content-types/BannerElement.ts',
+    './src/content-types/CallToActionElement.ts',
+    './src/display-templates/CallToActionElementDisplayTemplate.ts',
     './src/display-templates/TextElementDisplayTemplate.ts',
     './src/display-templates/ImageElementDisplayTemplate.ts',
   ],

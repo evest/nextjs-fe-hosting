@@ -7,15 +7,6 @@ import type { ReactElement } from 'react';
 
 
 type Props = {
-  /*
-  searchParams: Promise<{
-    key?: string;
-    loc?: string;
-    ver?: string;
-    ctx?: string;
-    preview_token?: string;
-  }>;
-  */
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
