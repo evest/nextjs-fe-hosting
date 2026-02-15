@@ -29,6 +29,7 @@ initReactComponentRegistry({
     CallToActionElement: components.CallToActionElement,
     CardBlock: components.CardBlock,
     BlankExperience: components.BlankExperience,
+    LandingPageExperience: components.LandingPageExperience,
     BlankSection: components.BlankSection,
   },
 });

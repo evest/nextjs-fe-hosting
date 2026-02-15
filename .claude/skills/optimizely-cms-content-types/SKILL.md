@@ -495,9 +495,10 @@ import { buildConfig } from '@optimizely/cms-sdk';
 export default buildConfig({
   components: ['./src/components/**/*.tsx'],
   propertyGroups: [
-    { key: 'content', displayName: 'Content', sortOrder: 1 },
-    { key: 'seo', displayName: 'SEO', sortOrder: 2 },
-    { key: 'styling', displayName: 'Styling', sortOrder: 3 },
+    // Do NOT include 'content' or 'settings' — these are reserved!
+    { key: 'media', displayName: 'Media', sortOrder: 2 },
+    { key: 'seo', displayName: 'SEO', sortOrder: 3 },
+    { key: 'styling', displayName: 'Styling', sortOrder: 4 },
   ],
 });
 ```
@@ -518,6 +519,12 @@ properties: {
 - `Information`, `Scheduling`, `Advanced`, `Shortcut`, `Categories`, `DynamicBlocks`
 
 **Note!** The built-in group `Advanced` is named "Settings" in the CMS UI.
+
+**Reserved group names** — Do NOT define these in `propertyGroups`, they already exist:
+- `content` — Reserved (properties default to this tab)
+- `settings` — Reserved (maps to built-in `Advanced` tab)
+
+If you define reserved names, the CMS push will fail with: *"The TabDefinition name 'content' is reserved and cannot be used."*
 
 ## Common Patterns
 
@@ -749,9 +756,9 @@ export default buildConfig({
     './src/cms/content-types/settings/HeaderSettings.ts',
   ],
   propertyGroups: [
-    { key: 'content', displayName: 'Content', sortOrder: 1 },
-    { key: 'seo', displayName: 'SEO', sortOrder: 2 },
-    { key: 'settings', displayName: 'Settings', sortOrder: 3 },
+    // Do NOT include 'content' or 'settings' — these are reserved!
+    { key: 'media', displayName: 'Media', sortOrder: 2 },
+    { key: 'seo', displayName: 'SEO', sortOrder: 3 },
   ],
 });
 ```

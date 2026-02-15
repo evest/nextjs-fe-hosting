@@ -4,6 +4,32 @@ Common issues and solutions when working with Optimizely CMS content types and R
 
 ## CMS Sync Errors
 
+### "The TabDefinition name 'X' is reserved and cannot be used"
+
+**Error**: When pushing config, you get: `The TabDefinition name 'content' is reserved and cannot be used.` or `The TabDefinition name 'settings' is reserved and cannot be used.`
+
+**Cause**: The property group names `content` and `settings` are built-in reserved tabs in Optimizely CMS. You cannot redefine them in `propertyGroups`.
+
+**❌ Wrong:**
+```javascript
+propertyGroups: [
+  { key: 'content', displayName: 'Content', sortOrder: 1 },   // ❌ Reserved!
+  { key: 'settings', displayName: 'Settings', sortOrder: 3 }, // ❌ Reserved!
+],
+```
+
+**✅ Correct — only define custom (non-reserved) groups:**
+```javascript
+propertyGroups: [
+  { key: 'media', displayName: 'Media', sortOrder: 2 },
+  { key: 'seo', displayName: 'SEO', sortOrder: 3 },
+],
+```
+
+**Note**: Properties without an explicit `group` default to the built-in `content` tab. You do not need to reference `group: 'content'` in your properties — it's the default.
+
+---
+
 ### "Cannot read properties of undefined (reading 'map')"
 
 **Error**: When running `npx optimizely-cms-cli config push`, you get: `TypeError: Cannot read properties of undefined (reading 'map')`
@@ -20,7 +46,7 @@ export default buildConfig({
   contentTypes: [ButtonElementCT, HeroBlockCT],  // ❌ WRONG!
   displayTemplates: [HeroDisplayTemplate],       // ❌ WRONG!
   propertyGroups: [
-    { key: 'content', displayName: 'Content', sortOrder: 1 },
+    { key: 'media', displayName: 'Media', sortOrder: 2 },
   ],
 });
 ```
@@ -35,7 +61,7 @@ export default buildConfig({
     './src/cms/content-types/blocks/HeroBlock.ts',
   ],
   propertyGroups: [
-    { key: 'content', displayName: 'Content', sortOrder: 1 },
+    { key: 'media', displayName: 'Media', sortOrder: 2 },
   ],
 });
 ```
@@ -836,6 +862,34 @@ export default async function PreviewPage({ searchParams }: Props) {
 ```
 
 **Rule**: Avoid viewport-relative units (`vh`, `vw`, `dvh`, `svh`) in CMS components that will be previewed in Visual Builder. Use fixed values or let content/padding determine sizing.
+
+---
+
+### Preview Attributes (`pa()`) on Background Image Wrappers Break Layout
+
+**Error**: When using `{...pa('backgroundImage')}` on a wrapper `<div>` around a background image, the Visual Builder's `communicationinjector.js` adds a hover overlay that covers the entire area, blocking interaction with child elements and breaking the layout.
+
+**Cause**: The `pa()` function adds `data-epi-property-name` attributes. The CMS injects interactive hover overlays on these elements for in-context editing. When applied to a full-bleed or absolutely-positioned container (like a background image wrapper), the overlay covers the entire component.
+
+**❌ Wrong:**
+```typescript
+{hasBackground && (
+  <div className="absolute inset-0 -z-10" {...pa('backgroundImage')}>
+    <Image src={src(opti.backgroundImage)} alt="" fill className="object-cover" />
+  </div>
+)}
+```
+
+**✅ Correct — omit `pa()` on background containers:**
+```typescript
+{hasBackground && (
+  <div className="absolute inset-0 -z-10">
+    <Image src={src(opti.backgroundImage)} alt="" fill className="object-cover" />
+  </div>
+)}
+```
+
+**Rule**: Do not use `pa()` on absolutely-positioned or full-bleed wrapper elements (background images, overlays, full-width containers). The CMS hover overlay will cover the entire area. Only use `pa()` on elements that are part of the normal document flow and have bounded dimensions.
 
 ---
 

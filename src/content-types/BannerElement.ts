@@ -11,25 +11,21 @@ export const BannerElementCT = contentType({
       displayName: 'Background Image',
       required: true,
       allowedTypes: ['_image'],
-      group: 'content',
     },
     heading: {
       type: 'string',
       displayName: 'Heading',
       required: true,
       localized: true,
-      group: 'content',
     },
     text: {
       type: 'string',
       displayName: 'Text',
       localized: true,
-      group: 'content',
     },
     ctaLink: {
       type: 'link',
       displayName: 'Call to Action Link',
-      group: 'content',
     },
   },
 });

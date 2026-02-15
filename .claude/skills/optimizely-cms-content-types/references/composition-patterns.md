@@ -164,8 +164,9 @@ function ComponentWrapper({ children, node }: ComponentContainerProps) {
 }
 
 export default function LandingPage({ opti }: Props) {
+  // IMPORTANT: Do NOT use min-h-screen — it breaks Visual Builder preview iframe
   return (
-    <main className="landing-page min-h-screen bg-linear-to-b from-gray-50 to-white">
+    <main className="landing-page bg-linear-to-b from-gray-50 to-white">
       <OptimizelyExperience
         nodes={opti.composition.nodes ?? []}
         ComponentWrapper={ComponentWrapper}

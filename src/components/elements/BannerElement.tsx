@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { Infer } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { BannerElementCT } from '@/content-types/BannerElement';

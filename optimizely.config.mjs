@@ -9,13 +9,12 @@ export default buildConfig({
     './src/content-types/ImageElement.ts',
     './src/content-types/BannerElement.ts',
     './src/content-types/CallToActionElement.ts',
+    './src/content-types/LandingPageExperience.ts',
     './src/display-templates/CallToActionElementDisplayTemplate.ts',
     './src/display-templates/TextElementDisplayTemplate.ts',
     './src/display-templates/ImageElementDisplayTemplate.ts',
   ],
   propertyGroups: [
-    { key: 'content', displayName: 'Content', sortOrder: 1 },
     { key: 'media', displayName: 'Media', sortOrder: 2 },
-    { key: 'settings', displayName: 'Settings', sortOrder: 3 },
   ],
 });

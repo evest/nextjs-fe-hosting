@@ -5,3 +5,4 @@ export { ImageElementCT } from './ImageElement';
 export { BannerElementCT } from './BannerElement';
 export { CallToActionElementCT } from './CallToActionElement';
 export { CardBlockCT } from './CardBlock';
+export { LandingPageExperienceCT } from './LandingPageExperience';
