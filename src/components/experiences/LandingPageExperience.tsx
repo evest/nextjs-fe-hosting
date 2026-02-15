@@ -25,7 +25,7 @@ export default function LandingPageExperience({ opti }: Props) {
   const hasBackground = !!opti.backgroundImage?.url?.default;
 
   return (
-    <div className="landing-page-experience -mt-16 relative">
+    <div className={`landing-page-experience -mt-16 relative${hasBackground ? ' has-background-image' : ''}`}>
       {/* Full-bleed background image covering entire page including behind header */}
       {hasBackground && (
         <div className="absolute inset-0 -z-10">

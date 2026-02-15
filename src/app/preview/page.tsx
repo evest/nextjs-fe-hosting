@@ -18,11 +18,25 @@ export default async function Page({ searchParams }: Props) {
 
   let response;
   let error: unknown = null;
+  const maxRetries = 3;
 
-  try {
-    response = await client.getPreviewContent(params as PreviewParams);
-  } catch (err: unknown) {
-    error = err;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      error = null;
+      response = await client.getPreviewContent(params as PreviewParams);
+      break;
+    } catch (err: unknown) {
+      error = err;
+      const isNotYetIndexed =
+        err instanceof Error &&
+        err.name === 'GraphResponseError' &&
+        err.message.includes('No content found for key');
+      if (isNotYetIndexed && attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        continue;
+      }
+      break;
+    }
   }
 
   if (error) {
