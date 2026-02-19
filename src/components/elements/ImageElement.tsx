@@ -12,7 +12,7 @@ type Props = {
 export default function ImageElement({ opti, displaySettings }: Props) {
   const { pa, src } = getPreviewUtils(opti);
 
-  if (!opti.image?.url?.default) {
+  if (!opti.image?.url?.default && !opti.image?.item?.Url) {
     return null;
   }
 

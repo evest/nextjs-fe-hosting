@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cdn.optimizely.com',
       },
+      {
+        protocol: 'https',
+        hostname: '*.cmp.optimizely.com',
+      },
     ],
   },
   async redirects() {

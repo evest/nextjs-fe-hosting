@@ -14,7 +14,7 @@ type Props = {
 export default function BannerElement({ opti, displaySettings }: Props) {
   const { pa, src } = getPreviewUtils(opti);
 
-  if (!opti.backgroundImage?.url?.default) {
+  if (!opti.backgroundImage?.url?.default && !opti.backgroundImage?.item?.Url) {
     return null;
   }
 

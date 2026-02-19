@@ -22,7 +22,7 @@ function ComponentWrapper({ children, node }: ComponentContainerProps) {
 
 export default function LandingPageExperience({ opti }: Props) {
   const { pa, src } = getPreviewUtils(opti);
-  const hasBackground = !!opti.backgroundImage?.url?.default;
+  const hasBackground = !!(opti.backgroundImage?.url?.default || opti.backgroundImage?.item?.Url);
 
   return (
     <div className={`landing-page-experience -mt-16 relative${hasBackground ? ' has-background-image' : ''}`}>

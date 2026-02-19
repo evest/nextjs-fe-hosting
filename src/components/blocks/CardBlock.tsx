@@ -13,7 +13,7 @@ export default function CardBlock({ opti }: Props) {
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      {opti.image?.url?.default && (
+      {(opti.image?.url?.default || opti.image?.item?.Url) && (
         <div className="relative h-48 w-full">
           <Image
             src={src(opti.image)}

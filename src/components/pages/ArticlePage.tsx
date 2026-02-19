@@ -13,7 +13,7 @@ export default function ArticlePage({ opti }: Props) {
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-8">
-      {opti.featuredImage?.url?.default && (
+      {(opti.featuredImage?.url?.default || opti.featuredImage?.item?.Url) && (
         <div className="relative w-full h-64 md:h-96 mb-8 rounded-lg overflow-hidden">
           <Image
             src={src(opti.featuredImage)}
