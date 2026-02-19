@@ -29,7 +29,6 @@ export default async function Page({ searchParams }: Props) {
       error = err;
       const isNotYetIndexed =
         err instanceof Error &&
-        err.name === 'GraphResponseError' &&
         err.message.includes('No content found for key');
       if (isNotYetIndexed && attempt < maxRetries) {
         await new Promise((resolve) => setTimeout(resolve, 200));
