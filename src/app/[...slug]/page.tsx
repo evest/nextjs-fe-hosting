@@ -1,5 +1,6 @@
 import { GraphClient } from '@optimizely/cms-sdk';
 import { OptimizelyComponent } from '@optimizely/cms-sdk/react/server';
+import { notFound } from 'next/navigation';
 import { getGraphGatewayUrl } from '@/lib/config';
 
 type Props = {
@@ -18,14 +19,7 @@ export default async function Page({ params }: Props) {
   const content = await client.getContentByPath(`/${slug.join('/')}/`);
 
   if (!content || content.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
-          <p className="text-gray-600">Page not found</p>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   return <OptimizelyComponent opti={content[0]} />;
