@@ -44,3 +44,4 @@ next-env.d.ts
 # misc
 certificates
 nextjs-fe-hosting.head.app.*
+.claude/settings.local.json
