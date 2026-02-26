@@ -60,19 +60,48 @@ Barrel exports in `src/components/index.ts` must match content type keys used in
 ### Component Pattern
 
 ```typescript
-import { Infer } from '@optimizely/cms-sdk';
+import { ContentProps } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 
 type Props = {
-  opti: Infer<typeof SomeContentTypeCT>;
-  displaySettings?: Infer<typeof SomeDisplayTemplate>;
+  content: ContentProps<typeof SomeContentTypeCT>;
+  displaySettings?: ContentProps<typeof SomeDisplayTemplate>;
 };
 
-export default function MyComponent({ opti, displaySettings }: Props) {
-  const { pa, src } = getPreviewUtils(opti);
+export default function MyComponent({ content, displaySettings }: Props) {
+  const { pa, src } = getPreviewUtils(content);
   // pa('propertyName') — adds preview attributes for Visual Builder editing
   // src(opti.image) — returns optimized image URL from CMS CDN
-  return <div {...pa('title')}>{opti.title}</div>;
+  return <div {...pa('title')}>{content.title}</div>;
+}
+```
+### Experience Pattern
+```typescript
+import { BlankExperienceContentType, ContentProps } from '@optimizely/cms-sdk';
+import {
+  ComponentContainerProps,
+  OptimizelyComposition,
+  getPreviewUtils,
+} from '@optimizely/cms-sdk/react/server';
+
+type Props = {
+  content: ContentProps<typeof BlankExperienceContentType>;
+};
+
+function ComponentWrapper({ children, node }: ComponentContainerProps) {
+  const { pa } = getPreviewUtils(node);
+  return <div className="mb-8" {...pa(node)}>{children}</div>;
+}
+
+export default function BlankExperience({ content }: Props) {
+  return (
+    <main className="blank-experience">
+      <OptimizelyComposition
+        nodes={content.composition?.nodes ?? []}
+        ComponentWrapper={ComponentWrapper}
+      />
+    </main>
+  );
 }
 ```
 

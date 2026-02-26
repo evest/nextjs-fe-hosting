@@ -1,5 +1,5 @@
 import type { JSX } from 'react';
-import { Infer } from '@optimizely/cms-sdk';
+import { ContentProps } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { BannerElementCT } from '@/content-types/BannerElement';
 import { BannerDisplayTemplate } from '@/display-templates/BannerElementDisplayTemplate';
@@ -7,14 +7,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 type Props = {
-  opti: Infer<typeof BannerElementCT>;
-  displaySettings?: Infer<typeof BannerDisplayTemplate>;
+  content: ContentProps<typeof BannerElementCT>;
+  displaySettings?: ContentProps<typeof BannerDisplayTemplate>;
 };
 
-export default function BannerElement({ opti, displaySettings }: Props) {
-  const { pa, src } = getPreviewUtils(opti);
+export default function BannerElement({ content, displaySettings }: Props) {
+  const { pa, src } = getPreviewUtils(content);
 
-  if (!opti.backgroundImage?.url?.default && !opti.backgroundImage?.item?.Url) {
+  if (!content.backgroundImage?.url?.default && !content.backgroundImage?.item?.Url) {
     return null;
   }
 
@@ -51,7 +51,7 @@ export default function BannerElement({ opti, displaySettings }: Props) {
     <div className="relative w-full h-96 overflow-hidden">
       {/* Background Image */}
       <Image
-        src={src(opti.backgroundImage)}
+        src={src(content.backgroundImage)}
         alt=""
         fill
         className="object-cover"
@@ -83,23 +83,23 @@ export default function BannerElement({ opti, displaySettings }: Props) {
             className="text-white font-bold text-3xl md:text-5xl mb-4"
             {...pa('heading')}
           >
-            {opti.heading}
+            {content.heading}
           </HeadingTag>
 
           {/* Text */}
-          {opti.text && (
+          {content.text && (
             <p
               className="text-white text-lg md:text-xl mb-6"
               {...pa('text')}
             >
-              {opti.text}
+              {content.text}
             </p>
           )}
 
           {/* CTA Link */}
-          {opti.ctaLink?.url?.default && (
+          {content.ctaLink?.url?.default && (
             <Link
-              href={opti.ctaLink.url.default}
+              href={content.ctaLink.url.default}
               className={
                 ctaStyle === 'button'
                   ? ctaColor === 'light'
@@ -113,11 +113,11 @@ export default function BannerElement({ opti, displaySettings }: Props) {
                   : `inline-block text-black font-semibold underline underline-offset-4
                      hover:text-gray-800 transition-colors`
               }
-              target={opti.ctaLink.target ?? undefined}
-              title={opti.ctaLink.title ?? undefined}
+              target={content.ctaLink.target ?? undefined}
+              title={content.ctaLink.title ?? undefined}
               {...pa('ctaLink')}
             >
-              {opti.ctaLink.text || 'Learn More'}
+              {content.ctaLink.text || 'Learn More'}
             </Link>
           )}
         </div>

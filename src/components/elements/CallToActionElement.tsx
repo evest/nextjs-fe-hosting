@@ -1,16 +1,16 @@
-import { Infer } from '@optimizely/cms-sdk';
+import { ContentProps } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { CallToActionElementCT } from '@/content-types/CallToActionElement';
 import { CallToActionDisplayTemplate } from '@/display-templates/CallToActionElementDisplayTemplate';
 import Link from 'next/link';
 
 type Props = {
-  opti: Infer<typeof CallToActionElementCT>;
-  displaySettings?: Infer<typeof CallToActionDisplayTemplate>;
+  content: ContentProps<typeof CallToActionElementCT>;
+  displaySettings?: ContentProps<typeof CallToActionDisplayTemplate>;
 };
 
-export default function CallToActionElement({ opti, displaySettings }: Props) {
-  const { pa } = getPreviewUtils(opti);
+export default function CallToActionElement({ content, displaySettings }: Props) {
+  const { pa } = getPreviewUtils(content);
 
   const style = displaySettings?.style ?? 'link';
   const color = displaySettings?.color ?? 'dark';
@@ -30,7 +30,7 @@ export default function CallToActionElement({ opti, displaySettings }: Props) {
     },
   };
 
-  if (!opti.link?.url?.default) {
+  if (!content.link?.url?.default) {
     return (
       <span className={styleClasses[style][color]} {...pa('link')}>
         Set link...
@@ -40,13 +40,13 @@ export default function CallToActionElement({ opti, displaySettings }: Props) {
 
   return (
     <Link
-      href={opti.link.url.default}
+      href={content.link.url.default}
       className={styleClasses[style][color]}
-      target={opti.link.target ?? undefined}
-      title={opti.link.title ?? undefined}
+      target={content.link.target ?? undefined}
+      title={content.link.title ?? undefined}
       {...pa('link')}
     >
-      {opti.link.text || 'Learn More'}
+      {content.link.text || 'Learn More'}
     </Link>
   );
 }
