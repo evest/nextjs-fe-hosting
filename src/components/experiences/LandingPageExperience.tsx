@@ -1,14 +1,14 @@
-import { Infer } from '@optimizely/cms-sdk';
+import { ContentProps } from '@optimizely/cms-sdk';
 import {
   ComponentContainerProps,
-  OptimizelyExperience,
+  OptimizelyComposition,
   getPreviewUtils,
 } from '@optimizely/cms-sdk/react/server';
 import { LandingPageExperienceCT } from '@/content-types/LandingPageExperience';
 import Image from 'next/image';
 
 type Props = {
-  opti: Infer<typeof LandingPageExperienceCT>;
+  content: ContentProps<typeof LandingPageExperienceCT>;
 };
 
 function ComponentWrapper({ children, node }: ComponentContainerProps) {
@@ -20,9 +20,9 @@ function ComponentWrapper({ children, node }: ComponentContainerProps) {
   );
 }
 
-export default function LandingPageExperience({ opti }: Props) {
-  const { pa, src } = getPreviewUtils(opti);
-  const hasBackground = !!(opti.backgroundImage?.url?.default || opti.backgroundImage?.item?.Url);
+export default function LandingPageExperience({ content }: Props) {
+  const { pa, src } = getPreviewUtils(content);
+  const hasBackground = !!(content.backgroundImage?.url?.default || content.backgroundImage?.item?.Url);
 
   return (
     <div className={`landing-page-experience -mt-16 relative${hasBackground ? ' has-background-image' : ''}`}>
@@ -30,7 +30,7 @@ export default function LandingPageExperience({ opti }: Props) {
       {hasBackground && (
         <div className="absolute inset-0 -z-10">
           <Image
-            src={src(opti.backgroundImage)}
+            src={src(content.backgroundImage)}
             alt=""
             fill
             className="object-cover"
@@ -41,8 +41,8 @@ export default function LandingPageExperience({ opti }: Props) {
 
       {/* Content area with top padding to clear the header */}
       <div className="relative pt-16">
-        <OptimizelyExperience
-          nodes={opti.composition?.nodes ?? []}
+        <OptimizelyComposition
+          nodes={content.composition?.nodes ?? []}
           ComponentWrapper={ComponentWrapper}
         />
       </div>

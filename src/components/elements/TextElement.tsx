@@ -1,15 +1,15 @@
-import { Infer } from '@optimizely/cms-sdk';
+import { ContentProps } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { TextElementCT } from '@/content-types/TextElement';
 import { TextElementDisplayTemplate } from '@/display-templates/TextElementDisplayTemplate';
 
 type Props = {
-  opti: Infer<typeof TextElementCT>;
-  displaySettings?: Infer<typeof TextElementDisplayTemplate>;
+  content: ContentProps<typeof TextElementCT>;
+  displaySettings?: ContentProps<typeof TextElementDisplayTemplate>;
 };
 
-export default function TextElement({ opti, displaySettings }: Props) {
-  const { pa } = getPreviewUtils(opti);
+export default function TextElement({ content, displaySettings }: Props) {
+  const { pa } = getPreviewUtils(content);
 
   const headingLevel = displaySettings?.headingLevel || 'plain';
   const alignment = displaySettings?.alignment || 'left';
@@ -29,7 +29,7 @@ export default function TextElement({ opti, displaySettings }: Props) {
           className={`text-4xl font-bold text-gray-900 ${baseClasses}`}
           {...pa('text')}
         >
-          {opti.text}
+          {content.text}
         </h1>
       );
     case 'h2':
@@ -38,7 +38,7 @@ export default function TextElement({ opti, displaySettings }: Props) {
           className={`text-3xl font-bold text-gray-800 ${baseClasses}`}
           {...pa('text')}
         >
-          {opti.text}
+          {content.text}
         </h2>
       );
     case 'h3':
@@ -47,7 +47,7 @@ export default function TextElement({ opti, displaySettings }: Props) {
           className={`text-2xl font-semibold text-gray-800 ${baseClasses}`}
           {...pa('text')}
         >
-          {opti.text}
+          {content.text}
         </h3>
       );
     case 'h4':
@@ -56,7 +56,7 @@ export default function TextElement({ opti, displaySettings }: Props) {
           className={`text-xl font-semibold text-gray-700 ${baseClasses}`}
           {...pa('text')}
         >
-          {opti.text}
+          {content.text}
         </h4>
       );
     case 'h5':
@@ -65,13 +65,13 @@ export default function TextElement({ opti, displaySettings }: Props) {
           className={`text-lg font-medium text-gray-700 ${baseClasses}`}
           {...pa('text')}
         >
-          {opti.text}
+          {content.text}
         </h5>
       );
     default:
       return (
         <p className={`text-base text-gray-600 ${baseClasses}`} {...pa('text')}>
-          {opti.text}
+          {content.text}
         </p>
       );
   }

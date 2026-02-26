@@ -1,23 +1,23 @@
-import { Infer } from '@optimizely/cms-sdk';
+import { ContentProps } from '@optimizely/cms-sdk';
 import { RichText } from '@optimizely/cms-sdk/react/richText';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { CardBlockCT } from '@/content-types/CardBlock';
 import Image from 'next/image';
 
 type Props = {
-  opti: Infer<typeof CardBlockCT>;
+  content: ContentProps<typeof CardBlockCT>;
 };
 
-export default function CardBlock({ opti }: Props) {
-  const { pa, src } = getPreviewUtils(opti);
+export default function CardBlock({ content }: Props) {
+  const { pa, src } = getPreviewUtils(content);
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      {(opti.image?.url?.default || opti.image?.item?.Url) && (
+      {(content.image?.url?.default || content.image?.item?.Url) && (
         <div className="relative h-48 w-full">
           <Image
-            src={src(opti.image)}
-            alt={opti.title || 'Card image'}
+            src={src(content.image)}
+            alt={content.title || 'Card image'}
             fill
             className="object-cover"
             {...pa('image')}
@@ -30,22 +30,22 @@ export default function CardBlock({ opti }: Props) {
           className="text-xl font-semibold text-gray-900 mb-2"
           {...pa('title')}
         >
-          {opti.title}
+          {content.title}
         </h3>
 
-        {opti.text && (
+        {content.text && (
           <div className="prose prose-sm text-gray-600 mb-4" {...pa('text')}>
-            <RichText content={opti.text?.json} />
+            <RichText content={content.text?.json} />
           </div>
         )}
 
-        {opti.linkUrl && opti.linkText && (
+        {content.linkUrl && content.linkText && (
           <a
-            href={String(opti.linkUrl)}
+            href={String(content.linkUrl)}
             className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
             {...pa('linkUrl')}
           >
-            {opti.linkText}
+            {content.linkText}
             <svg
               className="ml-2 w-4 h-4"
               fill="none"

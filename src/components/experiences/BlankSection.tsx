@@ -1,4 +1,4 @@
-import { BlankSectionContentType, Infer } from '@optimizely/cms-sdk';
+import { BlankSectionContentType, ContentProps } from '@optimizely/cms-sdk';
 import {
   OptimizelyGridSection,
   getPreviewUtils,
@@ -7,19 +7,19 @@ import {
 
 
 type BlankSectionProps = {
-  opti: Infer<typeof BlankSectionContentType>;
+  content: ContentProps<typeof BlankSectionContentType>;
 };
 
 /** Defines a component to render a blank section */
-export default function BlankSection({ opti }: BlankSectionProps) {
-  const { pa } = getPreviewUtils(opti)
+export default function BlankSection({ content }: BlankSectionProps) {
+  const { pa } = getPreviewUtils(content)
   return (
     <section
       className="vb:grid relative w-full py-12 px-4 md:px-6 lg:px-8 overflow-visible"
-      {...pa(opti)}
+      {...pa(content)}
     >
       <div className="max-w-7xl mx-auto w-full">
-        <OptimizelyGridSection nodes={opti.nodes} row={Row} column={Column} />
+        <OptimizelyGridSection nodes={content.nodes} row={Row} column={Column} />
       </div>
     </section>
   )

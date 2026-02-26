@@ -1,18 +1,18 @@
-import { Infer } from '@optimizely/cms-sdk';
+import { ContentProps } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { ImageElementCT } from '@/content-types/ImageElement';
 import { ImageDisplayTemplate } from '@/display-templates';
 import Image from 'next/image';
 
 type Props = {
-  opti: Infer<typeof ImageElementCT>;
-  displaySettings?: Infer<typeof ImageDisplayTemplate>;
+  content: ContentProps<typeof ImageElementCT>;
+  displaySettings?: ContentProps<typeof ImageDisplayTemplate>;
 };
 
-export default function ImageElement({ opti, displaySettings }: Props) {
-  const { pa, src } = getPreviewUtils(opti);
+export default function ImageElement({ content, displaySettings }: Props) {
+  const { pa, src } = getPreviewUtils(content);
 
-  if (!opti.image?.url?.default && !opti.image?.item?.Url) {
+  if (!content.image?.url?.default && !content.image?.item?.Url) {
     return null;
   }
 
@@ -107,19 +107,19 @@ export default function ImageElement({ opti, displaySettings }: Props) {
         `.trim().replace(/\s+/g, ' ')}
       >
         <Image
-          src={src(opti.image)}
-          alt={opti.altText || ''}
+          src={src(content.image)}
+          alt={content.altText || ''}
           fill
           className={`object-cover ${verticalAlignmentClasses[verticalAlignment]}`}
           {...pa('image')}
         />
       </div>
-      {opti.caption && (
+      {content.caption && (
         <figcaption
           className={`mt-2 text-sm text-gray-500 italic ${captionAlignmentClasses[alignment]}`}
           {...pa('caption')}
         >
-          {opti.caption}
+          {content.caption}
         </figcaption>
       )}
     </figure>
