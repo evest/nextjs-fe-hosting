@@ -1,4 +1,5 @@
 import { contentType } from '@optimizely/cms-sdk';
+import { SeoBlockCT } from './SeoBlock';
 
 export const ArticlePageCT = contentType({
   key: 'ArticlePage',
@@ -21,6 +22,18 @@ export const ArticlePageCT = contentType({
       type: 'contentReference',
       displayName: 'Featured Image',
       allowedTypes: ['_image'],
+      description: 'Image shown on the top of the page',
     },
+    seo: {
+      type: 'component',
+      displayName: 'SEO Settings',
+      contentType: SeoBlockCT,
+      group: 'seo',
+    },
+    ingress: {
+      type: 'string',
+      displayName: 'Introduction',
+      sortOrder: 20
+    }
   },
 });
