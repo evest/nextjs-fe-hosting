@@ -1,23 +1,24 @@
-import { Infer } from '@optimizely/cms-sdk';
+import { ContentProps, damAssets } from '@optimizely/cms-sdk';
 import { RichText } from '@optimizely/cms-sdk/react/richText';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { ArticlePageCT } from '@/content-types/ArticlePage';
 import Image from 'next/image';
 
 type Props = {
-  opti: Infer<typeof ArticlePageCT>;
+  content: ContentProps<typeof ArticlePageCT>;
 };
 
-export default function ArticlePage({ opti }: Props) {
-  const { pa, src } = getPreviewUtils(opti);
+export default function ArticlePage({ content }: Props) {
+  const { pa, src } = getPreviewUtils(content);
+  const { getSrcset, getAlt } = damAssets(content);
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-8">
-      {(opti.featuredImage?.url?.default || opti.featuredImage?.item?.Url) && (
+      {(content.featuredImage?.url?.default || content.featuredImage?.item?.Url) && (
         <div className="relative w-full h-64 md:h-96 mb-8 rounded-lg overflow-hidden">
           <Image
-            src={src(opti.featuredImage)}
-            alt={opti.heading || 'Featured image'}
+            src={src(content.featuredImage)!}
+            alt={getAlt(content.featuredImage, 'Featured image')}
             fill
             className="object-cover"
             {...pa('featuredImage')}
@@ -29,12 +30,21 @@ export default function ArticlePage({ opti }: Props) {
         className="text-3xl md:text-4xl font-bold text-gray-900 mb-6"
         {...pa('heading')}
       >
-        {opti.heading}
+        {content.heading}
       </h1>
 
-      {opti.body && (
+      {content.ingress && (
+        <p
+          className="text-xl md:text-2xl text-gray-600 leading-relaxed mb-8"
+          {...pa('ingress')}
+        >
+          {content.ingress}
+        </p>
+      )}
+
+      {content.body && (
         <div className="prose prose-lg max-w-none" {...pa('body')}>
-          <RichText content={opti.body?.json} />
+          <RichText content={content.body?.json} />
         </div>
       )}
     </article>

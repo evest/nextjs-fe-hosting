@@ -14,6 +14,8 @@ export default buildConfig({
     './src/display-templates/CallToActionElementDisplayTemplate.ts',
     './src/display-templates/TextElementDisplayTemplate.ts',
     './src/display-templates/ImageElementDisplayTemplate.ts',
+    './src/display-templates/LandingPageExperienceDisplayTemplate.ts',
+    './src/display-templates/BlankSectionDisplayTemplate.ts',
   ],
   propertyGroups: [
     { key: 'media', displayName: 'Media', sortOrder: 2 },

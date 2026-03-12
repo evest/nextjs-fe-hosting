@@ -38,5 +38,5 @@ export default async function Page({ params }: Props) {
     notFound();
   }
 
-  return <OptimizelyComponent opti={content} />;
+  return <OptimizelyComponent content={content} />;
 }

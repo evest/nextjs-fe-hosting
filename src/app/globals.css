@@ -44,34 +44,35 @@ body[data-epi-edit-mode] {
   position: relative;
 }
 
-/* Landing Page Experience — transparent header over background image */
+/* Landing Page Experience — transparent header when background image is present */
 body:has(.landing-page-experience.has-background-image) > header {
   background-color: transparent !important;
   border-bottom-color: transparent !important;
 }
 
-body:has(.landing-page-experience.has-background-image) > header nav a,
-body:has(.landing-page-experience.has-background-image) > header nav > div > button,
-body:has(.landing-page-experience.has-background-image) > header button[aria-label] {
+/* Light header style — white text/logo for dark backgrounds (editor-controlled) */
+body:has(.landing-page-experience.header-light) > header nav a,
+body:has(.landing-page-experience.header-light) > header nav > div > button,
+body:has(.landing-page-experience.header-light) > header button[aria-label] {
   color: white !important;
 }
 
-body:has(.landing-page-experience.has-background-image) > header nav a:hover,
-body:has(.landing-page-experience.has-background-image) > header nav > div > button:hover,
-body:has(.landing-page-experience.has-background-image) > header button[aria-label]:hover {
+body:has(.landing-page-experience.header-light) > header nav a:hover,
+body:has(.landing-page-experience.header-light) > header nav > div > button:hover,
+body:has(.landing-page-experience.header-light) > header button[aria-label]:hover {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* Keep dropdown menus readable */
-body:has(.landing-page-experience.has-background-image) > header nav .absolute a {
+/* Keep dropdown menus readable even with light header */
+body:has(.landing-page-experience.header-light) > header nav .absolute a {
   color: rgb(55, 65, 81) !important;
 }
 
-body:has(.landing-page-experience.has-background-image) > header nav .absolute a:hover {
+body:has(.landing-page-experience.header-light) > header nav .absolute a:hover {
   color: rgb(17, 24, 39) !important;
 }
 
 /* Invert header logo for visibility on dark backgrounds */
-body:has(.landing-page-experience.has-background-image) > header a > img {
+body:has(.landing-page-experience.header-light) > header a > img {
   filter: brightness(0) invert(1);
 }

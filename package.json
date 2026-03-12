@@ -16,7 +16,7 @@
     "cms:pull-config": "npx @optimizely/cms-cli@latest config pull --output ./content-types.json"
   },
   "dependencies": {
-    "@optimizely/cms-sdk": "^0.1.0-alpha.16",
+    "@optimizely/cms-sdk": "^1.0.0",
     "@tailwindcss/typography": "^0.5.19",
     "next": "16.1.1",
     "react": "19.2.3",

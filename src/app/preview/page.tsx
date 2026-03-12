@@ -46,7 +46,7 @@ export default async function Page({ searchParams }: Props) {
     <div>
       <CommunicationInjector />
       <PreviewComponent />
-      <OptimizelyComponent opti={response} />
+      <OptimizelyComponent content={response} />
     </div>
   );
 }
