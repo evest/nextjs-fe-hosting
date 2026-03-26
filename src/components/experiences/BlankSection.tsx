@@ -13,11 +13,24 @@ const sectionSpacingMap: Record<string, string> = {
   large: 'py-16',
 };
 
+const colorSchemeMap: Record<string, string> = {
+  light: '',
+  dark: 'section-dark bg-background text-foreground',
+  muted: 'section-muted bg-background text-foreground',
+};
+
+const rowSpacingMap: Record<string, string> = {
+  none: 'mb-0',
+  small: 'mb-2',
+  medium: 'mb-4',
+  large: 'mb-8',
+};
+
 const rowGapMap: Record<string, string> = {
-  none: 'gap-0 mb-0',
-  small: 'gap-2 mb-2',
-  medium: 'gap-4 mb-4',
-  large: 'gap-8 mb-8',
+  none: 'gap-0',
+  small: 'gap-2',
+  medium: 'gap-4',
+  large: 'gap-8',
 };
 
 const columnGapMap: Record<string, string> = {
@@ -34,6 +47,20 @@ const elementGapMap: Record<string, string> = {
   large: 'gap-6',
 };
 
+const verticalAlignmentMap: Record<string, string> = {
+  start: 'items-start',
+  center: 'items-center',
+  end: 'items-end',
+  stretch: 'items-stretch',
+};
+
+const columnPaddingMap: Record<string, string> = {
+  none: 'p-0',
+  small: 'p-2',
+  medium: 'p-4',
+  large: 'p-8',
+};
+
 type BlankSectionProps = {
   content: ContentProps<typeof BlankSectionContentType>;
   displaySettings?: ContentProps<typeof BlankSectionDisplayTemplate>;
@@ -43,33 +70,34 @@ export default function BlankSection({ content, displaySettings }: BlankSectionP
   const { pa } = getPreviewUtils(content);
 
   const sectionSpacing = sectionSpacingMap[displaySettings?.sectionSpacing ?? 'medium'];
-  const rowGap = displaySettings?.rowGap ?? 'medium';
+  const colorScheme = colorSchemeMap[displaySettings?.colorScheme ?? 'light'];
   const colGap = displaySettings?.columnGap ?? 'medium';
   const elemGap = displaySettings?.elementGap ?? 'medium';
 
   return (
     <section
-      className={`vb:grid relative w-full ${sectionSpacing} px-4 md:px-6 lg:px-8 overflow-visible`}
+      className={`vb:grid relative w-full ${sectionSpacing} ${colorScheme} px-4 md:px-6 lg:px-8 overflow-visible`}
       {...pa(content)}
     >
       <div className="max-w-7xl mx-auto w-full">
         <OptimizelyGridSection
           nodes={content.nodes}
-          row={(props) => <Row {...props} gap={rowGap} colGap={colGap} />}
-          column={(props) => <Column {...props} gap={elemGap} />}
+          row={(props) => <Row {...props} colGap={colGap} />}
+          column={(props) => <Column {...props} elemGap={elemGap} />}
         />
       </div>
     </section>
   );
 }
 
-function Row({ children, node, gap, colGap }: StructureContainerProps & { gap: string; colGap: string }) {
+function Row({ children, node, displaySettings, colGap }: StructureContainerProps & { colGap: string }) {
   const { pa } = getPreviewUtils(node);
-  const gapClasses = rowGapMap[gap];
+  const rowSpacing = rowSpacingMap[displaySettings?.rowSpacing as string ?? 'medium'];
   const colGapClasses = columnGapMap[colGap];
+  const verticalAlignment = verticalAlignmentMap[displaySettings?.verticalAlignment as string ?? 'start'];
   return (
     <div
-      className={`vb:row flex flex-row ${colGapClasses} ${gapClasses} last:mb-0`}
+      className={`vb:row flex flex-row ${colGapClasses} ${rowSpacing} ${verticalAlignment} last:mb-0`}
       {...pa(node)}
     >
       {children}
@@ -77,12 +105,15 @@ function Row({ children, node, gap, colGap }: StructureContainerProps & { gap: s
   );
 }
 
-function Column({ children, node, gap }: StructureContainerProps & { gap: string }) {
+function Column({ children, node, displaySettings, elemGap }: StructureContainerProps & { elemGap: string }) {
   const { pa } = getPreviewUtils(node);
-  const gapClasses = elementGapMap[gap];
+  const gapClasses = elementGapMap[elemGap];
+  const padding = columnPaddingMap[displaySettings?.columnSpacing as string ?? 'none'];
+  const hideOnMobile = displaySettings?.hideOnMobile === 'hide' ? 'hidden md:flex' : 'flex';
+  const hideOnTablet = displaySettings?.hideOnTablet === 'hide' ? 'md:hidden lg:flex' : '';
   return (
     <div
-      className={`vb:col flex-1 flex flex-col ${gapClasses} min-w-0`}
+      className={`vb:col flex-1 flex-col ${gapClasses} ${padding} ${hideOnMobile} ${hideOnTablet} min-w-0`}
       {...pa(node)}
     >
       {children}

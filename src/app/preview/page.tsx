@@ -4,6 +4,7 @@ import { PreviewComponent } from '@optimizely/cms-sdk/react/client';
 import { getGraphGatewayUrl } from '@/lib/config';
 import PreviewError from '@/components/layout/PreviewError';
 import CommunicationInjector from '@/components/layout/CommunicationInjector';
+import Script from 'next/script';
 
 
 type Props = {
@@ -44,7 +45,12 @@ export default async function Page({ searchParams }: Props) {
 
   return (
     <div>
-      <CommunicationInjector />
+      {/* <CommunicationInjector /> */}
+    <Script
+      src={`${process.env.OPTIMIZELY_CMS_URL}/util/javascript/communicationinjector.js`}
+      strategy="beforeInteractive"
+      id="optimizely-communication-injector"
+    />
       <PreviewComponent />
       <OptimizelyComponent content={response} />
     </div>

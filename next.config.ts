@@ -17,6 +17,19 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'unload=(self)',
+          },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       {

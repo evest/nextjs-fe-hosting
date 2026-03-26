@@ -17,16 +17,16 @@ export default function CallToActionElement({ content, displaySettings }: Props)
 
   const styleClasses: Record<string, Record<string, string>> = {
     button: {
-      light: `inline-block bg-white text-black px-6 py-3 rounded-lg font-semibold
-              hover:bg-gray-100 transition-colors`,
-      dark: `inline-block bg-black text-white px-6 py-3 rounded-lg font-semibold
-             hover:bg-gray-800 transition-colors`,
+      light: `inline-block bg-primary-foreground text-primary px-6 py-3 rounded-lg font-semibold
+              hover:opacity-90 transition-opacity`,
+      dark: `inline-block bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold
+             hover:opacity-90 transition-opacity`,
     },
     link: {
-      light: `inline-block text-white font-semibold underline underline-offset-4
-              hover:text-gray-200 transition-colors`,
-      dark: `inline-block text-black font-semibold underline underline-offset-4
-             hover:text-gray-800 transition-colors`,
+      light: `inline-block text-primary-foreground font-semibold underline underline-offset-4
+              hover:opacity-80 transition-opacity`,
+      dark: `inline-block text-primary font-semibold underline underline-offset-4
+             hover:opacity-80 transition-opacity`,
     },
   };
 

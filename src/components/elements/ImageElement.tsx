@@ -11,9 +11,9 @@ type Props = {
 
 export default function ImageElement({ content, displaySettings }: Props) {
   const { pa, src } = getPreviewUtils(content);
-  const { getSrcset, getAlt } = damAssets(content);
+  const { getAlt } = damAssets(content);
 
-  if (!content.image?.url?.default && !content.image?.item?.Url) {
+  if (!src(content.image)) {
     return null;
   }
 
@@ -112,12 +112,13 @@ export default function ImageElement({ content, displaySettings }: Props) {
           alt={getAlt(content.image, content.altText || '')}
           fill
           className={`object-cover ${verticalAlignmentClasses[verticalAlignment]}`}
+          sizes="(max-width: 768px) 100vw, 50vw"
           {...pa('image')}
         />
       </div>
       {content.caption && (
         <figcaption
-          className={`mt-2 text-sm text-gray-500 italic ${captionAlignmentClasses[alignment]}`}
+          className={`mt-2 text-sm text-muted-foreground italic ${captionAlignmentClasses[alignment]}`}
           {...pa('caption')}
         >
           {content.caption}

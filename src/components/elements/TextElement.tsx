@@ -26,7 +26,7 @@ export default function TextElement({ content, displaySettings }: Props) {
     case 'h1':
       return (
         <h1
-          className={`text-4xl font-bold text-gray-900 ${baseClasses}`}
+          className={`text-4xl font-bold text-foreground ${baseClasses}`}
           {...pa('text')}
         >
           {content.text}
@@ -35,7 +35,7 @@ export default function TextElement({ content, displaySettings }: Props) {
     case 'h2':
       return (
         <h2
-          className={`text-3xl font-bold text-gray-800 ${baseClasses}`}
+          className={`text-3xl font-bold text-foreground ${baseClasses}`}
           {...pa('text')}
         >
           {content.text}
@@ -44,7 +44,7 @@ export default function TextElement({ content, displaySettings }: Props) {
     case 'h3':
       return (
         <h3
-          className={`text-2xl font-semibold text-gray-800 ${baseClasses}`}
+          className={`text-2xl font-semibold text-foreground ${baseClasses}`}
           {...pa('text')}
         >
           {content.text}
@@ -53,7 +53,7 @@ export default function TextElement({ content, displaySettings }: Props) {
     case 'h4':
       return (
         <h4
-          className={`text-xl font-semibold text-gray-700 ${baseClasses}`}
+          className={`text-xl font-semibold text-muted-foreground ${baseClasses}`}
           {...pa('text')}
         >
           {content.text}
@@ -62,7 +62,7 @@ export default function TextElement({ content, displaySettings }: Props) {
     case 'h5':
       return (
         <h5
-          className={`text-lg font-medium text-gray-700 ${baseClasses}`}
+          className={`text-lg font-medium text-muted-foreground ${baseClasses}`}
           {...pa('text')}
         >
           {content.text}
@@ -70,7 +70,7 @@ export default function TextElement({ content, displaySettings }: Props) {
       );
     default:
       return (
-        <p className={`text-base text-gray-600 ${baseClasses}`} {...pa('text')}>
+        <p className={`text-base text-muted-foreground ${baseClasses}`} {...pa('text')}>
           {content.text}
         </p>
       );

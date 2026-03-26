@@ -13,9 +13,9 @@ type Props = {
 
 export default function BannerElement({ content, displaySettings }: Props) {
   const { pa, src } = getPreviewUtils(content);
-  const { getSrcset, getAlt } = damAssets(content);
+  const { getAlt } = damAssets(content);
 
-  if (!content.backgroundImage?.url?.default && !content.backgroundImage?.item?.Url) {
+  if (!src(content.backgroundImage)) {
     return null;
   }
 
@@ -56,13 +56,14 @@ export default function BannerElement({ content, displaySettings }: Props) {
         alt={getAlt(content.backgroundImage, '')}
         fill
         className="object-cover"
+        sizes="100vw"
         priority
       />
 
       {/* Overlay */}
       {overlayOpacity > 0 && (
         <div
-          className="absolute inset-0 bg-black"
+          className="absolute inset-0 bg-primary"
           style={{ opacity: overlayOpacity }}
           aria-hidden="true"
         />
@@ -81,7 +82,7 @@ export default function BannerElement({ content, displaySettings }: Props) {
         <div className="max-w-4xl">
           {/* Heading */}
           <HeadingTag
-            className="text-white font-bold text-3xl md:text-5xl mb-4"
+            className="text-primary-foreground font-bold text-3xl md:text-5xl mb-4"
             {...pa('heading')}
           >
             {content.heading}
@@ -90,7 +91,7 @@ export default function BannerElement({ content, displaySettings }: Props) {
           {/* Text */}
           {content.text && (
             <p
-              className="text-white text-lg md:text-xl mb-6"
+              className="text-primary-foreground text-lg md:text-xl mb-6"
               {...pa('text')}
             >
               {content.text}
@@ -104,15 +105,15 @@ export default function BannerElement({ content, displaySettings }: Props) {
               className={
                 ctaStyle === 'button'
                   ? ctaColor === 'light'
-                    ? `inline-block bg-white text-black px-6 py-3 rounded-lg font-semibold
-                       hover:bg-gray-100 transition-colors`
-                    : `inline-block bg-black text-white px-6 py-3 rounded-lg font-semibold
-                       hover:bg-gray-800 transition-colors`
+                    ? `inline-block bg-primary-foreground text-primary px-6 py-3 rounded-lg font-semibold
+                       hover:opacity-90 transition-opacity`
+                    : `inline-block bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold
+                       hover:opacity-90 transition-opacity`
                   : ctaColor === 'light'
-                  ? `inline-block text-white font-semibold underline underline-offset-4
-                     hover:text-gray-200 transition-colors`
-                  : `inline-block text-black font-semibold underline underline-offset-4
-                     hover:text-gray-800 transition-colors`
+                  ? `inline-block text-primary-foreground font-semibold underline underline-offset-4
+                     hover:opacity-80 transition-opacity`
+                  : `inline-block text-primary font-semibold underline underline-offset-4
+                     hover:opacity-80 transition-opacity`
               }
               target={content.ctaLink.target ?? undefined}
               title={content.ctaLink.title ?? undefined}

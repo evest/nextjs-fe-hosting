@@ -3,13 +3,23 @@ import { displayTemplate } from '@optimizely/cms-sdk';
 export const BlankSectionDisplayTemplate = displayTemplate({
   key: 'BlankSectionDisplayTemplate',
   isDefault: true,
-  displayName: 'Section Spacing',
+  displayName: 'Section Settings',
   contentType: 'BlankSection',
   settings: {
+    colorScheme: {
+      editor: 'select',
+      displayName: 'Color Scheme',
+      sortOrder: 0,
+      choices: {
+        light: { displayName: 'Light (default)', sortOrder: 0 },
+        dark: { displayName: 'Dark', sortOrder: 1 },
+        muted: { displayName: 'Muted', sortOrder: 2 },
+      },
+    },
     sectionSpacing: {
       editor: 'select',
       displayName: 'Section Padding',
-      sortOrder: 0,
+      sortOrder: 1,
       choices: {
         none: { displayName: 'None', sortOrder: 0 },
         small: { displayName: 'Small', sortOrder: 1 },
@@ -20,7 +30,7 @@ export const BlankSectionDisplayTemplate = displayTemplate({
     rowGap: {
       editor: 'select',
       displayName: 'Row Gap',
-      sortOrder: 1,
+      sortOrder: 2,
       choices: {
         none: { displayName: 'None', sortOrder: 0 },
         small: { displayName: 'Small', sortOrder: 1 },
@@ -31,7 +41,7 @@ export const BlankSectionDisplayTemplate = displayTemplate({
     columnGap: {
       editor: 'select',
       displayName: 'Column Gap',
-      sortOrder: 2,
+      sortOrder: 3,
       choices: {
         none: { displayName: 'None', sortOrder: 0 },
         small: { displayName: 'Small', sortOrder: 1 },
@@ -42,7 +52,7 @@ export const BlankSectionDisplayTemplate = displayTemplate({
     elementGap: {
       editor: 'select',
       displayName: 'Element Gap (within columns)',
-      sortOrder: 3,
+      sortOrder: 4,
       choices: {
         none: { displayName: 'None', sortOrder: 0 },
         small: { displayName: 'Small', sortOrder: 1 },

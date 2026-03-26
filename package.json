@@ -13,7 +13,8 @@
     "cms:login": "npx @optimizely/cms-cli@latest login",
     "cms:push-config": "npx @optimizely/cms-cli@latest config push ./optimizely.config.mjs",
     "cms:push-config-force": "npx @optimizely/cms-cli@latest config push ./optimizely.config.mjs --force",
-    "cms:pull-config": "npx @optimizely/cms-cli@latest config pull --output ./content-types.json"
+    "cms:pull-config": "npx @optimizely/cms-cli@latest config pull --output ./content-types.json",
+    "deploy-test2": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Test2"
   },
   "dependencies": {
     "@optimizely/cms-sdk": "^1.0.0",

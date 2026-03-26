@@ -16,6 +16,8 @@ export default buildConfig({
     './src/display-templates/ImageElementDisplayTemplate.ts',
     './src/display-templates/LandingPageExperienceDisplayTemplate.ts',
     './src/display-templates/BlankSectionDisplayTemplate.ts',
+    './src/display-templates/RowDisplayTemplate.ts',
+    './src/display-templates/ColumnDisplayTemplate.ts',
   ],
   propertyGroups: [
     { key: 'media', displayName: 'Media', sortOrder: 2 },

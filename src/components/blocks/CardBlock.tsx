@@ -10,17 +10,18 @@ type Props = {
 
 export default function CardBlock({ content }: Props) {
   const { pa, src } = getPreviewUtils(content);
-  const { getSrcset, getAlt } = damAssets(content);
+  const { getAlt } = damAssets(content);
 
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      {(content.image?.url?.default || content.image?.item?.Url) && (
+    <div className="bg-card rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+      {src(content.image) && (
         <div className="relative h-48 w-full">
           <Image
             src={src(content.image)!}
             alt={getAlt(content.image, 'Card image')}
             fill
             className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             {...pa('image')}
           />
         </div>
@@ -28,14 +29,14 @@ export default function CardBlock({ content }: Props) {
 
       <div className="p-6">
         <h3
-          className="text-xl font-semibold text-gray-900 mb-2"
+          className="text-xl font-semibold text-card-foreground mb-2"
           {...pa('title')}
         >
           {content.title}
         </h3>
 
         {content.text && (
-          <div className="prose prose-sm text-gray-600 mb-4" {...pa('text')}>
+          <div className="prose prose-sm text-muted-foreground mb-4" {...pa('text')}>
             <RichText content={content.text?.json} />
           </div>
         )}
@@ -43,7 +44,7 @@ export default function CardBlock({ content }: Props) {
         {content.linkUrl && content.linkText && (
           <a
             href={String(content.linkUrl)}
-            className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+            className="inline-flex items-center text-accent hover:text-accent/80 font-medium"
             {...pa('linkUrl')}
           >
             {content.linkText}

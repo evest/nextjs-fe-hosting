@@ -10,32 +10,34 @@ type Props = {
 
 export default function ArticlePage({ content }: Props) {
   const { pa, src } = getPreviewUtils(content);
-  const { getSrcset, getAlt } = damAssets(content);
+  const { getAlt } = damAssets(content);
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-8">
-      {(content.featuredImage?.url?.default || content.featuredImage?.item?.Url) && (
+      {src(content.featuredImage) && (
         <div className="relative w-full h-64 md:h-96 mb-8 rounded-lg overflow-hidden">
           <Image
             src={src(content.featuredImage)!}
             alt={getAlt(content.featuredImage, 'Featured image')}
             fill
             className="object-cover"
+            sizes="(max-width: 768px) 100vw, 896px"
             {...pa('featuredImage')}
           />
         </div>
       )}
 
       <h1
-        className="text-3xl md:text-4xl font-bold text-gray-900 mb-6"
+        className="text-3xl md:text-4xl font-bold text-foreground mb-6"
         {...pa('heading')}
+         data-epi-edit='heading'
       >
         {content.heading}
       </h1>
 
       {content.ingress && (
         <p
-          className="text-xl md:text-2xl text-gray-600 leading-relaxed mb-8"
+          className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-8"
           {...pa('ingress')}
         >
           {content.ingress}

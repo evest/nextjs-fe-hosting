@@ -24,8 +24,8 @@ function ComponentWrapper({ children, node }: ComponentContainerProps) {
 
 export default function LandingPageExperience({ content, displaySettings }: Props) {
   const { pa, src } = getPreviewUtils(content);
-  const { getSrcset, getAlt } = damAssets(content);
-  const hasBackground = !!(content.backgroundImage?.url?.default || content.backgroundImage?.item?.Url);
+  const { getAlt } = damAssets(content);
+  const hasBackground = !!src(content.backgroundImage);
   const fullBleed = displaySettings?.fullBleedImage === 'on';
   const headerStyle = displaySettings?.headerStyle ?? 'dark';
 
@@ -47,6 +47,7 @@ export default function LandingPageExperience({ content, displaySettings }: Prop
             alt={getAlt(content.backgroundImage, '')}
             fill
             className="object-cover"
+            sizes="100vw"
             priority
           />
         </div>

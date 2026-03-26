@@ -4,3 +4,5 @@ export { BannerDisplayTemplate } from './BannerElementDisplayTemplate';
 export { CallToActionDisplayTemplate } from './CallToActionElementDisplayTemplate';
 export { LandingPageExperienceDisplayTemplate } from './LandingPageExperienceDisplayTemplate';
 export { BlankSectionDisplayTemplate } from './BlankSectionDisplayTemplate';
+export { RowDisplayTemplate } from './RowDisplayTemplate';
+export { ColumnDisplayTemplate } from './ColumnDisplayTemplate';

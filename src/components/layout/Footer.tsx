@@ -89,7 +89,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-footer text-footer-foreground">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         {/* Top Section - Logo and Description */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
@@ -97,7 +97,7 @@ export default function Footer() {
             <div className="mb-4">
               <Logo variant="footer" className="brightness-0 invert" />
             </div>
-            <p className="text-sm text-gray-400 mb-6">
+            <p className="text-sm text-footer-muted mb-6">
               Building better digital experiences with modern web technologies and
               content management solutions.
             </p>
@@ -109,7 +109,7 @@ export default function Footer() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-footer-muted hover:text-footer-heading transition-colors"
                   aria-label={label}
                 >
                   <Icon className="w-5 h-5" />
@@ -122,7 +122,7 @@ export default function Footer() {
           <div className="lg:col-span-4 grid grid-cols-2 sm:grid-cols-4 gap-8">
             {footerSections.map((section) => (
               <div key={section.title}>
-                <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+                <h3 className="text-sm font-semibold text-footer-heading uppercase tracking-wider mb-4">
                   {section.title}
                 </h3>
                 <ul className="space-y-3">
@@ -130,7 +130,7 @@ export default function Footer() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-sm text-gray-400 hover:text-white transition-colors"
+                        className="text-sm text-footer-muted hover:text-footer-heading transition-colors"
                       >
                         {link.label}
                       </Link>
@@ -143,27 +143,27 @@ export default function Footer() {
         </div>
 
         {/* Bottom Section - Copyright */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
+        <div className="mt-12 pt-8 border-t border-footer-border">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-footer-muted">
               &copy; {currentYear} Your Company. All rights reserved.
             </p>
             <div className="flex items-center space-x-6">
               <Link
                 href="/privacy"
-                className="text-sm text-gray-400 hover:text-white transition-colors"
+                className="text-sm text-footer-muted hover:text-footer-heading transition-colors"
               >
                 Privacy
               </Link>
               <Link
                 href="/terms"
-                className="text-sm text-gray-400 hover:text-white transition-colors"
+                className="text-sm text-footer-muted hover:text-footer-heading transition-colors"
               >
                 Terms
               </Link>
               <Link
                 href="/sitemap"
-                className="text-sm text-gray-400 hover:text-white transition-colors"
+                className="text-sm text-footer-muted hover:text-footer-heading transition-colors"
               >
                 Sitemap
               </Link>
@@ -172,7 +172,7 @@ export default function Footer() {
                   href={process.env.OPTIMIZELY_CMS_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                  className="text-sm text-footer-muted hover:text-footer-heading transition-colors"
                 >
                   Edit
                 </a>

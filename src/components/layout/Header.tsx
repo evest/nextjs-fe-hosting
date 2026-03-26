@@ -124,7 +124,7 @@ function DesktopMenuItem({ item }: DesktopMenuItemProps) {
     return (
       <Link
         href={item.href}
-        className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+        className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
       >
         {item.label}
       </Link>
@@ -138,7 +138,7 @@ function DesktopMenuItem({ item }: DesktopMenuItemProps) {
       onMouseLeave={handleMouseLeave}
     >
       <button
-        className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+        className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
@@ -148,12 +148,12 @@ function DesktopMenuItem({ item }: DesktopMenuItemProps) {
         />
       </button>
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+        <div className="absolute top-full left-0 mt-1 w-48 bg-background rounded-lg shadow-lg border border-border py-2 z-50">
           {item.children.map((child) => (
             <Link
               key={child.href}
               href={child.href}
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+              className="block px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
             >
               {child.label}
             </Link>
@@ -175,7 +175,7 @@ function MobileMenuItem({ item }: MobileMenuItemProps) {
     return (
       <Link
         href={item.href}
-        className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+        className="block px-4 py-3 text-base font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
       >
         {item.label}
       </Link>
@@ -186,7 +186,7 @@ function MobileMenuItem({ item }: MobileMenuItemProps) {
     <div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+        className="flex items-center justify-between w-full px-4 py-3 text-base font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
         aria-expanded={isOpen}
       >
         {item.label}
@@ -195,12 +195,12 @@ function MobileMenuItem({ item }: MobileMenuItemProps) {
         />
       </button>
       {isOpen && (
-        <div className="bg-gray-50 border-l-4 border-gray-200">
+        <div className="bg-secondary border-l-4 border-border">
           {item.children.map((child) => (
             <Link
               key={child.href}
               href={child.href}
-              className="block px-8 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+              className="block px-8 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               {child.label}
             </Link>
@@ -215,7 +215,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-gray-200">
+    <header className="sticky top-0 z-40 bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Logo variant="header" />
@@ -230,7 +230,7 @@ export default function Header() {
           {/* Mobile Menu Button */}
           <button
             type="button"
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-expanded={mobileMenuOpen}
             aria-label="Toggle navigation menu"
@@ -246,7 +246,7 @@ export default function Header() {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <nav className="md:hidden border-t border-gray-200 bg-white">
+        <nav className="md:hidden border-t border-border bg-background">
           <div className="py-2">
             {menuItems.map((item) => (
               <MobileMenuItem key={item.href} item={item} />
