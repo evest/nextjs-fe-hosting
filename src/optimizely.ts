@@ -8,12 +8,14 @@
 
 import { initContentTypeRegistry, initDisplayTemplateRegistry, BlankExperienceContentType } from '@optimizely/cms-sdk';
 import { initReactComponentRegistry } from '@optimizely/cms-sdk/react/server';
+// This loads all the content types from the /content-types/index.ts file.
 import * as contentTypes from '@/content-types';
 import * as displayTemplates from '@/display-templates';
 import * as components from '@/components';
 
 // Initialize content type registry with all content types
-initContentTypeRegistry([...Object.values(contentTypes), BlankExperienceContentType]);
+const allContentTypes = [...Object.values(contentTypes), BlankExperienceContentType];
+initContentTypeRegistry(allContentTypes);
 
 // Initialize display template registry
 initDisplayTemplateRegistry([...Object.values(displayTemplates)]);
@@ -22,6 +24,8 @@ initDisplayTemplateRegistry([...Object.values(displayTemplates)]);
 initReactComponentRegistry({
   resolver: {
     ArticlePage: components.ArticlePage,
+    PersonPage: components.PersonPage,
+    PersonElement: components.PersonElement,
     TextElement: components.TextElement,
     RichTextElement: components.RichTextElement,
     ImageElement: components.ImageElement,

@@ -3,6 +3,7 @@ import { RichText } from '@optimizely/cms-sdk/react/richText';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { ArticlePageCT } from '@/content-types/ArticlePage';
 import Image from 'next/image';
+import { link } from 'fs';
 
 type Props = {
   content: ContentProps<typeof ArticlePageCT>;

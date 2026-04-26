@@ -1,4 +1,6 @@
 export { default as ArticlePage } from './pages/ArticlePage';
+export { default as PersonPage } from './pages/PersonPage';
+export { default as PersonElement } from './elements/PersonElement';
 export { default as TextElement } from './elements/TextElement';
 export { default as RichTextElement } from './elements/RichTextElement';
 export { default as ImageElement } from './elements/ImageElement';

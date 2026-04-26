@@ -12,23 +12,27 @@ export const ArticlePageCT = contentType({
       required: true,
       localized: true,
       indexingType: 'searchable',
+      sortOrder: 10,      
     },
     body: {
       type: 'richText',
       displayName: 'Body',
       localized: true,
+      sortOrder: 30
     },
     featuredImage: {
       type: 'contentReference',
       displayName: 'Featured Image',
       allowedTypes: ['_image'],
       description: 'Image shown on the top of the page',
+      sortOrder: 5
     },
     seo: {
       type: 'component',
       displayName: 'SEO Settings',
       contentType: SeoBlockCT,
       group: 'seo',
+      sortOrder: 100
     },
     ingress: {
       type: 'string',

@@ -4,6 +4,8 @@ export default buildConfig({
   components: [
     './src/content-types/SeoBlock.ts',
     './src/content-types/ArticlePage.ts',
+    './src/content-types/PersonPage.ts',
+    './src/content-types/PersonElement.ts',
     './src/content-types/CardBlock.ts',
     './src/content-types/TextElement.ts',
     './src/content-types/RichTextElement.ts',
@@ -20,7 +22,8 @@ export default buildConfig({
     './src/display-templates/ColumnDisplayTemplate.ts',
   ],
   propertyGroups: [
-    { key: 'media', displayName: 'Media', sortOrder: 2 },
-    { key: 'seo', displayName: 'SEO', sortOrder: 3 },
+    { key: 'media', displayName: 'Media', sortOrder: 200 },
+    { key: 'seo', displayName: 'SEO', sortOrder: 300 },
+    { key: 'socialMedia', displayName: 'Social Media', sortOrder: 400 },
   ],
 });

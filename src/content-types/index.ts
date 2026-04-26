@@ -6,4 +6,6 @@ export { BannerElementCT } from './BannerElement';
 export { CallToActionElementCT } from './CallToActionElement';
 export { CardBlockCT } from './CardBlock';
 export { LandingPageExperienceCT } from './LandingPageExperience';
+export { PersonPageCT } from './PersonPage';
+export { PersonElementCT } from './PersonElement';
 export { SeoBlockCT } from './SeoBlock';
