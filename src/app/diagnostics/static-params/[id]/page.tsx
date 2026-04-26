@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { TestPage, Evidence, Row } from "../../_components/TestPage";
 import { Verdict } from "../../_components/Verdict";
 import { formatStamp, requestNow } from "../../_lib/shared";
@@ -16,8 +17,17 @@ export default async function StaticParamPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const renderedAt = requestNow();
   const wasPreRendered = PRE_RENDERED.includes(id);
+
+  // For non-pre-rendered IDs, opt out of the full route cache so each request
+  // re-renders. Without this, the first on-demand render of `zeta` would be
+  // cached and subsequent reloads would return the same stamp — defeating the
+  // point of the diagnostic.
+  if (!wasPreRendered) {
+    await headers();
+  }
+
+  const renderedAt = requestNow();
 
   return (
     <TestPage
