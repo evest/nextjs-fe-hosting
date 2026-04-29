@@ -93,7 +93,7 @@ successfully — `x-nextjs-cache: HIT` works as advertised). But:
 and without these errors *with no code changes between them*. After
 the first successful deploy, a subsequent deploy from an unchanged
 commit produced clean build logs (no `replicas/master` errors, no
-auth failures — see issue 8). That suggests the underlying cause may
+auth failures — see issue 7). That suggests the underlying cause may
 not be the node-redis bug itself but rather **infrastructure that gets
 provisioned on first deploy**: the build-container's managed-identity
 role assignment against Redis, the Redis instance itself, or the Entra
@@ -371,57 +371,7 @@ need to be added by us manually.
   which environments (Test1/Test2/Production).
 - If the customer needs to fetch them from somewhere, say where.
 
-### 7. Webhook callback assumes `_metadata.url.default` is always populated; the doc doesn't say what guarantees that
-
-**Severity:** documentation gap. We don't have evidence of this failing
-in practice — flagging as a clarity ask, not a bug report.
-
-§3.2's `revalidateDocId` reads `url.default` with no fallback:
-
-```ts
-const url = response?._Content?.item?._metadata?.url?.default;
-if (!url) return "";
-```
-
-If `url.default` ever returns `null` for a published item, the webhook
-silently returns `{ received: true }` with HTTP 200 and no path is
-invalidated — exactly the kind of failure that's hard to detect from
-the Optimizely Graph side ("we sent the webhook, you said 200") and
-hard to detect from the editor side ("I published, the page didn't
-update, no error message").
-
-What we know:
-- Our probe (`/diagnostics/cms-graph` in our repo) shows
-  `url.default` IS populated on every published item on this CMS
-  instance, AND `url.default === url.hierarchical` on the items we
-  checked. The reference code works for us.
-- An earlier (now-superseded) revision of the public Optimizely ISR
-  doc recommended `url.hierarchical` with Start Page prefix stripping,
-  which suggested `url.default` might not be reliable in some
-  configurations. The current doc switched to `url.default` without
-  explaining why or what configurations it requires.
-
-What we don't know:
-- Whether `url.default` is guaranteed to be populated on all SaaS CMS
-  instances regardless of routing model (`SIMPLE` vs `HIERARCHICAL`),
-  Site config, locale fallback rules, or editor input.
-- Whether there's a CMS-side configuration that customers need to
-  apply for `url.default` to populate consistently.
-
-**Suggestions:**
-- Document the prerequisite: state explicitly what guarantees
-  `_metadata.url.default` is populated for every published item, or
-  what CMS configuration the customer needs to apply.
-- If there's a known scenario where `url.default` can be null, mention
-  it and provide a fallback (e.g. `url.hierarchical` with the Start
-  Page prefix stripped, matching the earlier doc revision).
-- Consider recommending a verification probe customers can run before
-  going live — we wrote one for ourselves
-  (`/diagnostics/cms-graph` — published page → check `url.default` is
-  non-null) which has been useful as a smoke test against both
-  Test2 and Production.
-
-### 8. Redis ManagedIdentityCredential auth fails during build (intermittent)
+### 7. Redis ManagedIdentityCredential auth fails during build (intermittent)
 
 **Severity:** noise and ~10s of wasted build time on the *initial* deploy;
 likely zero impact on subsequent deploys (see "intermittent" note below).
@@ -477,7 +427,7 @@ minutes and redeploy" would resolve it.
 - If the platform team has a reason to keep the Redis connection
   attempted at build, document it.
 
-### 9. Cloudflare doesn't cache HTML by default
+### 8. Cloudflare doesn't cache HTML by default
 
 **Severity:** observability — the doc implies CDN caching works
 out-of-the-box; it doesn't.
@@ -506,7 +456,7 @@ HTML isn't cached at the edge, the purge has nothing to purge.
   Frontend Hosting customers, document that fact and the steps to
   request changes.
 
-### 10. The instrumentation hook's "delete-then-create on every boot" earlier draft
+### 9. The instrumentation hook's "delete-then-create on every boot" earlier draft
 
 **Severity:** rationale missing — easy to misunderstand.
 
@@ -585,8 +535,6 @@ In priority order:
 6. **Investigate the `createCluster` errors** against Azure Managed
    Redis. Either fix the topology or update the reference to use
    `createClient`.
-7. **Document the `_metadata.url.default` prerequisite** (or provide
-   the hierarchical fallback).
 
 Happy to walk through any of these in more detail or share additional
 build logs / repro steps.
