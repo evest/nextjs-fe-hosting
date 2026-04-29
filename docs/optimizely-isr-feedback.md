@@ -89,14 +89,47 @@ successfully — `x-nextjs-cache: HIT` works as advertised). But:
   with a topology that node-redis Cluster mode can't parse), `createClient`
   (single-node) would be the correct API instead of `createCluster`.
 
+**Behaviour is intermittent.** We've now observed several builds with
+and without these errors *with no code changes between them*. After
+the first successful deploy, a subsequent deploy from an unchanged
+commit produced clean build logs (no `replicas/master` errors, no
+auth failures — see issue 8). That suggests the underlying cause may
+not be the node-redis bug itself but rather **infrastructure that gets
+provisioned on first deploy**: the build-container's managed-identity
+role assignment against Redis, the Redis instance itself, or the Entra
+ID propagation that authorises the credentials. Once those settle, the
+cluster client connects cleanly and the noise disappears.
+
+If that's the actual mechanism, the practical fix is **documentation,
+not code**: a sentence telling first-time customers "if your initial
+deploy logs cluster errors and managed-identity auth failures, those
+are expected on the first build while the infrastructure provisions —
+wait a few minutes and redeploy from the same commit." Without that
+note, customers will assume their integration is broken and start
+chasing fixes that aren't needed.
+
 **Suggestions:**
+- **Confirm whether the first-deploy-provisioning hypothesis is
+  correct.** If yes, add a "What to expect on first deploy" section
+  to the ISR docs explicitly stating the errors are benign on the
+  initial build and a redeploy clears them. This single sentence
+  would save the next customer hours of debugging.
 - Confirm whether DXP's Azure Managed Redis is actually a multi-node
   cluster or a single-shard instance. If single-shard, switch the
-  reference handler to `createClient`.
-- If it must remain a cluster, document the observed `replicas/master`
-  errors as expected/benign so customers don't chase them.
+  reference handler to `createClient` (single-node) — that would
+  sidestep the node-redis cluster bug entirely, regardless of
+  provisioning timing. (Note: this question is about the Redis
+  topology, not the application's. DXP runs multiple Next.js replicas
+  in production — that's the whole reason a *shared* cache backend is
+  needed — but a single-shard Redis instance can still serve any
+  number of application replicas. The two are independent.)
+- If it must remain a cluster *and* the errors persist beyond first
+  deploy on some customer environments, document the observed
+  `replicas/master` errors as expected/benign so customers don't
+  chase them.
 - Consider suppressing the `withFallback` `console.error` per attempt;
-  one warning per cooldown window would be sufficient.
+  one warning per cooldown window would be sufficient regardless of
+  the underlying cause.
 
 ### 2. `cacheComponents: true` is structurally incompatible with the §1 reference code
 
@@ -366,14 +399,14 @@ code works. But it's not guaranteed for every SaaS instance.
 - Or, recommend an existence-check probe customers can run before
   going live.
 
-### 8. Redis ManagedIdentityCredential auth fails during build
+### 8. Redis ManagedIdentityCredential auth fails during build (intermittent)
 
-**Severity:** noise and ~10s of wasted build time.
+**Severity:** noise and ~10s of wasted build time on the *initial* deploy;
+likely zero impact on subsequent deploys (see "intermittent" note below).
 
-DXP build containers have `AZURE_CLIENT_ID` set, so the cache handler
-attempts to authenticate against Redis at build time. The build
-container's managed identity isn't authorised against the Redis
-instance, so the connection fails after a 10s timeout:
+On some builds, DXP build containers have `AZURE_CLIENT_ID` set but the
+managed identity isn't authorised against Redis yet, so the connection
+fails after a 10s timeout:
 
 ```
 [cache] Redis cluster error: ManagedIdentityCredential: Authentication failed.
@@ -385,9 +418,40 @@ The handler correctly falls back to the in-memory Map, but the build
 log gets noisy and the 10s timeout × N parallel workers wastes build
 time.
 
+**Behaviour is intermittent — and probably first-deploy-related.** On
+the same project, after the first successful deploy, subsequent
+deploys from unchanged commits produced clean build logs with neither
+the auth failure nor the cluster-discovery errors from issue 1. This
+strongly suggests **the supporting infrastructure (managed-identity
+role assignment, Entra ID propagation, Redis instance authorisation)
+is provisioned on first deploy and takes a few minutes to settle**.
+Once it has, the build container connects successfully and the
+warnings disappear.
+
+If that's the actual mechanism, the fix that helps the most customers
+is **a documentation update**, not a code change. Without it, a first-
+time customer sees these errors on their first deploy, assumes their
+integration is broken, and starts chasing causes — when "wait a few
+minutes and redeploy" would resolve it.
+
 **Suggestions:**
-- Either authorise the build-container managed identity against Redis,
-  or skip Redis at build time. The handler could check `process.env.NEXT_PHASE === 'phase-production-build'` and short-circuit to memory.
+- **Confirm the first-deploy provisioning hypothesis** internally and,
+  if correct, add a "What to expect on first deploy" section to the
+  ISR docs. Recommended wording (adjust as needed):
+  > **First-deploy note.** On your project's initial deploy, you may
+  > see Redis cluster-discovery errors (issue 1) and
+  > `ManagedIdentityCredential: Authentication failed` warnings in the
+  > build log. These are expected while DXP provisions the supporting
+  > infrastructure (managed identity, Redis access, Entra ID
+  > propagation). The cache handler falls back to in-memory mode for
+  > this build, so the deploy still succeeds. Wait 2–5 minutes and
+  > redeploy from the same commit; subsequent builds should connect
+  > to Redis cleanly.
+- Either authorise the build-container managed identity against Redis
+  *before* the first build runs (so customers never see the warnings),
+  or skip Redis entirely at build time. The handler could check
+  `process.env.NEXT_PHASE === 'phase-production-build'` and short-
+  circuit to the in-memory Map.
 - If the platform team has a reason to keep the Redis connection
   attempted at build, document it.
 
