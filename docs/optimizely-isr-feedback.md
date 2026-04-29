@@ -122,15 +122,55 @@ So a customer following the doc has two choices:
 
 - **`cacheComponents: false`** — the §1 code works as-is, but the
   customer can't use `'use cache'`, `cacheLife`, `cacheTag`, or PPR.
-  These are the recommended Next 16 primitives.
 - **`cacheComponents: true`** — the customer must rewrite the §1
   example using `'use cache'` instead of the segment-config exports,
   and discovers a chain of follow-on issues (issues 3–5 below).
 
-The doc doesn't say which path Optimizely supports, recommends, or
-considers stable. We chose `cacheComponents: true` to align with
-Next.js's stated direction; the resulting incompatibilities consumed
-most of this implementation effort.
+#### Why `cacheComponents: true` matters
+
+This isn't a stylistic preference. The Next.js docs are explicit that
+`cacheComponents` + `'use cache'` is the **current model** and the
+older route-segment-config approach is **the previous model**:
+
+- The Next.js Caching guide at
+  [nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+  opens with: *"This page covers caching with Cache Components, enabled
+  by setting `cacheComponents: true` in your `next.config.ts` file. If
+  you're not using Cache Components, see the Caching and Revalidating
+  (Previous Model) guide."*
+- The corresponding "Previous Model" guide at
+  [nextjs.org/docs/app/guides/caching-without-cache-components](https://nextjs.org/docs/app/guides/caching-without-cache-components)
+  is literally titled *"Caching and Revalidating (Previous Model)"* and
+  states up front: *"This guide assumes you are **not** using Cache
+  Components which was introduced in version 16."*
+- The `cacheComponents` reference at
+  [nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents](https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents)
+  describes it as *"expected to be used in conjunction with `use cache`"*
+  and notes that in Next.js 16.0.0 *"this flag controls the `ppr`,
+  `useCache`, and `dynamicIO` flags as a single, unified configuration"*
+  — i.e., it's the consolidated successor to the prior experimental
+  flags.
+- The `use cache` reference at
+  [nextjs.org/docs/app/api-reference/directives/use-cache](https://nextjs.org/docs/app/api-reference/directives/use-cache)
+  starts the Usage section with: *"`use cache` is a Cache Components
+  feature. To enable it, add the `cacheComponents` option to your
+  `next.config.ts` file."*
+- The incompatibility itself is documented in
+  [vercel/next.js Discussion #84894](https://github.com/vercel/next.js/discussions/84894)
+  ("Route segment config 'dynamic' is not compatible with
+  `nextConfig.experimental.cacheComponents`"), where the Vercel team
+  states: *"In Next.js 16, the dynamic route segment config has been
+  replaced by the new static/dynamic rendering model using cache and
+  revalidate."*
+
+In short: the §1 reference code uses what Next.js's own documentation
+calls the *previous model*. Customers building greenfield Next.js 16
+apps will reach for `cacheComponents: true` because that's where the
+docs point, and they'll then discover the §1 reference code doesn't
+work.
+
+We chose `cacheComponents: true` for this exact reason. The resulting
+incompatibilities consumed most of this implementation effort.
 
 **Suggestions:**
 - Pick a position and state it explicitly at the top of the doc:

@@ -20,12 +20,21 @@ The single biggest ask, if nothing else lands:
 **Please clarify whether the supported `cacheComponents` value is
 `true` or `false`.** The two are structurally incompatible: the §1
 reference code (`export const revalidate = 60` + `export const dynamic
-= "force-static"`) is forbidden under `cacheComponents: true`, which
-is Next 16's recommended direction. Customers picking either path will
-discover the conflict only at build time. A one-sentence note at the
-top of the guide saying "this assumes `cacheComponents: false`" (or
-`true`, with the §1 code revised) would save the next customer most
-of the work this took us.
+= "force-static"`) is forbidden under `cacheComponents: true`. The
+Next.js docs are explicit that `cacheComponents` + `'use cache'` is
+the **current model** and the segment-config-export approach is
+**the previous model** — the [Next.js Caching guide](https://nextjs.org/docs/app/getting-started/caching)
+is now the Cache Components guide, and the older approach lives at
+[Caching and Revalidating (Previous Model)](https://nextjs.org/docs/app/guides/caching-without-cache-components).
+Vercel themselves state in [discussion #84894](https://github.com/vercel/next.js/discussions/84894)
+that *"in Next.js 16, the dynamic route segment config has been replaced
+by the new static/dynamic rendering model"*.
+
+Customers building a new Next.js 16 app will reach for `cacheComponents: true`
+because that's where the docs point — and then discover the §1 reference
+code doesn't work. A one-sentence note at the top of the guide saying
+"this assumes `cacheComponents: false`" (or `true`, with §1 revised
+accordingly) would save the next customer most of the work this took us.
 
 Other issues worth highlighting (full detail in the attachment):
 
