@@ -345,7 +345,7 @@ even though the function had handled the error correctly.
 - Recommend the placeholder-slug pattern (or an equivalent) as the
   safe default for `cacheComponents` users.
 
-### 6. `OPTIMIZELY_CLOUDPLATFORM_API_URL` and `OPTIMIZELY_CLOUDPLATFORM_API_RESOURCE_ID` aren't in the §5 env-var table
+### 6. `OPTIMIZELY_CLOUDPLATFORM_API_URL` and `OPTIMIZELY_CLOUDPLATFORM_API_RESOURCE_ID` are populated but missing from the §5 table
 
 **Severity:** documentation completeness.
 
@@ -355,21 +355,78 @@ even though the function had handled the error correctly.
 - `OPTIMIZELY_CLOUDPLATFORM_API_URL`
 - `OPTIMIZELY_CLOUDPLATFORM_API_RESOURCE_ID`
 
-A customer reading §5 first will assume their CDN purge "just works"
-because all the env vars they're told about are platform-set. They'll
-discover the silent-skip behaviour (helper logs `CDN cache purge
-skipped: API URL or resource ID not configured` and returns) only when
-testing publish→invalidate end-to-end.
+We've now verified on our Test2 environment (via a dump of
+`process.env` from a runtime container) that **both variables are in
+fact provisioned automatically** — `OPTIMIZELY_CLOUDPLATFORM_API_URL`
+points at `https://api.cloudplatform.cms.optimizely.com/` and the
+resource ID is set. So the platform does the right thing; the doc is
+just incomplete.
 
-We currently can't tell whether these vars are platform-provisioned on
-our DXP project; they may be (and we just haven't checked) or they may
-need to be added by us manually.
+The risk for a new customer reading §5 first is that they don't see
+these vars listed and assume their CDN purge needs manual config.
+They might add them to their own deployment env (potentially with a
+wrong value), or they might assume CDN purge isn't supported and not
+test it. Either way, a one-line addition to the §5 table avoids the
+confusion.
 
 **Suggestions:**
-- Add both vars to the §5 table.
-- State explicitly whether DXP provisions them automatically and on
-  which environments (Test1/Test2/Production).
-- If the customer needs to fetch them from somewhere, say where.
+- Add both vars to the §5 table with the same wording as the others
+  ("Set by the platform").
+
+### 6a. `OPTIMIZELY_SITE_HOSTNAME` is the internal Azure hostname, not the public hostname — breaks CDN purge target
+
+**Severity:** real correctness bug — CDN purge silently misses every
+target URL once HTML caching is enabled.
+
+On our Test2 environment, `OPTIMIZELY_SITE_HOSTNAME` is set to:
+
+```
+epsa05head3wy8zt002.dxcloud.episerver.net
+```
+
+…which is the internal Azure container hostname. The site's actual
+public hostname (the one Cloudflare proxies and the one users hit) is
+`fetest2.optimize.li`.
+
+This is a problem because §3.2's reference webhook code uses
+`OPTIMIZELY_SITE_HOSTNAME` to build the CDN purge target:
+
+```ts
+const hostname = process.env.OPTIMIZELY_SITE_HOSTNAME?.replace(/^https?:\/\//, "");
+if (hostname) {
+  purgeCdnCache([`https://${hostname}${path}`]).catch(...)
+}
+```
+
+So the purge API is being called with
+`https://epsa05head3wy8zt002.dxcloud.episerver.net/<path>` — an
+internal hostname that Cloudflare has never seen. The purge succeeds
+(the Cloud Platform Services API doesn't validate the hostname against
+your zone), but it invalidates nothing the user can reach. Once HTML
+caching is enabled at the Cloudflare layer (issue 8), the
+publish→invalidate flow will be silently broken.
+
+The same `OPTIMIZELY_SITE_HOSTNAME` is also used by §3.1's
+`instrumentation.ts` as the webhook target URL. That probably works
+because Optimizely Graph likely has internal routing that resolves the
+internal hostname, but it's worth confirming.
+
+§5 describes `OPTIMIZELY_SITE_HOSTNAME` as *"Public hostname of the
+site (e.g. mysite.example.com)"*. The actual provisioned value is not
+the public hostname.
+
+**Suggestions:**
+- Either populate `OPTIMIZELY_SITE_HOSTNAME` with the actual public
+  hostname (matching the §5 description), or split into two variables:
+  - `OPTIMIZELY_INTERNAL_HOSTNAME` — what the platform routes to
+    (current behaviour).
+  - `OPTIMIZELY_PUBLIC_HOSTNAME` — the customer-facing hostname for
+    CDN purge.
+- Update the §3.2 reference code to use whichever variable holds the
+  public hostname.
+- If the public hostname can be different per environment (Test1 vs
+  Test2 vs Production) and per customer DNS configuration, it likely
+  needs to be a customer-supplied env var rather than platform-set.
 
 ### 7. Redis ManagedIdentityCredential auth fails during build (intermittent)
 
@@ -484,7 +541,6 @@ site, during which any publish would be silently lost.
 
 These are minor but would save customers some Stack Overflow time.
 
-- **Code blocks lose their language tags.** Most of `docs/isr-documentation.md`'s code blocks render without syntax highlighting because the opening fence is just ```` ``` ```` instead of ```` ```ts ```` or ```` ```js ````. Easy to fix.
 - **The `dirname(fileURLToPath(import.meta.url))` pattern in §2.3** doesn't work in `next.config.ts` because Next compiles it to CommonJS. We had to use `process.cwd()` instead. Worth noting that `.ts` config files have a subtly different shape than `.mjs` config files.
 - **§5's note "All these variables are preconfigured as part of the environment when deploying to Optimizely Front-end"** would be more useful as a per-env table (which vars are set on Test1/Test2/Production specifically).
 - **The webhook callback returns `{ received: true }` for all valid auth requests, even if the docId is malformed or unrecognised.** That's correct (avoid retries) but worth explaining — we initially thought our handler was broken because malformed test payloads got 200s.

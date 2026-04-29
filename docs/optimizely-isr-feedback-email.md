@@ -56,30 +56,44 @@ Other issues worth highlighting (full detail in the attachment):
    `notFound()` from `generateMetadata` (which runs before the
    response is committed).
 
-3. **`createCluster` against Azure Managed Redis floods build logs**
+3. **`OPTIMIZELY_SITE_HOSTNAME` is the internal Azure hostname, not
+   the public one — silently breaks CDN purge.** On Test2 the var is
+   set to `epsa05head3wy8zt002.dxcloud.episerver.net` while our
+   actual public hostname is `fetest2.optimize.li`. The §3.2 reference
+   webhook code passes `OPTIMIZELY_SITE_HOSTNAME` to the CDN purge
+   API, so we're purging an internal hostname Cloudflare has never
+   heard of. The purge succeeds (the API doesn't validate against
+   your zone) but invalidates nothing. Once HTML caching is enabled
+   at the edge (issue 5 below), publish→invalidate is silently
+   broken. §5's description of the var ("Public hostname of the site,
+   e.g. mysite.example.com") doesn't match the provisioned value.
+   Either populate it correctly, or split into separate
+   internal/public vars.
+
+4. **`createCluster` against Azure Managed Redis floods build logs**
    with `Cannot read properties of undefined (reading 'replicas')`
    errors — known node-redis bug
    ([#2704](https://github.com/redis/node-redis/issues/2704)). The
-   handler's `withFallback` wrapper catches them, so runtime is
-   fine, but ~20 lines of error spam per build worker makes it look
-   like Redis is broken. May be worth investigating whether DXP's
-   Redis is actually clustered or a single shard — if single,
-   `createClient` would be the right API.
+   handler's `withFallback` wrapper catches them, so runtime is fine,
+   but ~20 lines of error spam per build worker makes it look like
+   Redis is broken. **Notably, errors disappear on subsequent
+   deploys from the same commit** — likely first-deploy infrastructure
+   provisioning. A "what to expect on first deploy" section in the
+   docs would save customers a lot of time.
 
-4. **`OPTIMIZELY_CLOUDPLATFORM_API_URL` and
+5. **Cloudflare's default Cache Level doesn't cache HTML** — only
+   static asset extensions. Even with the doc's `s-maxage=2592000`
+   origin headers, `cf-cache-status: DYNAMIC` for HTML, and the §4
+   CDN purge has nothing to purge on the edge. Fixable with a
+   Cloudflare Cache Rule but the doc doesn't mention it.
+
+6. **`OPTIMIZELY_CLOUDPLATFORM_API_URL` and
    `OPTIMIZELY_CLOUDPLATFORM_API_RESOURCE_ID`** are referenced in
    §4's purge code but absent from the §5 platform-set env-var
-   table. Customers can't tell whether they need to provision them
-   manually.
+   table. We've now confirmed they ARE provisioned, just undocumented.
+   One-line fix in §5.
 
-5. **Cloudflare's default Cache Level doesn't cache HTML** — it only
-   caches static asset extensions. So even with the doc's
-   `s-maxage=2592000` origin headers, `cf-cache-status: DYNAMIC`
-   for HTML responses, and the §4 CDN purge has nothing to purge
-   on the edge. This is fixable with a Cloudflare Cache Rule but
-   the doc doesn't mention it.
-
-The attached document has six more items, repro details where
+The attached document has more items, repro details where
 applicable, and a "what ended up working for us" section that may be
 useful as a reference configuration for the next customer asking how
 to make `cacheComponents: true` work on DXP.
