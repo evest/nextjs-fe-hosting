@@ -37,11 +37,14 @@ type GraphContentItem = {
  * at least one entry so the framework can validate the route at build time.
  * When Graph is unreachable or has no pages of the configured types we
  * still need to return something, so we use a deliberately-unmatchable
- * slug. The catch-all renders a 404 for it (tiny, harmless) and the rest
- * of the route falls back to ISR-only rendering.
+ * slug. getPageContent recognises this slug and short-circuits without
+ * calling Graph — important because the DXP build container can't always
+ * reach Graph, and a Graph fetch from inside `'use cache'` would manifest
+ * as USE_CACHE_TIMEOUT and fail the build.
  */
+export const PLACEHOLDER_SLUG_SEGMENT = '__no-cms-pages-at-build__';
 const PLACEHOLDER: { slug: string[] }[] = [
-  { slug: ['__no-cms-pages-at-build__'] },
+  { slug: [PLACEHOLDER_SLUG_SEGMENT] },
 ];
 
 /**
@@ -51,13 +54,32 @@ const PLACEHOLDER: { slug: string[] }[] = [
  * contract; see /diagnostics/cms-graph). On error or empty result, returns
  * a single placeholder slug to satisfy Cache Components while leaving real
  * URLs to ISR fallback.
+ *
+ * Race the Graph call against a 30s timeout so a slow Graph response
+ * during DXP build doesn't hang the build worker indefinitely. If the
+ * race times out we fall through to the placeholder and rely on ISR.
  */
+const BUILD_TIMEOUT_MS = 30_000;
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timeout after ${ms}ms`)), ms),
+    ),
+  ]);
+}
+
 export async function getAllPagesPaths(): Promise<{ slug: string[] }[]> {
   try {
     const client = new GraphClient(process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!, {
       graphUrl: getGraphGatewayUrl(),
     });
-    const resp = await client.request(ALL_PAGES_QUERY, { pageType: PAGE_TYPES });
+    const resp = await withTimeout(
+      client.request(ALL_PAGES_QUERY, { pageType: PAGE_TYPES }),
+      BUILD_TIMEOUT_MS,
+      'getAllPagesPaths',
+    );
     const items: GraphContentItem[] = resp?._Content?.items ?? [];
     const seen = new Set<string>();
     const out: { slug: string[] }[] = [];
