@@ -24,20 +24,13 @@ The current app uses no caching at all on the CMS path: every request to `/[...s
 
 ## 1. Should you use `<Suspense>`?
 
-**Mostly no — sparingly, where it actually earns its keep.** With `cacheComponents: true`, any uncached server-side data access in a page must be wrapped in `<Suspense>` or the whole page opts out of partial prerendering. The win — when there is one — is that a static shell ships from the CDN immediately and slow per-request work streams in afterwards.
+**Yes, more than the original draft of this plan claimed — `cacheComponents` requires it for any uncached data access.** Earlier drafts said "mostly no, public CMS pages don't need it." That turned out to be wrong in practice: under `cacheComponents: true`, the build refuses to prerender any page that does uncached server data access outside a `<Suspense>` boundary, even if the underlying call is `'use cache'`-wrapped (because the cache-fill on first hit is itself uncached). What was implemented in Phase 1+2:
 
-Two routes, two different rules:
+- **`/[...slug]`** — wraps `getPageContent` in a `<PageContent slug={slug}>` child component, which is rendered inside `<Suspense>`. With `generateStaticParams` populating the cache at build time, the Suspense fallback is never seen for prerendered slugs; for unmatched slugs (404s, brand-new pages) the boundary streams a fallback while Graph responds.
+- **`/preview`** — the `getPreviewContent()` call (and `await searchParams`) live inside a suspended `<PreviewBody>` child. The `<Script>` injector and `<PreviewComponent>` ship in the eager shell. This is functionally identical to the pre-`cacheComponents` behaviour — editors still see fresh content on every load — just with the data fetch isolated.
+- **`/diagnostics/cms-graph`** — same pattern; the probe runs inside Suspense.
 
-- **Public CMS pages (`/[...slug]`)** — don't suspend. Cache the data fetch with `'use cache'` and the whole page becomes static. There is no "dynamic island" here; the entire tree is CMS content, and we want every byte of it cached.
-
-- **`/preview`** — don't suspend. **Editor-only route. Performance does not matter; correctness and freshness do.** Every part of a preview page can change based on the editor's last edit, so there is no meaningful static shell to split out. Suspense would only add a render boundary that complicates the communication-injector wiring without making editors' lives any better. Keep `/preview` fully dynamic, never cached, no Suspense — exactly the pattern it has today, just verified to still hold under `cacheComponents: true`.
-
-Where Suspense **is** worth it (none of these exist today, but flagging for future work):
-
-- A genuinely slow third-party call on a public page (recommendations widget, live stock counter) where the rest of the page is cacheable but that one block isn't.
-- A user-personalised badge in an otherwise-static layout (e.g. "Welcome, $name") fed by `cookies()`/`headers()`.
-
-Concrete rule of thumb: **if the data is from the CMS via Graph on a public page, cache it. If it's per-user or live data on a public page, suspend it. On `/preview`, neither — just render dynamically.**
+Concrete rule of thumb: **under `cacheComponents`, any `await` on uncached request data (`searchParams`, `headers()`, `cookies()`) or any `await` of an uncached fetch must live inside `<Suspense>`.** It's not a perf-tuning knob, it's a build constraint.
 
 ---
 
@@ -56,7 +49,7 @@ Concrete rule of thumb: **if the data is from the CMS via Graph on a public page
 | `/[...slug]` | `src/app/[...slug]/page.tsx` | **No caching, no static params, no revalidate, no metadata caching.** Calls `GraphClient.getContentByPath` per request. |
 | `/preview` | `src/app/preview/page.tsx` | Uncached (correct). Retries on `No content found for key` up to 3× with 200ms delay. |
 | `/debug` | `src/app/debug/route.ts` | Returns env vars (masked). Should be gated in prod. |
-| `/diagnostics/*` | `src/app/diagnostics/**` | The probing suite — keep as is, gate before public deploy. |
+| `/diagnostics/*` | `src/app/diagnostics/**` | Retired in Phase 1 — most probes were incompatible with `cacheComponents` (segment-config exports forbidden, `Date.now()` in render bodies disallowed). Only `cms-graph` survived, rewritten as a self-contained server-rendered page. |
 
 ### 2.3 Catch-all CMS page (`src/app/[...slug]/page.tsx`) — issues
 
