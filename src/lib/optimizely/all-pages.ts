@@ -33,12 +33,24 @@ type GraphContentItem = {
 };
 
 /**
+ * Cache Components forbids generateStaticParams returning []: it requires
+ * at least one entry so the framework can validate the route at build time.
+ * When Graph is unreachable or has no pages of the configured types we
+ * still need to return something, so we use a deliberately-unmatchable
+ * slug. The catch-all renders a 404 for it (tiny, harmless) and the rest
+ * of the route falls back to ISR-only rendering.
+ */
+const PLACEHOLDER: { slug: string[] }[] = [
+  { slug: ['__no-cms-pages-at-build__'] },
+];
+
+/**
  * Returns every published page's slug array, shaped for the catch-all route.
  *
  * Reads `_metadata.url.default` (per the official Optimizely ISR webhook
- * contract; see /diagnostics/cms-graph). Returns [] on any error so a
- * transient Graph outage during `next build` falls back to ISR-only
- * rendering rather than failing the build.
+ * contract; see /diagnostics/cms-graph). On error or empty result, returns
+ * a single placeholder slug to satisfy Cache Components while leaving real
+ * URLs to ISR fallback.
  */
 export async function getAllPagesPaths(): Promise<{ slug: string[] }[]> {
   try {
@@ -58,9 +70,13 @@ export async function getAllPagesPaths(): Promise<{ slug: string[] }[]> {
       seen.add(key);
       out.push({ slug: parts });
     }
+    if (out.length === 0) {
+      console.warn('[all-pages] Graph returned no pages, using placeholder');
+      return PLACEHOLDER;
+    }
     return out;
   } catch (e) {
-    console.error('[all-pages] graph query failed, falling back to ISR-only:', e);
-    return [];
+    console.error('[all-pages] graph query failed, using placeholder:', e);
+    return PLACEHOLDER;
   }
 }
