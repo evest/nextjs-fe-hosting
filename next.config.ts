@@ -1,17 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // NOTE: `cacheComponents: true` (which would enable the `'use cache'`
-  // directive AND auto-PPR) is intentionally NOT enabled here. Turning it on
-  // requires every page that accesses uncached data to wrap it in <Suspense>
-  // (including the existing /[...slug] CMS page and /preview), which is a
-  // larger refactor than the diagnostics pass aimed at.
-  //
-  // The use-cache and on-demand diagnostics use the legacy `unstable_cache`
-  // API instead, which works without the flag. To test the new directive,
-  // enable cacheComponents here, refactor /[...slug] + /preview to wrap
-  // their async work in <Suspense>, and the diagnostic pages can be
-  // updated to match.
+  // Enables the `'use cache'` directive and auto-PPR. /[...slug] reads CMS
+  // content via a `'use cache'` wrapper, so the whole page caches; /preview
+  // is explicitly `force-dynamic` and reflects editor edits on every load.
+  cacheComponents: true,
   images: {
     remotePatterns: [
       {
