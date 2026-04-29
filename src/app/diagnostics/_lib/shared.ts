@@ -47,6 +47,7 @@ export const TESTS: DiagnosticTest[] = [
   { slug: "edge", title: "Edge runtime route", category: "E. Edge", short: "Route handler declared as runtime='edge'." },
   { slug: "image", title: "next/image optimization", category: "F. Other", short: "Image transformer at /_next/image." },
   { slug: "draft", title: "Draft mode", category: "F. Other", short: "Cookie-based preview bypass." },
+  { slug: "cms-graph", title: "CMS Graph URL shape", category: "G. CMS", short: "Confirms _metadata.url.default is populated — required by /hooks/graph." },
 ];
 
 export function formatStamp(ts: number | string): string {
