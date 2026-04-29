@@ -16,33 +16,31 @@ export async function generateStaticParams() {
   return getAllPagesPaths();
 }
 
+// notFound() must be called from generateMetadata AND the page component
+// (above any Suspense boundary), not from inside a suspended child. Under
+// cacheComponents, the response status is committed when the static shell
+// flushes; a notFound() thrown from inside <Suspense> swaps the body but
+// not the status, so unknown URLs would otherwise serve 200 OK with a
+// 30-day CDN cache. The duplicated getPageContent() call is cache-free
+// (same slug → same cache key as generateMetadata).
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const content = await getPageContent(slug);
-  if (!content) return {};
+  if (!content) notFound();
   return getSeoMetadata(content as Record<string, unknown>);
 }
 
-// Suspense wraps the page body for a defence-in-depth reason: under
-// cacheComponents, any uncached server data access on a route must be inside
-// a Suspense boundary. With generateStaticParams above, every published page
-// is pre-rendered at build and the boundary resolves synchronously from the
-// Redis-backed cache (Phase 3). For URLs that aren't in generateStaticParams
-// (404s, brand-new pages), it streams a skeleton-free fallback while
-// getPageContent runs.
-async function PageContent({ slug }: { slug: string[] }) {
-  const content = await getPageContent(slug);
-  if (!content) {
-    notFound();
-  }
+function PageContent({ content }: { content: NonNullable<Awaited<ReturnType<typeof getPageContent>>> }) {
   return <OptimizelyComponent content={content} />;
 }
 
 export default async function Page({ params }: Props) {
   const { slug } = await params;
+  const content = await getPageContent(slug);
+  if (!content) notFound();
   return (
     <Suspense>
-      <PageContent slug={slug} />
+      <PageContent content={content} />
     </Suspense>
   );
 }
