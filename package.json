@@ -17,11 +17,14 @@
     "deploy-test2": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Test2"
   },
   "dependencies": {
+    "@azure/identity": "^4.13.1",
     "@optimizely/cms-sdk": "^1.0.0",
+    "@redis/entraid": "^5.12.1",
     "@tailwindcss/typography": "^0.5.19",
     "next": "16.1.1",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "redis": "^5.12.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
