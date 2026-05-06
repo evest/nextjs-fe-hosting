@@ -10,7 +10,7 @@ export const PersonElementCT = contentType({
     person: {
       type: 'contentReference',
       displayName: 'Person',
-      required: true,
+      isRequired: true,
       allowedTypes: [PersonPageCT],
       sortOrder: 10,
     },

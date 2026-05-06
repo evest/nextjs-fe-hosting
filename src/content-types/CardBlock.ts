@@ -9,18 +9,18 @@ export const CardBlockCT = contentType({
     title: {
       type: 'string',
       displayName: 'Title',
-      required: true,
-      localized: true,
+      isRequired: true,
+      isLocalized: true,
     },
     text: {
       type: 'richText',
       displayName: 'Text',
-      localized: true,
+      isLocalized: true,
     },
     linkText: {
       type: 'string',
       displayName: 'Link Text',
-      localized: true,
+      isLocalized: true,
     },
     linkUrl: {
       type: 'url',

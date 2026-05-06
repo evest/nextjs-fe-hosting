@@ -9,19 +9,19 @@ export const BannerElementCT = contentType({
     backgroundImage: {
       type: 'contentReference',
       displayName: 'Background Image',
-      required: true,
+      isRequired: true,
       allowedTypes: ['_image'],
     },
     heading: {
       type: 'string',
       displayName: 'Heading',
-      required: true,
-      localized: true,
+      isRequired: true,
+      isLocalized: true,
     },
     text: {
       type: 'string',
       displayName: 'Text',
-      localized: true,
+      isLocalized: true,
     },
     ctaLink: {
       type: 'link',

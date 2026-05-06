@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { OptimizelyComponent } from '@optimizely/cms-sdk/react/server';
+import { OptimizelyComponent, withAppContext } from '@optimizely/cms-sdk/react/server';
 import { notFound } from 'next/navigation';
 import { getPageContent } from '@/lib/optimizely/get-page';
 import { getAllPagesPaths } from '@/lib/optimizely/all-pages';
@@ -34,7 +34,7 @@ function PageContent({ content }: { content: NonNullable<Awaited<ReturnType<type
   return <OptimizelyComponent content={content} />;
 }
 
-export default async function Page({ params }: Props) {
+async function Page({ params }: Props) {
   const { slug } = await params;
   const content = await getPageContent(slug);
   if (!content) notFound();
@@ -44,3 +44,8 @@ export default async function Page({ params }: Props) {
     </Suspense>
   );
 }
+
+// withAppContext initialises request-scoped context storage for the routed
+// content. Server components down the tree can call getContext() /
+// getContextData() to read locale, content key, etc. without prop drilling.
+export default withAppContext(Page);

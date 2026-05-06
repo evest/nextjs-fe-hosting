@@ -9,8 +9,8 @@ export const RichTextElementCT = contentType({
     content: {
       type: 'richText',
       displayName: 'Content',
-      required: true,
-      localized: true,
+      isRequired: true,
+      isLocalized: true,
     },
   },
 });

@@ -10,7 +10,7 @@ export const PageCardElementCT = contentType({
       type: 'contentReference',
       displayName: 'Page',
       description: 'Page or experience to render as a card',
-      required: true,
+      isRequired: true,
       allowedTypes: ['_page', '_experience'],
     },
   },

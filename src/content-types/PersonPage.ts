@@ -10,21 +10,21 @@ export const PersonPageCT = contentType({
     name: {
       type: 'string',
       displayName: 'Name',
-      required: true,
-      localized: true,
+      isRequired: true,
+      isLocalized: true,
       sortOrder: 10,
     },
     title: {
       type: 'string',
       displayName: 'Title',
       description: 'Job title or role',
-      localized: true,
+      isLocalized: true,
       sortOrder: 20,
     },
     bio: {
       type: 'richText',
       displayName: 'Bio',
-      localized: true,
+      isLocalized: true,
       sortOrder: 30,
     },
     image: {

@@ -1,6 +1,5 @@
-import { GraphClient } from '@optimizely/cms-sdk';
+import { getClient } from '@optimizely/cms-sdk';
 import { cacheLife, cacheTag } from 'next/cache';
-import { getGraphGatewayUrl } from '@/lib/config';
 import { getPageTag } from '@/lib/cache/cache-keys';
 import { PLACEHOLDER_SLUG_SEGMENT } from '@/lib/optimizely/all-pages';
 
@@ -32,9 +31,7 @@ export async function getPageContent(slug: string[]) {
   }
 
   try {
-    const client = new GraphClient(process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!, {
-      graphUrl: getGraphGatewayUrl(),
-    });
+    const client = getClient();
     const path = `/${slug.join('/')}/`;
     const items = await client.getContentByPath(path);
     return items?.[0] ?? null;

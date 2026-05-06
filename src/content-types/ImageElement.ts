@@ -9,19 +9,19 @@ export const ImageElementCT = contentType({
     image: {
       type: 'contentReference',
       displayName: 'Image',
-      required: true,
+      isRequired: true,
       allowedTypes: ['_image'],
     },
     altText: {
       type: 'string',
       displayName: 'Alt Text',
-      required: true,
-      localized: true,
+      isRequired: true,
+      isLocalized: true,
     },
     caption: {
       type: 'string',
       displayName: 'Caption',
-      localized: true,
+      isLocalized: true,
     },
   },
 });

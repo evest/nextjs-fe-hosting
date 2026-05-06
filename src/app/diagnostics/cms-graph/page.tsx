@@ -1,6 +1,5 @@
 import { Suspense } from "react";
-import { GraphClient } from "@optimizely/cms-sdk";
-import { getGraphGatewayUrl } from "@/lib/config";
+import { getClient } from "@optimizely/cms-sdk";
 
 // Server-rendered on every request. No `'use cache'` — the whole point is
 // to read live state from Optimizely Graph. Under cacheComponents, the
@@ -56,9 +55,7 @@ async function probe(): Promise<ProbeResult> {
     return { ok: false, error: "OPTIMIZELY_GRAPH_SINGLE_KEY is not set" };
   }
   try {
-    const client = new GraphClient(process.env.OPTIMIZELY_GRAPH_SINGLE_KEY, {
-      graphUrl: getGraphGatewayUrl(),
-    });
+    const client = getClient();
     const resp = await client.request(PROBE_QUERY, {});
     const meta = resp?._Content?.items?.[0]?._metadata as ContentMeta | undefined;
     if (!meta) return { ok: false, error: "Graph returned no items" };

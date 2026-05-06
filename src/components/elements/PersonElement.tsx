@@ -1,8 +1,7 @@
-import { ContentProps, GraphClient, damAssets } from '@optimizely/cms-sdk';
+import { ContentProps, getClient, damAssets } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { PersonElementCT } from '@/content-types/PersonElement';
 import { PersonPageCT } from '@/content-types/PersonPage';
-import { getGraphGatewayUrl } from '@/lib/config';
 import Image from 'next/image';
 
 type Props = {
@@ -13,9 +12,7 @@ type PersonData = ContentProps<typeof PersonPageCT>;
 
 async function getPerson(path: string, host?: string): Promise<PersonData | null> {
   console.log('[PersonElement] Fetching person from Graph:', { path, host });
-  const client = new GraphClient(process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!, {
-    graphUrl: getGraphGatewayUrl(),
-  });
+  const client = getClient();
   const results = await client.getContentByPath(path, { host: host ?? undefined });
   console.log('[PersonElement] Graph results:', JSON.stringify(results, null, 2));
   return results?.[0] ?? null;

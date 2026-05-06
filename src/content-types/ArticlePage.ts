@@ -10,15 +10,15 @@ export const ArticlePageCT = contentType({
     heading: {
       type: 'string',
       displayName: 'Heading',
-      required: true,
-      localized: true,
+      isRequired: true,
+      isLocalized: true,
       indexingType: 'searchable',
       sortOrder: 10,      
     },
     body: {
       type: 'richText',
       displayName: 'Body',
-      localized: true,
+      isLocalized: true,
       sortOrder: 30
     },
     featuredImage: {

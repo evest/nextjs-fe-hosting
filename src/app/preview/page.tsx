@@ -1,8 +1,7 @@
 import { Suspense } from 'react';
-import { GraphClient, type PreviewParams } from '@optimizely/cms-sdk';
-import { OptimizelyComponent } from '@optimizely/cms-sdk/react/server';
+import { getClient, type PreviewParams } from '@optimizely/cms-sdk';
+import { OptimizelyComponent, withAppContext } from '@optimizely/cms-sdk/react/server';
 import { PreviewComponent } from '@optimizely/cms-sdk/react/client';
-import { getGraphGatewayUrl } from '@/lib/config';
 import PreviewError from '@/components/layout/PreviewError';
 import Script from 'next/script';
 
@@ -18,9 +17,7 @@ type Props = {
 
 async function PreviewBody({ searchParams }: Props) {
   const params = await searchParams;
-  const client = new GraphClient(process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!, {
-    graphUrl: getGraphGatewayUrl(),
-  });
+  const client = getClient();
 
   let response;
   let error: unknown = null;
@@ -50,7 +47,7 @@ async function PreviewBody({ searchParams }: Props) {
   return <OptimizelyComponent content={response} />;
 }
 
-export default function Page({ searchParams }: Props) {
+function Page({ searchParams }: Props) {
   return (
     <div>
       <Script
@@ -65,3 +62,10 @@ export default function Page({ searchParams }: Props) {
     </div>
   );
 }
+
+// withAppContext is required for preview mode: it initialises the
+// request-scoped context that getPreviewContent() then populates with
+// preview_token, key, locale, version, mode. Components down the tree can
+// then read those via getContextData() — e.g. RichText automatically uses
+// the preview_token to append it to image URLs.
+export default withAppContext(Page);

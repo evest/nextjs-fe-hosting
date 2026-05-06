@@ -9,8 +9,8 @@ export const TextElementCT = contentType({
     text: {
       type: 'string',
       displayName: 'Text',
-      required: true,
-      localized: true,
+      isRequired: true,
+      isLocalized: true,
     },
   },
 });

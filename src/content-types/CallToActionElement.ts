@@ -9,8 +9,8 @@ export const CallToActionElementCT = contentType({
     link: {
       type: 'link',
       displayName: 'Link',
-      required: true,
-      localized: true,
+      isRequired: true,
+      isLocalized: true,
     },
   },
 });
