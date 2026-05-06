@@ -10,10 +10,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "cms:login": "npx @optimizely/cms-cli@latest login",
-    "cms:push-config": "npx @optimizely/cms-cli@latest config push ./optimizely.config.mjs",
-    "cms:push-config-force": "npx @optimizely/cms-cli@latest config push ./optimizely.config.mjs --force",
-    "cms:pull-config": "npx @optimizely/cms-cli@latest config pull --output ./content-types.json",
+    "cms:login": "npx @optimizely/cms-cli@^1.0.1 login",
+    "cms:push-config": "npx @optimizely/cms-cli@^1.0.1 config push ./optimizely.config.mjs",
+    "cms:push-config-force": "npx @optimizely/cms-cli@^1.0.1 config push ./optimizely.config.mjs --force",
+    "cms:pull-config": "npx @optimizely/cms-cli@^1.0.1 config pull --output ./content-types.json",
     "deploy-test2": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Test2"
   },
   "dependencies": {

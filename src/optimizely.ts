@@ -32,6 +32,7 @@ initReactComponentRegistry({
     BannerElement: components.BannerElement,
     CallToActionElement: components.CallToActionElement,
     CardBlock: components.CardBlock,
+    PageCardElement: components.PageCardElement,
     BlankExperience: components.BlankExperience,
     LandingPageExperience: components.LandingPageExperience,
     BlankSection: components.BlankSection,

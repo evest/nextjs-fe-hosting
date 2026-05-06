@@ -12,6 +12,7 @@ export default buildConfig({
     './src/content-types/ImageElement.ts',
     './src/content-types/BannerElement.ts',
     './src/content-types/CallToActionElement.ts',
+    './src/content-types/PageCardElement.ts',
     './src/content-types/LandingPageExperience.ts',
     './src/display-templates/CallToActionElementDisplayTemplate.ts',
     './src/display-templates/TextElementDisplayTemplate.ts',

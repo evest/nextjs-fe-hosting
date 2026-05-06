@@ -5,6 +5,7 @@ export const PersonPageCT = contentType({
   key: 'PersonPage',
   displayName: 'Person Page',
   baseType: '_page',
+  mayContainTypes: ['*'],
   properties: {
     name: {
       type: 'string',

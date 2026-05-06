@@ -5,6 +5,7 @@ export const ArticlePageCT = contentType({
   key: 'ArticlePage',
   displayName: 'Article Page',
   baseType: '_page',
+  mayContainTypes: ['*'],
   properties: {
     heading: {
       type: 'string',

@@ -5,6 +5,7 @@ export { ImageElementCT } from './ImageElement';
 export { BannerElementCT } from './BannerElement';
 export { CallToActionElementCT } from './CallToActionElement';
 export { CardBlockCT } from './CardBlock';
+export { PageCardElementCT } from './PageCardElement';
 export { LandingPageExperienceCT } from './LandingPageExperience';
 export { PersonPageCT } from './PersonPage';
 export { PersonElementCT } from './PersonElement';

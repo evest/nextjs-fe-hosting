@@ -5,6 +5,7 @@ export const LandingPageExperienceCT = contentType({
   key: 'LandingPageExperience',
   displayName: 'Landing Page Experience',
   baseType: '_experience',
+  mayContainTypes: ['*'],
   properties: {
     backgroundImage: {
       type: 'contentReference',
