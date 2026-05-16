@@ -29,6 +29,30 @@ export default function DiagnosticsIndex() {
             </div>
           </Link>
         </li>
+        <li>
+          <Link
+            href="/diagnostics/raw-content"
+            className="block rounded border border-gray-200 bg-white p-4 hover:border-blue-400 hover:bg-blue-50 transition"
+          >
+            <div className="font-semibold text-gray-900">Raw content probe</div>
+            <div className="text-sm text-gray-600 mt-1">
+              Dumps the raw <code>getContentByPath</code> response for a
+              given path — useful for inspecting DAM asset shape.
+            </div>
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="/diagnostics/sdk-query"
+            className="block rounded border border-gray-200 bg-white p-4 hover:border-blue-400 hover:bg-blue-50 transition"
+          >
+            <div className="font-semibold text-gray-900">SDK query capture</div>
+            <div className="text-sm text-gray-600 mt-1">
+              Captures the GraphQL queries the SDK fires for a given page —
+              useful for comparing query shape across pages.
+            </div>
+          </Link>
+        </li>
       </ul>
     </div>
   );
