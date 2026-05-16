@@ -3,6 +3,7 @@ import { RichText } from '@optimizely/cms-sdk/react/richText';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { CardBlockCT } from '@/content-types/CardBlock';
 import { Card, CardBody, CardMedia, Heading, Prose } from '@/components/ui';
+import { decodeRichTextEntities } from '@/lib/rich-text';
 import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 
@@ -36,7 +37,7 @@ export default function CardBlock({ content }: Props) {
 
         {content.text && (
           <Prose size="sm" className="text-muted-foreground mb-4" {...pa('text')}>
-            <RichText content={content.text?.json} />
+            <RichText content={decodeRichTextEntities(content.text?.json)} />
           </Prose>
         )}
 

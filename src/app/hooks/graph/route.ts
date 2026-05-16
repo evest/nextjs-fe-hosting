@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { purgeCdnCache } from "@/lib/cdn-cache";
-import { getArticlesUnderTag } from "@/lib/cache/cache-keys";
+import { CACHE_KEYS, getArticlesUnderTag } from "@/lib/cache/cache-keys";
 
 const CALLBACK_API_KEY = process.env.OPTIMIZELY_GRAPH_CALLBACK_APIKEY;
 const singleKey = process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!;
@@ -68,6 +68,11 @@ async function revalidateDocId(docId: string): Promise<string> {
     // re-filled cache entry behaves the same as before invalidation.
     revalidateTag(getArticlesUnderTag(parent, locale), "max");
   }
+
+  // Sitemap is cached for an hour and tagged with PATHS — any publish should
+  // re-fill it with the new page included. 'hours' matches the cacheLife
+  // profile inside getAllContentPaths.
+  revalidateTag(CACHE_KEYS.PATHS, "hours");
 
   return path || "/";
 }

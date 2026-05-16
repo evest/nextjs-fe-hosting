@@ -2,6 +2,7 @@ import { ContentProps, damAssets } from '@optimizely/cms-sdk';
 import { RichText } from '@optimizely/cms-sdk/react/richText';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { PersonPageCT } from '@/content-types/PersonPage';
+import { decodeRichTextEntities } from '@/lib/rich-text';
 import {
   Container,
   Heading,
@@ -88,7 +89,7 @@ export default function PersonPage({ content }: Props) {
 
         {content.bio && (
           <Prose className="mt-10" {...pa('bio')}>
-            <RichText content={content.bio?.json} />
+            <RichText content={decodeRichTextEntities(content.bio?.json)} />
           </Prose>
         )}
       </article>

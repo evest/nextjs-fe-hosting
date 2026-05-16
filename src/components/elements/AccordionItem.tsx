@@ -3,6 +3,7 @@ import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { RichText } from '@optimizely/cms-sdk/react/richText';
 import { ChevronDown } from 'lucide-react';
 import { AccordionItemCT } from '@/content-types/AccordionItem';
+import { decodeRichTextEntities } from '@/lib/rich-text';
 
 type Props = { content: ContentProps<typeof AccordionItemCT> };
 
@@ -21,7 +22,7 @@ export default function AccordionItem({ content }: Props) {
         />
       </summary>
       <div className="pb-6 pr-8 text-base text-muted-foreground prose-sm" {...pa('body')}>
-        <RichText content={content.body?.json} />
+        <RichText content={decodeRichTextEntities(content.body?.json)} />
       </div>
     </details>
   );

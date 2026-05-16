@@ -3,6 +3,7 @@ import { RichText } from '@optimizely/cms-sdk/react/richText';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { ArticlePageCT } from '@/content-types/ArticlePage';
 import { Container, Heading, Prose } from '@/components/ui';
+import { decodeRichTextEntities } from '@/lib/rich-text';
 import Image from 'next/image';
 
 type Props = {
@@ -44,7 +45,7 @@ export default function ArticlePage({ content }: Props) {
 
         {content.body && (
           <Prose {...pa('body')}>
-            <RichText content={content.body?.json} />
+            <RichText content={decodeRichTextEntities(content.body?.json)} />
           </Prose>
         )}
       </article>
