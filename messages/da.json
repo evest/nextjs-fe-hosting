@@ -51,6 +51,24 @@
     "learnMore": "Læs mere",
     "contactUs": "Kontakt os"
   },
+  "ContactForm": {
+    "name": "Navn",
+    "namePlaceholder": "Dit navn",
+    "company": "Virksomhed",
+    "companyPlaceholder": "Din virksomhed",
+    "email": "E-mail",
+    "emailPlaceholder": "dig@eksempel.dk",
+    "phone": "Telefon",
+    "phonePlaceholder": "+45 00 00 00 00",
+    "message": "Besked",
+    "messagePlaceholder": "Hvordan kan vi hjælpe?",
+    "send": "Send besked",
+    "close": "Luk",
+    "openFormButton": "Kontakt os",
+    "successTitle": "Tak — beskeden er modtaget.",
+    "successBody": "Vi vender tilbage hurtigst muligt.",
+    "privacyNote": "Ved at indsende denne formular accepterer du at blive kontaktet om din henvendelse. Vi deler aldrig dine oplysninger."
+  },
   "NotFound": {
     "title": "404",
     "message": "Den side du leder efter findes ikke.",

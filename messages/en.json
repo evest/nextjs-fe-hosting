@@ -51,6 +51,24 @@
     "learnMore": "Learn more",
     "contactUs": "Contact us"
   },
+  "ContactForm": {
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "company": "Company",
+    "companyPlaceholder": "Your company",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "phone": "Phone",
+    "phonePlaceholder": "+47 000 00 000",
+    "message": "Message",
+    "messagePlaceholder": "How can we help?",
+    "send": "Send message",
+    "close": "Close",
+    "openFormButton": "Contact us",
+    "successTitle": "Thanks — message received.",
+    "successBody": "We'll get back to you shortly.",
+    "privacyNote": "By submitting this form you agree to be contacted about your enquiry. We never share your details."
+  },
   "NotFound": {
     "title": "404",
     "message": "The page you're looking for doesn't exist.",

@@ -26,3 +26,6 @@ export { default as AccordionBlock } from './blocks/AccordionBlock';
 
 // Phase 5a
 export { default as ArticleListBlock } from './blocks/ArticleListBlock';
+
+// Phase 5b
+export { default as ContactFormBlock } from './blocks/ContactFormBlock';

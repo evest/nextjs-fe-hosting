@@ -19,3 +19,6 @@ export { AccordionBlockDisplayTemplate } from './AccordionBlockDisplayTemplate';
 
 // Phase 5a
 export { ArticleListBlockDisplayTemplate } from './ArticleListBlockDisplayTemplate';
+
+// Phase 5b
+export { ContactFormBlockDisplayTemplate } from './ContactFormBlockDisplayTemplate';

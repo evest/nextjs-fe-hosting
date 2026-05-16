@@ -62,5 +62,8 @@ initReactComponentRegistry({
 
     // Phase 5a
     ArticleListBlock: components.ArticleListBlock,
+
+    // Phase 5b
+    ContactFormBlock: components.ContactFormBlock,
   },
 });

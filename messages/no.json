@@ -51,6 +51,24 @@
     "learnMore": "Les mer",
     "contactUs": "Kontakt oss"
   },
+  "ContactForm": {
+    "name": "Navn",
+    "namePlaceholder": "Ditt navn",
+    "company": "Selskap",
+    "companyPlaceholder": "Ditt selskap",
+    "email": "E-post",
+    "emailPlaceholder": "du@eksempel.no",
+    "phone": "Telefon",
+    "phonePlaceholder": "+47 000 00 000",
+    "message": "Melding",
+    "messagePlaceholder": "Hvordan kan vi hjelpe?",
+    "send": "Send melding",
+    "close": "Lukk",
+    "openFormButton": "Kontakt oss",
+    "successTitle": "Takk — meldingen er mottatt.",
+    "successBody": "Vi kontakter deg snart.",
+    "privacyNote": "Ved å sende inn dette skjemaet samtykker du i å bli kontaktet om henvendelsen din. Vi deler aldri opplysningene dine."
+  },
   "NotFound": {
     "title": "404",
     "message": "Siden du leter etter finnes ikke.",

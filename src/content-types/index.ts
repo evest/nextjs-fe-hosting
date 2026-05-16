@@ -25,3 +25,6 @@ export { AccordionBlockCT } from './AccordionBlock';
 
 // Phase 5a
 export { ArticleListBlockCT } from './ArticleListBlock';
+
+// Phase 5b
+export { ContactFormBlockCT } from './ContactFormBlock';
