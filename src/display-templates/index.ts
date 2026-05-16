@@ -16,3 +16,6 @@ export { CalloutBannerDisplayTemplate } from './CalloutBannerDisplayTemplate';
 export { SolutionsGridDisplayTemplate } from './SolutionsGridDisplayTemplate';
 export { PartnerLogosDisplayTemplate } from './PartnerLogosDisplayTemplate';
 export { AccordionBlockDisplayTemplate } from './AccordionBlockDisplayTemplate';
+
+// Phase 5a
+export { ArticleListBlockDisplayTemplate } from './ArticleListBlockDisplayTemplate';

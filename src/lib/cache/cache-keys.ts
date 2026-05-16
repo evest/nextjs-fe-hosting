@@ -11,6 +11,7 @@
 export const CACHE_KEYS = {
   PAGE: 'opti-page',
   PATHS: 'opti-paths',
+  ARTICLES_UNDER: 'opti-articles-under',
 } as const;
 
 export type CacheKey = (typeof CACHE_KEYS)[keyof typeof CACHE_KEYS];
@@ -25,4 +26,18 @@ export type CacheKey = (typeof CACHE_KEYS)[keyof typeof CACHE_KEYS];
 export function getPageTag(slug: string[]): string {
   const suffix = slug.length === 0 ? 'root' : slug.join('/');
   return `${CACHE_KEYS.PAGE}:${suffix}`;
+}
+
+/**
+ * Build a tag for the article-listing cache scoped to a specific parent
+ * path + locale (e.g. parent `/no/blogg/`, locale `no` →
+ * `opti-articles-under:/no/blogg/:no`).
+ *
+ * The parent path is expected to be normalised with a trailing slash so
+ * that `/news` doesn't collide with `/newsletter`. Tag composition
+ * matches `getArticlesUnder` exactly so revalidation can target it.
+ */
+export function getArticlesUnderTag(parentPath: string, locale: string): string {
+  const parent = parentPath.endsWith('/') ? parentPath : `${parentPath}/`;
+  return `${CACHE_KEYS.ARTICLES_UNDER}:${parent}:${locale}`;
 }

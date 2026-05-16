@@ -23,3 +23,6 @@ export { default as SolutionsGrid } from './blocks/SolutionsGrid';
 export { default as PartnerLogos } from './blocks/PartnerLogos';
 export { default as AccordionItem } from './elements/AccordionItem';
 export { default as AccordionBlock } from './blocks/AccordionBlock';
+
+// Phase 5a
+export { default as ArticleListBlock } from './blocks/ArticleListBlock';

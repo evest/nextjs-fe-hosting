@@ -10,8 +10,9 @@
 // Optimizely doesn't retry on transient downstream failures.
 
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { purgeCdnCache } from "@/lib/cdn-cache";
+import { getArticlesUnderTag } from "@/lib/cache/cache-keys";
 
 const CALLBACK_API_KEY = process.env.OPTIMIZELY_GRAPH_CALLBACK_APIKEY;
 const singleKey = process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!;
@@ -55,6 +56,19 @@ async function revalidateDocId(docId: string): Promise<string> {
   if (!url) return "";
   const path = url.endsWith("/") ? url.slice(0, -1) : url;
   revalidatePath(path || "/");
+
+  // Also invalidate any ArticleListBlock caches that include this URL as a
+  // descendant. For `/no/blog/my-post`, candidate parents are `/no/` and
+  // `/no/blog/`. revalidateTag on an unwritten tag is a no-op, so
+  // over-invalidating costs nothing while keeping listings fresh on publish.
+  const segments = path.split("/").filter(Boolean);
+  for (let i = 1; i < segments.length; i++) {
+    const parent = `/${segments.slice(0, i).join("/")}/`;
+    // 'max' matches the cacheLife profile inside getArticlesUnder so the
+    // re-filled cache entry behaves the same as before invalidation.
+    revalidateTag(getArticlesUnderTag(parent, locale), "max");
+  }
+
   return path || "/";
 }
 

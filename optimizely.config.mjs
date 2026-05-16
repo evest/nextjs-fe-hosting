@@ -26,6 +26,7 @@ export default buildConfig({
     './src/content-types/PartnerLogos.ts',
     './src/content-types/AccordionItem.ts',
     './src/content-types/AccordionBlock.ts',
+    './src/content-types/ArticleListBlock.ts',
 
     './src/display-templates/CallToActionElementDisplayTemplate.ts',
     './src/display-templates/TextElementDisplayTemplate.ts',
@@ -44,6 +45,7 @@ export default buildConfig({
     './src/display-templates/SolutionsGridDisplayTemplate.ts',
     './src/display-templates/PartnerLogosDisplayTemplate.ts',
     './src/display-templates/AccordionBlockDisplayTemplate.ts',
+    './src/display-templates/ArticleListBlockDisplayTemplate.ts',
   ],
   propertyGroups: [
     { key: 'media', displayName: 'Media', sortOrder: 200 },

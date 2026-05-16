@@ -59,5 +59,8 @@ initReactComponentRegistry({
     PartnerLogos: components.PartnerLogos,
     AccordionItem: components.AccordionItem,
     AccordionBlock: components.AccordionBlock,
+
+    // Phase 5a
+    ArticleListBlock: components.ArticleListBlock,
   },
 });

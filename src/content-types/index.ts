@@ -22,3 +22,6 @@ export { SolutionsGridCT } from './SolutionsGrid';
 export { PartnerLogosCT } from './PartnerLogos';
 export { AccordionItemCT } from './AccordionItem';
 export { AccordionBlockCT } from './AccordionBlock';
+
+// Phase 5a
+export { ArticleListBlockCT } from './ArticleListBlock';
