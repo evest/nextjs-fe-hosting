@@ -20,6 +20,14 @@ export const metadata: Metadata = {
   description: "Optimizely SaaS CMS expertise for Nordic brands.",
 };
 
+// Optimizely Web Experimentation snippet ID, sourced from env so branches /
+// preview deploys can opt out by leaving it blank. Format-validated against
+// Optimizely's alphanumeric ID shape — anything else is treated as missing
+// and the snippet is not rendered.
+const rawSnippetId = process.env.OPTIMIZELY_WEB_EXP_SNIPPET_ID;
+const webExpSnippetId =
+  rawSnippetId && /^[A-Za-z0-9_-]{1,32}$/.test(rawSnippetId) ? rawSnippetId : null;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,6 +35,17 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning>
+      <head>
+        {webExpSnippetId && (
+          // Synchronous, parser-blocking, in <head> — required for the
+          // anti-flicker behaviour. Do NOT switch to next/script: its
+          // beforeInteractive strategy does not block hydration, and the
+          // other strategies run after first paint. Audience/URL exclusions
+          // (e.g. /preview) belong in the Optimizely project, not here.
+          // eslint-disable-next-line @next/next/no-sync-scripts
+          <script src={`https://cdn.optimizely.com/js/${webExpSnippetId}.js`} />
+        )}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
