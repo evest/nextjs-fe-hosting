@@ -1,25 +1,11 @@
 import { ContentProps } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
-import {
-  Activity,
-  ArrowRight,
-  CheckCircle2,
-  Cog,
-  Compass,
-  Hammer,
-  Lightbulb,
-  Rocket,
-  Search,
-  Settings,
-  Shield,
-  Sparkles,
-  Users,
-  Wrench,
-  type LucideIcon,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { ProcessBlockCT } from '@/content-types/ProcessBlock';
 import { ProcessBlockDisplayTemplate } from '@/display-templates/ProcessBlockDisplayTemplate';
 import { Container } from '@/components/ui';
+import { ICON_MAP } from '@/lib/icon-map';
+import type { IconName } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 
 type Props = {
@@ -31,23 +17,6 @@ const surfaceClass = {
   light: 'bg-background text-foreground',
   muted: 'section-muted bg-background text-foreground',
   dark: 'section-dark bg-background text-foreground',
-};
-
-// Static allowlist so tree-shaking keeps only the imports below.
-const iconMap: Record<string, LucideIcon> = {
-  activity: Activity,
-  check: CheckCircle2,
-  cog: Cog,
-  compass: Compass,
-  hammer: Hammer,
-  lightbulb: Lightbulb,
-  rocket: Rocket,
-  search: Search,
-  settings: Settings,
-  shield: Shield,
-  sparkles: Sparkles,
-  users: Users,
-  wrench: Wrench,
 };
 
 export default function ProcessBlock({ content, displaySettings }: Props) {
@@ -93,7 +62,7 @@ export default function ProcessBlock({ content, displaySettings }: Props) {
 
         <ol className={gridClass}>
           {steps.map((step, index) => {
-            const Icon = iconMap[(step.icon ?? '').toLowerCase()];
+            const Icon = step.icon ? ICON_MAP[step.icon as IconName] : undefined;
             const isLast = index === steps.length - 1;
             return (
               <li key={step.key} className={cn('relative', !isHorizontal && 'flex gap-6')}>

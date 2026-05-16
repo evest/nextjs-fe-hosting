@@ -1,5 +1,7 @@
 import { contentType } from '@optimizely/cms-sdk';
 
+import { ICON_ENUM } from '@/lib/icons';
+
 export const SolutionTileCT = contentType({
   key: 'SolutionTile',
   displayName: 'Solution Tile',
@@ -22,8 +24,10 @@ export const SolutionTileCT = contentType({
     },
     iconName: {
       type: 'string',
-      displayName: 'Icon name',
-      description: 'Lucide icon key (e.g. compass, layers, settings, sparkles, target)',
+      displayName: 'Icon',
+      description: 'Pick a Lucide icon from the curated list.',
+      format: 'selectOne',
+      enum: ICON_ENUM,
       sortOrder: 30,
     },
     link: {

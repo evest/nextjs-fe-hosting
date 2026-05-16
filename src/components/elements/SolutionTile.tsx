@@ -2,55 +2,21 @@ import { ContentProps } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import {
-  ArrowRight,
-  Activity,
-  Box,
-  Cloud,
-  Compass,
-  Cpu,
-  Gauge,
-  Layers,
-  Lightbulb,
-  Network,
-  Rocket,
-  Settings,
-  Shield,
-  Sparkles,
-  Target,
-  Wrench,
-  type LucideIcon,
-} from 'lucide-react';
+import { ArrowRight, Box } from 'lucide-react';
 import { SolutionTileCT } from '@/content-types/SolutionTile';
+import { ICON_MAP } from '@/lib/icon-map';
+import type { IconName } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 
 type Props = {
   content: ContentProps<typeof SolutionTileCT>;
 };
 
-const iconMap: Record<string, LucideIcon> = {
-  activity: Activity,
-  box: Box,
-  cloud: Cloud,
-  compass: Compass,
-  cpu: Cpu,
-  gauge: Gauge,
-  layers: Layers,
-  lightbulb: Lightbulb,
-  network: Network,
-  rocket: Rocket,
-  settings: Settings,
-  shield: Shield,
-  sparkles: Sparkles,
-  target: Target,
-  wrench: Wrench,
-};
-
 export default function SolutionTile({ content }: Props) {
   const t = useTranslations('Cta');
   const { pa } = getPreviewUtils(content);
   const href = content.link?.url?.default;
-  const Icon = iconMap[(content.iconName ?? '').toLowerCase()] ?? Box;
+  const Icon = ICON_MAP[content.iconName as IconName] ?? Box;
 
   const inner = (
     <>
