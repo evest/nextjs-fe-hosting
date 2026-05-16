@@ -14,6 +14,19 @@ export default buildConfig({
     './src/content-types/CallToActionElement.ts',
     './src/content-types/PageCardElement.ts',
     './src/content-types/LandingPageExperience.ts',
+
+    // Marketing blocks (Phase 4)
+    './src/content-types/HeroBlock.ts',
+    './src/content-types/StatsBlock.ts',
+    './src/content-types/TestimonialBlock.ts',
+    './src/content-types/ProcessBlock.ts',
+    './src/content-types/CalloutBanner.ts',
+    './src/content-types/SolutionTile.ts',
+    './src/content-types/SolutionsGrid.ts',
+    './src/content-types/PartnerLogos.ts',
+    './src/content-types/AccordionItem.ts',
+    './src/content-types/AccordionBlock.ts',
+
     './src/display-templates/CallToActionElementDisplayTemplate.ts',
     './src/display-templates/TextElementDisplayTemplate.ts',
     './src/display-templates/ImageElementDisplayTemplate.ts',
@@ -21,6 +34,16 @@ export default buildConfig({
     './src/display-templates/BlankSectionDisplayTemplate.ts',
     './src/display-templates/RowDisplayTemplate.ts',
     './src/display-templates/ColumnDisplayTemplate.ts',
+
+    // Marketing block display templates (Phase 4)
+    './src/display-templates/HeroBlockDisplayTemplate.ts',
+    './src/display-templates/StatsBlockDisplayTemplate.ts',
+    './src/display-templates/TestimonialBlockDisplayTemplate.ts',
+    './src/display-templates/ProcessBlockDisplayTemplate.ts',
+    './src/display-templates/CalloutBannerDisplayTemplate.ts',
+    './src/display-templates/SolutionsGridDisplayTemplate.ts',
+    './src/display-templates/PartnerLogosDisplayTemplate.ts',
+    './src/display-templates/AccordionBlockDisplayTemplate.ts',
   ],
   propertyGroups: [
     { key: 'media', displayName: 'Media', sortOrder: 200 },

@@ -47,5 +47,17 @@ initReactComponentRegistry({
     BlankExperience: components.BlankExperience,
     LandingPageExperience: components.LandingPageExperience,
     BlankSection: components.BlankSection,
+
+    // Marketing blocks (Phase 4)
+    HeroBlock: components.HeroBlock,
+    StatsBlock: components.StatsBlock,
+    TestimonialBlock: components.TestimonialBlock,
+    ProcessBlock: components.ProcessBlock,
+    CalloutBanner: components.CalloutBanner,
+    SolutionTile: components.SolutionTile,
+    SolutionsGrid: components.SolutionsGrid,
+    PartnerLogos: components.PartnerLogos,
+    AccordionItem: components.AccordionItem,
+    AccordionBlock: components.AccordionBlock,
   },
 });

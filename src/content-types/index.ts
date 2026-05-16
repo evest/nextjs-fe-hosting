@@ -10,3 +10,15 @@ export { LandingPageExperienceCT } from './LandingPageExperience';
 export { PersonPageCT } from './PersonPage';
 export { PersonElementCT } from './PersonElement';
 export { SeoBlockCT } from './SeoBlock';
+
+// Marketing blocks (Phase 4)
+export { HeroBlockCT } from './HeroBlock';
+export { StatsBlockCT } from './StatsBlock';
+export { TestimonialBlockCT } from './TestimonialBlock';
+export { ProcessBlockCT } from './ProcessBlock';
+export { CalloutBannerCT } from './CalloutBanner';
+export { SolutionTileCT } from './SolutionTile';
+export { SolutionsGridCT } from './SolutionsGrid';
+export { PartnerLogosCT } from './PartnerLogos';
+export { AccordionItemCT } from './AccordionItem';
+export { AccordionBlockCT } from './AccordionBlock';
