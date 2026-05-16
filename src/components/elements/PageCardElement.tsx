@@ -2,6 +2,7 @@ import { ContentProps } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { PageCardElementCT } from '@/content-types/PageCardElement';
 import { getPageContent } from '@/lib/optimizely/get-page';
+import { Card, CardBody, CardMedia, Heading } from '@/components/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -30,12 +31,11 @@ export default async function PageCardElement({ content: opti }: Props) {
 
   if (!href) {
     return (
-      <div
-        className="bg-card rounded-xl shadow-md overflow-hidden p-6 border border-dashed border-muted-foreground/40"
-        {...pa('content')}
-      >
-        <p className="text-muted-foreground text-sm">Select a page...</p>
-      </div>
+      <Card className="border border-dashed border-muted-foreground/40" {...pa('content')}>
+        <CardBody>
+          <p className="text-muted-foreground text-sm">Select a page...</p>
+        </CardBody>
+      </Card>
     );
   }
 
@@ -43,12 +43,11 @@ export default async function PageCardElement({ content: opti }: Props) {
 
   if (!linked) {
     return (
-      <div
-        className="bg-card rounded-xl shadow-md overflow-hidden p-6"
-        {...pa('content')}
-      >
-        <p className="text-muted-foreground text-sm">Linked page not found</p>
-      </div>
+      <Card {...pa('content')}>
+        <CardBody>
+          <p className="text-muted-foreground text-sm">Linked page not found</p>
+        </CardBody>
+      </Card>
     );
   }
 
@@ -67,32 +66,33 @@ export default async function PageCardElement({ content: opti }: Props) {
   const ogImageUrl = ogImage?.url?.default;
 
   return (
-    <Link
-      href={href}
-      className="group block bg-card rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-      {...pa('content')}
-    >
-      {ogImageUrl && (
-        <div className="relative h-48 w-full">
-          <Image
-            src={ogImageUrl}
-            alt={heading}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        </div>
-      )}
-
-      <div className="p-6">
-        <h3 className="text-xl font-semibold text-card-foreground mb-2 group-hover:text-accent transition-colors">
-          {heading}
-        </h3>
-
-        {description && (
-          <p className="text-muted-foreground text-sm line-clamp-3">{description}</p>
+    <Link href={href} className="group block" {...pa('content')}>
+      <Card>
+        {ogImageUrl && (
+          <CardMedia>
+            <Image
+              src={ogImageUrl}
+              alt={heading}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          </CardMedia>
         )}
-      </div>
+
+        <CardBody>
+          <Heading
+            level="h3"
+            className="text-card-foreground mb-2 group-hover:text-accent transition-colors"
+          >
+            {heading}
+          </Heading>
+
+          {description && (
+            <p className="text-muted-foreground text-sm line-clamp-3">{description}</p>
+          )}
+        </CardBody>
+      </Card>
     </Link>
   );
 }

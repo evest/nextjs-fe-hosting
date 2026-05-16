@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import Logo from "./Logo";
 import Link from "next/link";
+import { ChevronDown, Menu, X } from "lucide-react";
+import { Container } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 interface MenuItem {
   label: string;
@@ -39,84 +42,26 @@ const menuItems: MenuItem[] = [
       { label: "Case Studies", href: "/en/resources/case-studies" },
     ],
   },
-  {
-    label: "About",
-    href: "/en/about",
-  },
-  {
-    label: "Contact",
-    href: "/en/contact",
-  },
+  { label: "About", href: "/en/about" },
+  { label: "Contact", href: "/en/contact" },
 ];
 
-function ChevronDownIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={2}
-      stroke="currentColor"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-    </svg>
-  );
-}
-
-function MenuIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={2}
-      stroke="currentColor"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-    </svg>
-  );
-}
-
-function CloseIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={2}
-      stroke="currentColor"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  );
-}
-
-interface DesktopMenuItemProps {
-  item: MenuItem;
-}
-
-function DesktopMenuItem({ item }: DesktopMenuItemProps) {
+function DesktopMenuItem({ item }: { item: MenuItem }) {
   const [isOpen, setIsOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsOpen(true);
   };
 
   const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 150);
+    timeoutRef.current = setTimeout(() => setIsOpen(false), 150);
   };
 
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
 
@@ -143,8 +88,11 @@ function DesktopMenuItem({ item }: DesktopMenuItemProps) {
         aria-haspopup="true"
       >
         {item.label}
-        <ChevronDownIcon
-          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        <ChevronDown
+          className={cn(
+            "w-4 h-4 transition-transform duration-200",
+            isOpen && "rotate-180"
+          )}
         />
       </button>
       {isOpen && (
@@ -164,11 +112,7 @@ function DesktopMenuItem({ item }: DesktopMenuItemProps) {
   );
 }
 
-interface MobileMenuItemProps {
-  item: MenuItem;
-}
-
-function MobileMenuItem({ item }: MobileMenuItemProps) {
+function MobileMenuItem({ item }: { item: MenuItem }) {
   const [isOpen, setIsOpen] = useState(false);
 
   if (!item.children) {
@@ -190,8 +134,11 @@ function MobileMenuItem({ item }: MobileMenuItemProps) {
         aria-expanded={isOpen}
       >
         {item.label}
-        <ChevronDownIcon
-          className={`w-5 h-5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        <ChevronDown
+          className={cn(
+            "w-5 h-5 transition-transform duration-200",
+            isOpen && "rotate-180"
+          )}
         />
       </button>
       {isOpen && (
@@ -216,18 +163,16 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-background border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Container>
         <div className="flex items-center justify-between h-16">
           <Logo variant="header" />
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             {menuItems.map((item) => (
               <DesktopMenuItem key={item.href} item={item} />
             ))}
           </nav>
 
-          {/* Mobile Menu Button */}
           <button
             type="button"
             className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
@@ -236,15 +181,14 @@ export default function Header() {
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? (
-              <CloseIcon className="w-6 h-6" />
+              <X className="w-6 h-6" />
             ) : (
-              <MenuIcon className="w-6 h-6" />
+              <Menu className="w-6 h-6" />
             )}
           </button>
         </div>
-      </div>
+      </Container>
 
-      {/* Mobile Navigation */}
       {mobileMenuOpen && (
         <nav className="md:hidden border-t border-border bg-background">
           <div className="py-2">

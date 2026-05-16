@@ -1,5 +1,6 @@
 import { ContentProps, damAssets } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
+import { cva } from 'class-variance-authority';
 import { ImageElementCT } from '@/content-types/ImageElement';
 import { ImageDisplayTemplate } from '@/display-templates';
 import Image from 'next/image';
@@ -9,118 +10,113 @@ type Props = {
   displaySettings?: ContentProps<typeof ImageDisplayTemplate>;
 };
 
+type Alignment = 'left' | 'center' | 'right' | 'full';
+type Size = 'small' | 'medium' | 'large' | 'full';
+type AspectRatio = 'auto' | 'square' | 'video' | 'standard' | 'classic' | 'ultrawide';
+type BorderRadius = 'none' | 'small' | 'medium' | 'large' | 'full';
+type Shadow = 'none' | 'small' | 'medium' | 'large';
+type VerticalAlignment = 'top' | 'center' | 'bottom';
+type Spacing = 'none' | 'small' | 'medium' | 'large' | 'xlarge';
+
+const figureVariants = cva('', {
+  variants: {
+    spacing: {
+      none: 'my-0',
+      small: 'my-2',
+      medium: 'my-4',
+      large: 'my-8',
+      xlarge: 'my-12',
+    },
+  },
+});
+
+const frameVariants = cva('relative w-full overflow-hidden', {
+  variants: {
+    alignment: {
+      left: 'mr-auto',
+      center: 'mx-auto',
+      right: 'ml-auto',
+      full: 'w-full',
+    },
+    size: {
+      small: 'max-w-xs',
+      medium: 'max-w-lg',
+      large: 'max-w-3xl',
+      full: 'w-full',
+    },
+    aspectRatio: {
+      auto: 'h-64 md:h-80',
+      square: 'aspect-square',
+      video: 'aspect-video',
+      standard: 'aspect-[4/3]',
+      classic: 'aspect-[3/2]',
+      ultrawide: 'aspect-[21/9]',
+    },
+    borderRadius: {
+      none: 'rounded-none',
+      small: 'rounded-sm',
+      medium: 'rounded-lg',
+      large: 'rounded-2xl',
+      full: 'rounded-full',
+    },
+    shadow: {
+      none: '',
+      small: 'shadow-sm',
+      medium: 'shadow-md',
+      large: 'shadow-xl',
+    },
+  },
+});
+
+const imageVariants = cva('object-cover', {
+  variants: {
+    verticalAlignment: {
+      top: 'object-top',
+      center: 'object-center',
+      bottom: 'object-bottom',
+    },
+  },
+});
+
+const captionVariants = cva('mt-2 text-sm text-muted-foreground italic', {
+  variants: {
+    alignment: {
+      left: 'text-left',
+      center: 'text-center',
+      right: 'text-right',
+      full: 'text-center',
+    },
+  },
+});
+
 export default function ImageElement({ content, displaySettings }: Props) {
   const { pa, src } = getPreviewUtils(content);
   const { getAlt } = damAssets(content);
 
-  if (!src(content.image)) {
-    return null;
-  }
+  if (!src(content.image)) return null;
 
-  // Get display settings with defaults
-  const alignment = displaySettings?.alignment ?? 'center';
-  const size = displaySettings?.size ?? 'medium';
-  const aspectRatio = displaySettings?.aspectRatio ?? 'auto';
-  const borderRadius = displaySettings?.borderRadius ?? 'medium';
-  const shadow = displaySettings?.shadow ?? 'none';
-  const verticalAlignment = displaySettings?.verticalAlignment ?? 'center';
-  const spacing = displaySettings?.spacing ?? 'small';
-
-  // Alignment classes
-  const alignmentClasses = {
-    left: 'mr-auto',
-    center: 'mx-auto',
-    right: 'ml-auto',
-    full: 'w-full',
-  };
-
-  // Size classes (max-width)
-  const sizeClasses = {
-    small: 'max-w-xs',    // 300px
-    medium: 'max-w-lg',   // 500px
-    large: 'max-w-3xl',   // 800px
-    full: 'w-full',
-  };
-
-  // Aspect ratio classes
-  const aspectRatioClasses = {
-    auto: 'h-64 md:h-80',  // Fixed height for auto (original behavior)
-    square: 'aspect-square',
-    video: 'aspect-video',      // 16:9
-    standard: 'aspect-[4/3]',
-    classic: 'aspect-[3/2]',
-    ultrawide: 'aspect-[21/9]',
-  };
-
-  // Border radius classes
-  const borderRadiusClasses = {
-    none: 'rounded-none',
-    small: 'rounded-sm',
-    medium: 'rounded-lg',
-    large: 'rounded-2xl',
-    full: 'rounded-full',
-  };
-
-  // Shadow classes
-  const shadowClasses = {
-    none: '',
-    small: 'shadow-sm',
-    medium: 'shadow-md',
-    large: 'shadow-xl',
-  };
-
-  // Vertical alignment classes (object-position for the image)
-  const verticalAlignmentClasses = {
-    top: 'object-top',
-    center: 'object-center',
-    bottom: 'object-bottom',
-  };
-
-  // Spacing classes (vertical margin)
-  const spacingClasses = {
-    none: 'my-0',
-    small: 'my-2',
-    medium: 'my-4',
-    large: 'my-8',
-    xlarge: 'my-12',
-  };
-
-  // Caption alignment based on image alignment
-  const captionAlignmentClasses = {
-    left: 'text-left',
-    center: 'text-center',
-    right: 'text-right',
-    full: 'text-center',
-  };
+  const alignment = (displaySettings?.alignment ?? 'center') as Alignment;
+  const size = (displaySettings?.size ?? 'medium') as Size;
+  const aspectRatio = (displaySettings?.aspectRatio ?? 'auto') as AspectRatio;
+  const borderRadius = (displaySettings?.borderRadius ?? 'medium') as BorderRadius;
+  const shadow = (displaySettings?.shadow ?? 'none') as Shadow;
+  const verticalAlignment = (displaySettings?.verticalAlignment ?? 'center') as VerticalAlignment;
+  const spacing = (displaySettings?.spacing ?? 'small') as Spacing;
 
   return (
-    <figure className={spacingClasses[spacing]}>
-      <div
-        className={`
-          relative
-          w-full
-          ${alignmentClasses[alignment]}
-          ${sizeClasses[size]}
-          ${aspectRatioClasses[aspectRatio]}
-          ${borderRadiusClasses[borderRadius]}
-          ${shadowClasses[shadow]}
-          overflow-hidden
-        `.trim().replace(/\s+/g, ' ')}
-      >
+    <figure className={figureVariants({ spacing })}>
+      <div className={frameVariants({ alignment, size, aspectRatio, borderRadius, shadow })}>
         <Image
           src={src(content.image)!}
           alt={getAlt(content.image, content.altText || '')}
           fill
-          className={`object-cover ${verticalAlignmentClasses[verticalAlignment]}`}
+          className={imageVariants({ verticalAlignment })}
           sizes="(max-width: 768px) 100vw, 50vw"
           {...pa('image')}
         />
       </div>
       {content.caption && (
-        <figcaption
-          className={`mt-2 text-sm text-muted-foreground italic ${captionAlignmentClasses[alignment]}`}
-          {...pa('caption')}
-        >
+        <figcaption className={captionVariants({ alignment })} {...pa('caption')}>
           {content.caption}
         </figcaption>
       )}

@@ -1,8 +1,9 @@
-import type { JSX } from 'react';
 import { ContentProps, damAssets } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
+import { cva } from 'class-variance-authority';
 import { BannerElementCT } from '@/content-types/BannerElement';
 import { BannerDisplayTemplate } from '@/display-templates/BannerElementDisplayTemplate';
+import { buttonVariants, Heading, type ButtonVariantProps } from '@/components/ui';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -11,46 +12,45 @@ type Props = {
   displaySettings?: ContentProps<typeof BannerDisplayTemplate>;
 };
 
+type HeadingTag = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+type Horizontal = 'left' | 'center' | 'right';
+type Vertical = 'top' | 'center' | 'bottom';
+
+const layoutVariants = cva(
+  'relative z-10 h-full flex flex-col px-6 py-8 md:px-12 md:py-16',
+  {
+    variants: {
+      horizontal: {
+        left: 'text-left items-start',
+        center: 'text-center items-center',
+        right: 'text-right items-end',
+      },
+      vertical: {
+        top: 'justify-start',
+        center: 'justify-center',
+        bottom: 'justify-end',
+      },
+    },
+  }
+);
+
 export default function BannerElement({ content, displaySettings }: Props) {
   const { pa, src } = getPreviewUtils(content);
   const { getAlt } = damAssets(content);
 
-  if (!src(content.backgroundImage)) {
-    return null;
-  }
+  if (!src(content.backgroundImage)) return null;
 
-  // Get display settings with defaults
-  const headingTag = displaySettings?.headingTag ?? 'h2';
-  const horizontalAlignment = displaySettings?.horizontalAlignment ?? 'center';
-  const verticalAlignment = displaySettings?.verticalAlignment ?? 'center';
+  const headingTag = (displaySettings?.headingTag ?? 'h2') as HeadingTag;
+  const horizontal = (displaySettings?.horizontalAlignment ?? 'center') as Horizontal;
+  const vertical = (displaySettings?.verticalAlignment ?? 'center') as Vertical;
   const overlayKey = displaySettings?.overlayPercentage ?? 'overlay0';
-  const ctaStyle = displaySettings?.ctaStyle ?? 'button';
-  const ctaColor = displaySettings?.ctaColor ?? 'light';
+  const ctaVariant = (displaySettings?.ctaStyle ?? 'button') as ButtonVariantProps['variant'];
+  const ctaTone = (displaySettings?.ctaColor ?? 'light') as ButtonVariantProps['tone'];
 
-  // Horizontal alignment classes
-  const horizontalAlignmentClasses = {
-    left: 'text-left items-start',
-    center: 'text-center items-center',
-    right: 'text-right items-end',
-  };
-
-  // Vertical alignment classes
-  const verticalAlignmentClasses = {
-    top: 'justify-start',
-    center: 'justify-center',
-    bottom: 'justify-end',
-  };
-
-  // Create heading element dynamically
-  const HeadingTag = headingTag as keyof JSX.IntrinsicElements;
-
-  // Extract numeric value from overlay key (e.g., 'overlay50' -> 50)
-  const overlayPercentage = parseInt(overlayKey.replace('overlay', '')) || 0;
-  const overlayOpacity = overlayPercentage / 100;
+  const overlayOpacity = (parseInt(overlayKey.replace('overlay', '')) || 0) / 100;
 
   return (
     <div className="relative w-full h-96 overflow-hidden">
-      {/* Background Image */}
       <Image
         src={src(content.backgroundImage)!}
         alt={getAlt(content.backgroundImage, '')}
@@ -60,7 +60,6 @@ export default function BannerElement({ content, displaySettings }: Props) {
         priority
       />
 
-      {/* Overlay */}
       {overlayOpacity > 0 && (
         <div
           className="absolute inset-0 bg-primary"
@@ -69,26 +68,16 @@ export default function BannerElement({ content, displaySettings }: Props) {
         />
       )}
 
-      {/* Content Container */}
-      <div
-        className={`
-          relative z-10 h-full
-          flex flex-col
-          ${verticalAlignmentClasses[verticalAlignment]}
-          ${horizontalAlignmentClasses[horizontalAlignment]}
-          px-6 py-8 md:px-12 md:py-16
-        `.trim().replace(/\s+/g, ' ')}
-      >
+      <div className={layoutVariants({ horizontal, vertical })}>
         <div className="max-w-4xl">
-          {/* Heading */}
-          <HeadingTag
-            className="text-primary-foreground font-bold text-3xl md:text-5xl mb-4"
+          <Heading
+            level={headingTag}
+            className="text-primary-foreground text-3xl md:text-5xl mb-4"
             {...pa('heading')}
           >
             {content.heading}
-          </HeadingTag>
+          </Heading>
 
-          {/* Text */}
           {content.text && (
             <p
               className="text-primary-foreground text-lg md:text-xl mb-6"
@@ -98,23 +87,10 @@ export default function BannerElement({ content, displaySettings }: Props) {
             </p>
           )}
 
-          {/* CTA Link */}
           {content.ctaLink?.url?.default && (
             <Link
               href={content.ctaLink.url.default}
-              className={
-                ctaStyle === 'button'
-                  ? ctaColor === 'light'
-                    ? `inline-block bg-primary-foreground text-primary px-6 py-3 rounded-lg font-semibold
-                       hover:opacity-90 transition-opacity`
-                    : `inline-block bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold
-                       hover:opacity-90 transition-opacity`
-                  : ctaColor === 'light'
-                  ? `inline-block text-primary-foreground font-semibold underline underline-offset-4
-                     hover:opacity-80 transition-opacity`
-                  : `inline-block text-primary font-semibold underline underline-offset-4
-                     hover:opacity-80 transition-opacity`
-              }
+              className={buttonVariants({ variant: ctaVariant, tone: ctaTone })}
               target={content.ctaLink.target ?? undefined}
               title={content.ctaLink.title ?? undefined}
               {...pa('ctaLink')}
