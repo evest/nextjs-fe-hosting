@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
-import { Header, Footer } from '@/components/layout';
+import { Header, Footer, SkipLink } from '@/components/layout';
 import { routing } from '@/i18n/routing';
 
 type Props = {
@@ -20,8 +20,9 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider>
+      <SkipLink />
       <Header />
-      <main className="flex-1">{children}</main>
+      <main id="main-content" className="flex-1">{children}</main>
       <Footer />
     </NextIntlClientProvider>
   );

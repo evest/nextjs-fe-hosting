@@ -1,6 +1,7 @@
 {
   "Header": {
     "toggleMenu": "Växla navigeringsmeny",
+    "skipToContent": "Hoppa till huvudinnehåll",
     "nav": {
       "services":  { "label": "Tjänster", "href": "/tjanster" },
       "insights":  { "label": "Insikter", "href": "/insikter" },
@@ -42,6 +43,9 @@
       "edit":     { "label": "Redigera",    "href": "" }
     },
     "rights": "Alla rättigheter förbehållna."
+  },
+  "Breadcrumbs": {
+    "label": "Brödsmulor"
   },
   "Cta": {
     "learnMore": "Läs mer",

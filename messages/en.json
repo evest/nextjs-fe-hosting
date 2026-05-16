@@ -1,6 +1,7 @@
 {
   "Header": {
     "toggleMenu": "Toggle navigation menu",
+    "skipToContent": "Skip to main content",
     "nav": {
       "services":  { "label": "Services",  "href": "/services" },
       "insights":  { "label": "Insights",  "href": "/insights" },
@@ -42,6 +43,9 @@
       "edit":     { "label": "Edit",     "href": "" }
     },
     "rights": "All rights reserved."
+  },
+  "Breadcrumbs": {
+    "label": "Breadcrumb"
   },
   "Cta": {
     "learnMore": "Learn more",

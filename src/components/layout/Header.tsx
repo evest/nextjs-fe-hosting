@@ -3,16 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Logo from "./Logo";
+import LocaleSwitcher from "./LocaleSwitcher";
+import MobileMenu, { type MenuItem } from "./MobileMenu";
 import { Container } from "@/components/ui";
 import { cn } from "@/lib/utils";
-
-interface MenuItem {
-  label: string;
-  href: string;
-  children?: MenuItem[];
-}
 
 function DesktopMenuItem({ item }: { item: MenuItem }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -80,52 +76,6 @@ function DesktopMenuItem({ item }: { item: MenuItem }) {
   );
 }
 
-function MobileMenuItem({ item }: { item: MenuItem }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  if (!item.children) {
-    return (
-      <Link
-        href={item.href}
-        className="block px-4 py-3 text-base font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-      >
-        {item.label}
-      </Link>
-    );
-  }
-
-  return (
-    <div>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full px-4 py-3 text-base font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-        aria-expanded={isOpen}
-      >
-        {item.label}
-        <ChevronDown
-          className={cn(
-            "w-5 h-5 transition-transform duration-200",
-            isOpen && "rotate-180"
-          )}
-        />
-      </button>
-      {isOpen && (
-        <div className="bg-secondary border-l-4 border-border">
-          {item.children.map((child) => (
-            <Link
-              key={child.href}
-              href={child.href}
-              className="block px-8 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            >
-              {child.label}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function buildMenuItems(t: ReturnType<typeof useTranslations<"Header">>): MenuItem[] {
   const get = (key: string) => ({ label: t(`${key}.label`), href: t(`${key}.href`) });
   return [
@@ -153,7 +103,6 @@ function buildMenuItems(t: ReturnType<typeof useTranslations<"Header">>): MenuIt
 
 export default function Header() {
   const t = useTranslations("Header");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuItems = buildMenuItems(t);
 
   return (
@@ -166,33 +115,13 @@ export default function Header() {
             {menuItems.map((item) => (
               <DesktopMenuItem key={item.href} item={item} />
             ))}
+            <span className="mx-2 h-5 w-px bg-border" aria-hidden />
+            <LocaleSwitcher />
           </nav>
 
-          <button
-            type="button"
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-expanded={mobileMenuOpen}
-            aria-label={t("toggleMenu")}
-          >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
+          <MobileMenu items={menuItems} />
         </div>
       </Container>
-
-      {mobileMenuOpen && (
-        <nav className="md:hidden border-t border-border bg-background">
-          <div className="py-2">
-            {menuItems.map((item) => (
-              <MobileMenuItem key={item.href} item={item} />
-            ))}
-          </div>
-        </nav>
-      )}
     </header>
   );
 }

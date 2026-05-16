@@ -1,6 +1,7 @@
 {
   "Header": {
     "toggleMenu": "Veksle navigasjonsmeny",
+    "skipToContent": "Hopp til hovedinnhold",
     "nav": {
       "services":  { "label": "Tjenester", "href": "/tjenester" },
       "insights":  { "label": "Innsikt",   "href": "/innsikt" },
@@ -42,6 +43,9 @@
       "edit":     { "label": "Rediger",   "href": "" }
     },
     "rights": "Alle rettigheter forbeholdt."
+  },
+  "Breadcrumbs": {
+    "label": "Brødsmuler"
   },
   "Cta": {
     "learnMore": "Les mer",

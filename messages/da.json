@@ -1,6 +1,7 @@
 {
   "Header": {
     "toggleMenu": "Skift navigationsmenu",
+    "skipToContent": "Spring til hovedindhold",
     "nav": {
       "services":  { "label": "Ydelser",  "href": "/ydelser" },
       "insights":  { "label": "Indsigt",  "href": "/indsigt" },
@@ -42,6 +43,9 @@
       "edit":     { "label": "Rediger",    "href": "" }
     },
     "rights": "Alle rettigheder forbeholdes."
+  },
+  "Breadcrumbs": {
+    "label": "Brødkrummer"
   },
   "Cta": {
     "learnMore": "Læs mere",
