@@ -10,25 +10,15 @@ team see daily**, the rest is polish.
 
 ## 🔴 Must-do
 
-### 1. Brand colors
+### 1. Brand colors ✅ done
 
-**File:** `src/app/globals.css` (lines 4–38)
-
-The current palette is neutral dark-on-light. The two CSS variables with the
-most reach are:
-
-- `--accent` — used for links, button fills, hover states, hero/banner CTAs,
-  stat values, "Learn more" arrows, accordion icons. Touching this changes
-  the visual tone of every marketing block.
-- `--footer` — full footer background colour.
-
-Also worth a glance:
-
-- `--primary` / `--primary-foreground` — secondary surface (rarely the brand
-  hero colour, but check Header sticky bg).
-- `.section-dark` and `.section-muted` (lines 64–88) override the CSS vars
-  for blocks set to those surfaces. Usually fine to leave; revisit if the
-  brand has a specific dark surface tone.
+Shipped in `fcdd67e` + follow-ups. `--accent` is logo navy (`#1e3a8a`,
+with the brighter `#1E5BD8` left commented for easy swap), `--highlight`
+is logo orange (`#F37021`) and surfaces on hero/callout eyebrows, stat
+values, and solution-tile stripes. `--footer` is deep navy (`#0F1B3D`)
+plus matching foreground/muted/border. `--primary` now tracks `--accent`
+so future brand tweaks flow through. The `.section-dark` accent uses a
+lighter brand-blue variant (`#7C9DFF`) so dark surfaces stay on-brand.
 
 ### 2. Real navigation
 

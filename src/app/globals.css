@@ -13,8 +13,8 @@
   /* Borders & dividers */
   --border: #e5e5e5;
 
-  /* Primary action color */
-  --primary: #171717;
+  /* Primary action color — tracks --accent so brand updates flow through */
+  --primary: var(--accent);
   --primary-foreground: #ffffff;
 
   /* Secondary / subtle backgrounds */
@@ -22,7 +22,7 @@
   --secondary-foreground: #171717;
 
   /* Accent / links — Content Gurus logo blue */
-  --accent: #1E5BD8;
+  --accent: #1e3a8a; /* #1E5BD8;*/
   --accent-foreground: #ffffff;
 
   /* Highlight — Content Gurus logo orange. Use sparingly for "guru" moments:
@@ -78,7 +78,7 @@
   --primary-foreground: #171717;
   --secondary: #262626;
   --secondary-foreground: #ededed;
-  --accent: #60a5fa;
+  --accent: #7C9DFF;
   --accent-foreground: #171717;
   --card: #262626;
   --card-foreground: #ededed;
