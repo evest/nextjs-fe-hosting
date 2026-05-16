@@ -39,7 +39,7 @@ export default function StatsBlock({ content, displaySettings }: Props) {
           {stats.map((s) => (
             <div key={s.key}>
               <div
-                className="text-5xl md:text-6xl font-bold tracking-tight leading-none text-accent"
+                className="text-5xl md:text-6xl font-bold tracking-tight leading-none text-highlight"
                 {...pa(`${s.key}Value`)}
               >
                 {s.value || '—'}

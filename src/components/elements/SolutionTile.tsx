@@ -75,7 +75,7 @@ export default function SolutionTile({ content }: Props) {
 
   const baseClass = cn(
     "group relative block h-full bg-card text-card-foreground p-8 border border-border rounded-lg",
-    "before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent before:rounded-l-lg",
+    "before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-highlight before:rounded-l-lg",
     'hover:border-foreground/40 transition-colors'
   );
 

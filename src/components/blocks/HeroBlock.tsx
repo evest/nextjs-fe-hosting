@@ -69,7 +69,7 @@ export default function HeroBlock({ content, displaySettings }: Props) {
         <div className={cn('flex flex-col justify-center max-w-3xl', alignClass)}>
           {content.eyebrow && (
             <span
-              className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-accent"
+              className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-highlight"
               {...pa('eyebrow')}
             >
               {content.eyebrow}
