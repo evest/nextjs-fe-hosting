@@ -1,0 +1,55 @@
+{
+  "Header": {
+    "toggleMenu": "Skift navigationsmenu",
+    "nav": {
+      "services":  { "label": "Ydelser",  "href": "/ydelser" },
+      "insights":  { "label": "Indsigt",  "href": "/indsigt" },
+      "about":     { "label": "Om os",    "href": "/om-os" },
+      "contact":   { "label": "Kontakt",  "href": "/kontakt" }
+    },
+    "submenu": {
+      "strategy":      { "label": "Indholdsstrategi", "href": "/ydelser/strategi" },
+      "implementation":{ "label": "Implementering",   "href": "/ydelser/implementering" },
+      "optimization":  { "label": "Optimering",       "href": "/ydelser/optimering" },
+      "training":      { "label": "Træning",          "href": "/ydelser/traening" },
+      "blog":          { "label": "Blog",             "href": "/indsigt/blog" },
+      "caseStudies":   { "label": "Kundecases",       "href": "/indsigt/kundecases" },
+      "guides":        { "label": "Guider",           "href": "/indsigt/guider" }
+    }
+  },
+  "LocaleSwitcher": {
+    "label": "Sprog",
+    "en": "English",
+    "no": "Norsk",
+    "sv": "Svenska",
+    "da": "Dansk"
+  },
+  "Footer": {
+    "tagline": "Content Gurus — vi får Optimizely til at synge for nordiske brands.",
+    "sections": {
+      "services": "Ydelser",
+      "insights": "Indsigt",
+      "company": "Virksomhed",
+      "legal": "Juridisk"
+    },
+    "links": {
+      "about":    { "label": "Om os",      "href": "/om-os" },
+      "careers":  { "label": "Karriere",   "href": "/karriere" },
+      "contact":  { "label": "Kontakt",    "href": "/kontakt" },
+      "privacy":  { "label": "Privatliv",  "href": "/privatliv" },
+      "cookies":  { "label": "Cookies",    "href": "/cookies" },
+      "terms":    { "label": "Vilkår",     "href": "/vilkaar" },
+      "edit":     { "label": "Rediger",    "href": "" }
+    },
+    "rights": "Alle rettigheder forbeholdes."
+  },
+  "Cta": {
+    "learnMore": "Læs mere",
+    "contactUs": "Kontakt os"
+  },
+  "NotFound": {
+    "title": "404",
+    "message": "Den side du leder efter findes ikke.",
+    "back": "Tilbage til forsiden"
+  }
+}

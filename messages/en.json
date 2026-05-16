@@ -1,0 +1,55 @@
+{
+  "Header": {
+    "toggleMenu": "Toggle navigation menu",
+    "nav": {
+      "services":  { "label": "Services",  "href": "/services" },
+      "insights":  { "label": "Insights",  "href": "/insights" },
+      "about":     { "label": "About",     "href": "/about" },
+      "contact":   { "label": "Contact",   "href": "/contact" }
+    },
+    "submenu": {
+      "strategy":      { "label": "Content Strategy",   "href": "/services/strategy" },
+      "implementation":{ "label": "Implementation",     "href": "/services/implementation" },
+      "optimization":  { "label": "Optimization",       "href": "/services/optimization" },
+      "training":      { "label": "Training",           "href": "/services/training" },
+      "blog":          { "label": "Blog",               "href": "/insights/blog" },
+      "caseStudies":   { "label": "Case Studies",       "href": "/insights/case-studies" },
+      "guides":        { "label": "Guides",             "href": "/insights/guides" }
+    }
+  },
+  "LocaleSwitcher": {
+    "label": "Language",
+    "en": "English",
+    "no": "Norsk",
+    "sv": "Svenska",
+    "da": "Dansk"
+  },
+  "Footer": {
+    "tagline": "Content Gurus — the people who make Optimizely sing for Nordic brands.",
+    "sections": {
+      "services": "Services",
+      "insights": "Insights",
+      "company": "Company",
+      "legal": "Legal"
+    },
+    "links": {
+      "about":    { "label": "About",    "href": "/about" },
+      "careers":  { "label": "Careers",  "href": "/careers" },
+      "contact":  { "label": "Contact",  "href": "/contact" },
+      "privacy":  { "label": "Privacy",  "href": "/privacy" },
+      "cookies":  { "label": "Cookies",  "href": "/cookies" },
+      "terms":    { "label": "Terms",    "href": "/terms" },
+      "edit":     { "label": "Edit",     "href": "" }
+    },
+    "rights": "All rights reserved."
+  },
+  "Cta": {
+    "learnMore": "Learn more",
+    "contactUs": "Contact us"
+  },
+  "NotFound": {
+    "title": "404",
+    "message": "The page you're looking for doesn't exist.",
+    "back": "Back to homepage"
+  }
+}

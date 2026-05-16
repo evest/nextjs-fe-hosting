@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Logo from "./Logo";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
+import Logo from "./Logo";
 import { Container } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -12,39 +13,6 @@ interface MenuItem {
   href: string;
   children?: MenuItem[];
 }
-
-// Sample navigation data - in a real app, this could come from CMS or config
-const menuItems: MenuItem[] = [
-  {
-    label: "Products",
-    href: "/en/products",
-    children: [
-      { label: "Featured", href: "/en/products/featured" },
-      { label: "New Arrivals", href: "/en/products/new" },
-      { label: "Best Sellers", href: "/en/products/best-sellers" },
-    ],
-  },
-  {
-    label: "Solutions",
-    href: "/en/solutions",
-    children: [
-      { label: "Enterprise", href: "/en/solutions/enterprise" },
-      { label: "Small Business", href: "/en/solutions/small-business" },
-      { label: "Developers", href: "/en/solutions/developers" },
-    ],
-  },
-  {
-    label: "Resources",
-    href: "/en/resources",
-    children: [
-      { label: "Documentation", href: "/en/resources/docs" },
-      { label: "Blog", href: "/en/resources/blog" },
-      { label: "Case Studies", href: "/en/resources/case-studies" },
-    ],
-  },
-  { label: "About", href: "/en/about" },
-  { label: "Contact", href: "/en/contact" },
-];
 
 function DesktopMenuItem({ item }: { item: MenuItem }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -96,7 +64,7 @@ function DesktopMenuItem({ item }: { item: MenuItem }) {
         />
       </button>
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-48 bg-background rounded-lg shadow-lg border border-border py-2 z-50">
+        <div className="absolute top-full left-0 mt-1 w-56 bg-background rounded-lg shadow-lg border border-border py-2 z-50">
           {item.children.map((child) => (
             <Link
               key={child.href}
@@ -158,8 +126,35 @@ function MobileMenuItem({ item }: { item: MenuItem }) {
   );
 }
 
+function buildMenuItems(t: ReturnType<typeof useTranslations<"Header">>): MenuItem[] {
+  const get = (key: string) => ({ label: t(`${key}.label`), href: t(`${key}.href`) });
+  return [
+    {
+      ...get("nav.services"),
+      children: [
+        get("submenu.strategy"),
+        get("submenu.implementation"),
+        get("submenu.optimization"),
+        get("submenu.training"),
+      ],
+    },
+    {
+      ...get("nav.insights"),
+      children: [
+        get("submenu.blog"),
+        get("submenu.caseStudies"),
+        get("submenu.guides"),
+      ],
+    },
+    get("nav.about"),
+    get("nav.contact"),
+  ];
+}
+
 export default function Header() {
+  const t = useTranslations("Header");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuItems = buildMenuItems(t);
 
   return (
     <header className="sticky top-0 z-40 bg-background border-b border-border">
@@ -178,7 +173,7 @@ export default function Header() {
             className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-expanded={mobileMenuOpen}
-            aria-label="Toggle navigation menu"
+            aria-label={t("toggleMenu")}
           >
             {mobileMenuOpen ? (
               <X className="w-6 h-6" />

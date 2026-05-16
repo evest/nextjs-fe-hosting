@@ -20,12 +20,17 @@
  * Net effect: build never depends on Graph. Cache fills happen on first
  * request per URL after deploy.
  */
+import { routing } from '@/i18n/routing';
+
 export const PLACEHOLDER_SLUG_SEGMENT = '__no-cms-pages-at-build__';
 
-const PLACEHOLDER: { slug: string[] }[] = [
-  { slug: [PLACEHOLDER_SLUG_SEGMENT] },
-];
+type LocaleSlug = { locale: string; slug?: string[] };
 
-export function getAllPagesPaths(): { slug: string[] }[] {
+const PLACEHOLDER: LocaleSlug[] = routing.locales.map((locale) => ({
+  locale,
+  slug: [PLACEHOLDER_SLUG_SEGMENT],
+}));
+
+export function getAllPagesPaths(): LocaleSlug[] {
   return PLACEHOLDER;
 }

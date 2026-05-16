@@ -26,7 +26,7 @@ export async function getPageContent(slug: string[]) {
   cacheLife('max');
   cacheTag(getPageTag(slug));
 
-  if (slug.length === 1 && slug[0] === PLACEHOLDER_SLUG_SEGMENT) {
+  if (slug.includes(PLACEHOLDER_SLUG_SEGMENT)) {
     return null;
   }
 

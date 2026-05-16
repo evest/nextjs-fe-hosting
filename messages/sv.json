@@ -1,0 +1,55 @@
+{
+  "Header": {
+    "toggleMenu": "Växla navigeringsmeny",
+    "nav": {
+      "services":  { "label": "Tjänster", "href": "/tjanster" },
+      "insights":  { "label": "Insikter", "href": "/insikter" },
+      "about":     { "label": "Om oss",   "href": "/om-oss" },
+      "contact":   { "label": "Kontakt",  "href": "/kontakt" }
+    },
+    "submenu": {
+      "strategy":      { "label": "Innehållsstrategi", "href": "/tjanster/strategi" },
+      "implementation":{ "label": "Implementation",    "href": "/tjanster/implementation" },
+      "optimization":  { "label": "Optimering",        "href": "/tjanster/optimering" },
+      "training":      { "label": "Utbildning",        "href": "/tjanster/utbildning" },
+      "blog":          { "label": "Blogg",             "href": "/insikter/blogg" },
+      "caseStudies":   { "label": "Kundcase",          "href": "/insikter/kundcase" },
+      "guides":        { "label": "Guider",            "href": "/insikter/guider" }
+    }
+  },
+  "LocaleSwitcher": {
+    "label": "Språk",
+    "en": "English",
+    "no": "Norsk",
+    "sv": "Svenska",
+    "da": "Dansk"
+  },
+  "Footer": {
+    "tagline": "Content Gurus — vi får Optimizely att sjunga för nordiska varumärken.",
+    "sections": {
+      "services": "Tjänster",
+      "insights": "Insikter",
+      "company": "Företag",
+      "legal": "Juridiskt"
+    },
+    "links": {
+      "about":    { "label": "Om oss",      "href": "/om-oss" },
+      "careers":  { "label": "Karriär",     "href": "/karriar" },
+      "contact":  { "label": "Kontakt",     "href": "/kontakt" },
+      "privacy":  { "label": "Integritet",  "href": "/integritet" },
+      "cookies":  { "label": "Cookies",     "href": "/cookies" },
+      "terms":    { "label": "Villkor",     "href": "/villkor" },
+      "edit":     { "label": "Redigera",    "href": "" }
+    },
+    "rights": "Alla rättigheter förbehållna."
+  },
+  "Cta": {
+    "learnMore": "Läs mer",
+    "contactUs": "Kontakta oss"
+  },
+  "NotFound": {
+    "title": "404",
+    "message": "Sidan du letar efter finns inte.",
+    "back": "Tillbaka till startsidan"
+  }
+}

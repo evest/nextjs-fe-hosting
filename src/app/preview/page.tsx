@@ -2,6 +2,10 @@ import { Suspense } from 'react';
 import { getClient, type PreviewParams } from '@optimizely/cms-sdk';
 import { OptimizelyComponent, withAppContext } from '@optimizely/cms-sdk/react/server';
 import { PreviewComponent } from '@optimizely/cms-sdk/react/client';
+import { hasLocale, NextIntlClientProvider } from 'next-intl';
+import { setRequestLocale } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
+import { Header, Footer } from '@/components/layout';
 import PreviewError from '@/components/layout/PreviewError';
 import Script from 'next/script';
 
@@ -17,6 +21,16 @@ type Props = {
 
 async function PreviewBody({ searchParams }: Props) {
   const params = await searchParams;
+
+  // Bridge the CMS-supplied locale (`loc` param) into next-intl so any
+  // useTranslations() call inside rendered components resolves correctly.
+  // Falls back to the default locale on mismatch — better to render than
+  // to block the editor with a notFound().
+  const locParam = typeof params.loc === 'string' ? params.loc : undefined;
+  const locale = hasLocale(routing.locales, locParam) ? locParam : routing.defaultLocale;
+  setRequestLocale(locale);
+  const messages = (await import(`../../../messages/${locale}.json`)).default;
+
   const client = getClient();
 
   let response;
@@ -41,15 +55,31 @@ async function PreviewBody({ searchParams }: Props) {
   }
 
   if (error) {
-    return <PreviewError error={error} params={params} />;
+    return (
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        <Header />
+        <main className="flex-1">
+          <PreviewError error={error} params={params} />
+        </main>
+        <Footer />
+      </NextIntlClientProvider>
+    );
   }
 
-  return <OptimizelyComponent content={response} />;
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <Header />
+      <main className="flex-1">
+        <OptimizelyComponent content={response} />
+      </main>
+      <Footer />
+    </NextIntlClientProvider>
+  );
 }
 
 function Page({ searchParams }: Props) {
   return (
-    <div>
+    <div className="flex-1 flex flex-col">
       <Script
         src={`${process.env.OPTIMIZELY_CMS_URL}/util/javascript/communicationinjector.js`}
         strategy="beforeInteractive"

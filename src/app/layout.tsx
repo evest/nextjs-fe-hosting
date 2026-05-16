@@ -5,8 +5,6 @@ import "./globals.css";
 // Initialize Optimizely SDK registries
 import "@/optimizely";
 
-import { Header, Footer } from "@/components/layout";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -18,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Optimizely SaaS CMS Example",
-  description: "Using Opimizely SaaS CMS, Content JS SDK, Frontend Hosting and Next.js",
+  title: "Content Gurus",
+  description: "Optimizely SaaS CMS expertise for Nordic brands.",
 };
 
 export default function RootLayout({
@@ -28,13 +26,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   );

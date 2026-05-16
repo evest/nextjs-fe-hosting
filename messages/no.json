@@ -1,0 +1,55 @@
+{
+  "Header": {
+    "toggleMenu": "Veksle navigasjonsmeny",
+    "nav": {
+      "services":  { "label": "Tjenester", "href": "/tjenester" },
+      "insights":  { "label": "Innsikt",   "href": "/innsikt" },
+      "about":     { "label": "Om oss",    "href": "/om-oss" },
+      "contact":   { "label": "Kontakt",   "href": "/kontakt" }
+    },
+    "submenu": {
+      "strategy":      { "label": "Innholdsstrategi", "href": "/tjenester/strategi" },
+      "implementation":{ "label": "Implementering",   "href": "/tjenester/implementering" },
+      "optimization":  { "label": "Optimalisering",   "href": "/tjenester/optimalisering" },
+      "training":      { "label": "Opplæring",        "href": "/tjenester/opplaering" },
+      "blog":          { "label": "Blogg",            "href": "/innsikt/blogg" },
+      "caseStudies":   { "label": "Kundecase",        "href": "/innsikt/kundecase" },
+      "guides":        { "label": "Guider",           "href": "/innsikt/guider" }
+    }
+  },
+  "LocaleSwitcher": {
+    "label": "Språk",
+    "en": "English",
+    "no": "Norsk",
+    "sv": "Svenska",
+    "da": "Dansk"
+  },
+  "Footer": {
+    "tagline": "Content Gurus — vi får Optimizely til å synge for nordiske merkevarer.",
+    "sections": {
+      "services": "Tjenester",
+      "insights": "Innsikt",
+      "company": "Selskap",
+      "legal": "Juridisk"
+    },
+    "links": {
+      "about":    { "label": "Om oss",    "href": "/om-oss" },
+      "careers":  { "label": "Karriere",  "href": "/karriere" },
+      "contact":  { "label": "Kontakt",   "href": "/kontakt" },
+      "privacy":  { "label": "Personvern","href": "/personvern" },
+      "cookies":  { "label": "Cookies",   "href": "/cookies" },
+      "terms":    { "label": "Vilkår",    "href": "/vilkaar" },
+      "edit":     { "label": "Rediger",   "href": "" }
+    },
+    "rights": "Alle rettigheter forbeholdt."
+  },
+  "Cta": {
+    "learnMore": "Les mer",
+    "contactUs": "Kontakt oss"
+  },
+  "NotFound": {
+    "title": "404",
+    "message": "Siden du leter etter finnes ikke.",
+    "back": "Tilbake til forsiden"
+  }
+}

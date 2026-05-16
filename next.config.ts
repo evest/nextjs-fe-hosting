@@ -1,10 +1,14 @@
 import { resolve } from "node:path";
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
-  // Enables the `'use cache'` directive and auto-PPR. /[...slug] reads CMS
-  // content via a `'use cache'` wrapper, so the whole page caches; /preview
-  // is explicitly `force-dynamic` and reflects editor edits on every load.
+  // Enables the `'use cache'` directive and auto-PPR. The localized catch-all
+  // (/[locale]/[[...slug]]) reads CMS content via a `'use cache'` wrapper, so
+  // the whole page caches; /preview is explicitly `force-dynamic` and reflects
+  // editor edits on every load.
   cacheComponents: true,
 
   // Optimizely DXP shared Redis cache handler. With `cacheMaxMemorySize: 0`
@@ -48,15 +52,8 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/en',
-        permanent: false,
-      },
-    ];
-  },
+  // Locale routing — including the `/` → `/no` redirect — is handled by the
+  // next-intl middleware (src/proxy.ts). No explicit redirects needed.
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);
