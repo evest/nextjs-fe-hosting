@@ -14,7 +14,8 @@
     "cms:push-config": "npx @optimizely/cms-cli@^2.0.0 config push ./optimizely.config.mjs",
     "cms:push-config-force": "npx @optimizely/cms-cli@^2.0.0 config push ./optimizely.config.mjs --force",
     "cms:pull-config": "npx @optimizely/cms-cli@^2.0.0 config pull --output ./src/content-types --group",
-    "deploy-test2": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Test2"
+    "deploy-test2": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Test2",
+    "preinstall": "npx only-allow npm"
   },
   "dependencies": {
     "@azure/identity": "^4.13.1",
@@ -42,5 +43,6 @@
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "npm@11.8.0"
 }
