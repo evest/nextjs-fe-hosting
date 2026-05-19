@@ -35,11 +35,14 @@ export default async function ArticleListBlock({ content, displaySettings }: Pro
   const afterSkip = skip > 0 ? allArticles.slice(skip) : allArticles;
   const articles = content.maxItems ? afterSkip.slice(0, content.maxItems) : afterSkip;
 
+  const hasHeader = Boolean(content.heading || content.subheading);
+  const sectionPadding = layout === 'list' ? 'py-10 md:py-14' : 'py-16 md:py-24';
+
   return (
-    <section className={cn(surfaceClass[surface], 'py-16 md:py-24')}>
+    <section className={cn(surfaceClass[surface], sectionPadding)}>
       <Container className="max-w-5xl">
-        {(content.heading || content.subheading) && (
-          <div className="max-w-3xl mb-12 md:mb-16">
+        {hasHeader && (
+          <div className="max-w-3xl mb-8 md:mb-12">
             {content.heading && (
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight" {...pa('heading')}>
                 {content.heading}
@@ -71,7 +74,12 @@ export default async function ArticleListBlock({ content, displaySettings }: Pro
             ))}
           </div>
         ) : (
-          <ul className="divide-y divide-border border-y border-border">
+          <ul
+            className={cn(
+              'divide-y divide-border border-b border-border',
+              hasHeader && 'border-t',
+            )}
+          >
             {articles.map((article) => (
               <li key={article._metadata?.key}>
                 <ArticleListRow article={article} locale={locale} readMoreLabel={readMoreLabel} />
@@ -112,7 +120,7 @@ function ArticleListRow({
   return (
     <Link
       href={href}
-      className="group flex flex-col sm:flex-row gap-6 py-6 md:py-8 hover:opacity-90 transition-opacity"
+      className="group flex flex-col sm:flex-row gap-6 py-5 md:py-6 hover:opacity-90 transition-opacity"
     >
       {imgUrl && (
         <div className="relative w-full sm:w-40 md:w-48 aspect-[4/3] flex-shrink-0 overflow-hidden bg-muted rounded-md">
