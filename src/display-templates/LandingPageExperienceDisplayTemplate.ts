@@ -20,8 +20,8 @@ export const LandingPageExperienceDisplayTemplate = displayTemplate({
       displayName: 'Header Style',
       sortOrder: 1,
       choices: {
-        dark: { displayName: 'Dark (default)', sortOrder: 0 },
-        light: { displayName: 'Light (for dark backgrounds)', sortOrder: 1 },
+        dark: { displayName: 'Dark text — for light backgrounds', sortOrder: 0 },
+        light: { displayName: 'Light text — for dark backgrounds', sortOrder: 1 },
       },
     },
     backgroundTreatment: {

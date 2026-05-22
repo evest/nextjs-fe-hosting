@@ -104,9 +104,25 @@ function buildMenuItems(t: ReturnType<typeof useTranslations<"Header">>): MenuIt
 export default function Header() {
   const t = useTranslations("Header");
   const menuItems = buildMenuItems(t);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 0);
+    onScroll(); // sync on mount (e.g. reload mid-page)
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-40 bg-background border-b border-border">
+    <header
+      data-scrolled={scrolled ? "" : undefined}
+      className={cn(
+        "sticky top-0 z-40 transition-colors duration-200",
+        scrolled
+          ? "bg-background border-b border-border"
+          : "bg-transparent border-b border-transparent"
+      )}
+    >
       <Container>
         <div className="flex items-center justify-between h-16">
           <Logo variant="header" />

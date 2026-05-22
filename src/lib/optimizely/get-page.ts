@@ -11,6 +11,11 @@ import { PLACEHOLDER_SLUG_SEGMENT } from '@/lib/optimizely/all-pages';
  * and the tag is shared with the webhook receiver so a publish event can
  * invalidate exactly this page.
  *
+ * In production the entry lives until the webhook purges its tag. In local
+ * dev the Graph webhook can't reach localhost, so the cache is given a short
+ * lifetime instead — otherwise CMS edits (e.g. display-template settings)
+ * never surface without manually clearing .next.
+ *
  * Returns null when no content matches the path. Errors are swallowed
  * (returns null) so a transient Graph outage doesn't surface as a
  * HANGING_PROMISE_REJECTION during prerender — the caller decides whether
@@ -23,7 +28,11 @@ import { PLACEHOLDER_SLUG_SEGMENT } from '@/lib/optimizely/all-pages';
  */
 export async function getPageContent(slug: string[]) {
   'use cache';
-  cacheLife('max');
+  if (process.env.NODE_ENV === 'production') {
+    cacheLife('max');
+  } else {
+    cacheLife('minutes');
+  }
   cacheTag(getPageTag(slug));
 
   if (slug.includes(PLACEHOLDER_SLUG_SEGMENT)) {

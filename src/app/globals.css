@@ -118,22 +118,27 @@ body[data-epi-edit-mode] {
   position: relative;
 }
 
-/* Landing Page Experience — transparent header when background image is present */
-body:has(.landing-page-experience.has-background-image) > header {
+/* Landing Page Experience — transparent header when background image is
+   present, but only while the page is scrolled to the top. Once scrolled,
+   the header sets data-scrolled and reverts to its solid background so the
+   menu stays readable. */
+body:has(.landing-page-experience.has-background-image) > header:not([data-scrolled]) {
   background-color: transparent !important;
   border-bottom-color: transparent !important;
 }
 
-/* Light header style — white text/logo for dark backgrounds (editor-controlled) */
-body:has(.landing-page-experience.header-light) > header nav a,
-body:has(.landing-page-experience.header-light) > header nav > div > button,
-body:has(.landing-page-experience.header-light) > header button[aria-label] {
+/* Light header style — white text/logo for dark backgrounds (editor-controlled).
+   Scoped to :not([data-scrolled]): once the page is scrolled the header has a
+   solid background, so nav reverts to its default dark text for readability. */
+body:has(.landing-page-experience.header-light) > header:not([data-scrolled]) nav a,
+body:has(.landing-page-experience.header-light) > header:not([data-scrolled]) nav > div > button,
+body:has(.landing-page-experience.header-light) > header:not([data-scrolled]) button[aria-label] {
   color: white !important;
 }
 
-body:has(.landing-page-experience.header-light) > header nav a:hover,
-body:has(.landing-page-experience.header-light) > header nav > div > button:hover,
-body:has(.landing-page-experience.header-light) > header button[aria-label]:hover {
+body:has(.landing-page-experience.header-light) > header:not([data-scrolled]) nav a:hover,
+body:has(.landing-page-experience.header-light) > header:not([data-scrolled]) nav > div > button:hover,
+body:has(.landing-page-experience.header-light) > header:not([data-scrolled]) button[aria-label]:hover {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
@@ -147,6 +152,6 @@ body:has(.landing-page-experience.header-light) > header nav .absolute a:hover {
 }
 
 /* Invert header logo for visibility on dark backgrounds */
-body:has(.landing-page-experience.header-light) > header a > img {
+body:has(.landing-page-experience.header-light) > header:not([data-scrolled]) a > img {
   filter: brightness(0) invert(1);
 }

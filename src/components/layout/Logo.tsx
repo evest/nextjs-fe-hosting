@@ -25,6 +25,7 @@ export default function Logo({ variant = "header", className = "" }: LogoProps) 
         width={width}
         height={height}
         priority={variant === "header"}
+        style={{ width, height: "auto" }}
       />
     </Link>
   );
