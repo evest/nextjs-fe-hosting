@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* shadcn/ui components ship `dark:` utilities. Bind that variant to an
+   explicit `.dark` ancestor (which this project never sets) rather than the
+   OS `prefers-color-scheme`, so the .section-* colour schemes below stay the
+   single source of truth for light/dark surfaces. */
+@custom-variant dark (&:is(.dark *));
+
 :root {
   /* Base */
   --background: #ffffff;
@@ -13,17 +19,22 @@
   /* Borders & dividers */
   --border: #e5e5e5;
 
-  /* Primary action color — tracks --accent so brand updates flow through */
-  --primary: var(--accent);
+  /* Primary action color — tracks --brand so brand updates flow through */
+  --primary: var(--brand);
   --primary-foreground: #ffffff;
 
   /* Secondary / subtle backgrounds */
   --secondary: #f5f5f5;
   --secondary-foreground: #171717;
 
-  /* Accent / links — Content Gurus logo blue */
-  --accent: #1e3a8a; /* #1E5BD8;*/
-  --accent-foreground: #ffffff;
+  /* Brand colour / links — Content Gurus logo blue */
+  --brand: #1e3a8a; /* #1E5BD8;*/
+  --brand-foreground: #ffffff;
+
+  /* Accent — subtle hover/highlight surface for shadcn/ui menus, ghost
+     buttons, etc. NOT a brand colour (see --brand above). */
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
 
   /* Highlight — Content Gurus logo orange. Use sparingly for "guru" moments:
      eyebrow text, stat values, tile stripes. Never for primary CTAs. */
@@ -33,6 +44,18 @@
   /* Cards */
   --card: #ffffff;
   --card-foreground: #171717;
+
+  /* Popover surfaces (shadcn/ui) — match card */
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+
+  /* Destructive / error state (shadcn/ui) */
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  /* Form input border + focus ring (shadcn/ui) */
+  --input: #e5e5e5;
+  --ring: var(--brand);
 
   /* Footer — deep navy variant of brand blue */
   --footer: #0F1B3D;
@@ -54,10 +77,18 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-footer: var(--footer);
   --color-footer-foreground: var(--footer-foreground);
   --color-footer-muted: var(--footer-muted);
@@ -80,10 +111,18 @@
   --primary-foreground: #171717;
   --secondary: #262626;
   --secondary-foreground: #ededed;
-  --accent: #7C9DFF;
-  --accent-foreground: #171717;
+  --brand: #7C9DFF;
+  --brand-foreground: #171717;
+  --accent: #404040;
+  --accent-foreground: #ededed;
   --card: #262626;
   --card-foreground: #ededed;
+  --popover: #262626;
+  --popover-foreground: #ededed;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --input: #404040;
+  --ring: var(--brand);
 }
 
 .section-muted {
@@ -94,6 +133,8 @@
   --border: #d4d4d4;
   --card: #ffffff;
   --card-foreground: #171717;
+  --accent: #e5e5e5;
+  --accent-foreground: #171717;
 }
 
 body {

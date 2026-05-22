@@ -60,7 +60,7 @@ export default function CalloutBanner({ content, displaySettings }: Props) {
               <Link
                 href={primaryHref}
                 target={content.primaryCta?.target ?? undefined}
-                className="inline-flex items-center bg-accent text-accent-foreground font-semibold px-7 py-3.5 rounded-md hover:opacity-90 transition-opacity"
+                className="inline-flex items-center bg-brand text-brand-foreground font-semibold px-7 py-3.5 rounded-md hover:opacity-90 transition-opacity"
                 {...pa('primaryCta')}
               >
                 {content.primaryCta?.text || t('contactUs')}

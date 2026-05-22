@@ -11,11 +11,11 @@ type Props = {
 };
 
 // Splits a headline on *...* segments and renders the wrapped text in an
-// italic accent colour. "Unlock your *content* potential" accents "content".
+// italic brand colour. "Unlock your *content* potential" brands "content".
 function renderHeadline(text: string | null | undefined) {
   return (text ?? '').split(/\*([^*]+)\*/g).map((part, i) =>
     i % 2 === 1 ? (
-      <em key={i} className="italic text-accent">
+      <em key={i} className="italic text-brand">
         {part}
       </em>
     ) : (

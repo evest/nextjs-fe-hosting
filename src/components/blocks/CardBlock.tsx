@@ -44,7 +44,7 @@ export default function CardBlock({ content }: Props) {
         {content.linkUrl && content.linkText && (
           <a
             href={String(content.linkUrl)}
-            className="inline-flex items-center text-accent hover:text-accent/80 font-medium"
+            className="inline-flex items-center text-brand hover:text-brand/80 font-medium"
             {...pa('linkUrl')}
           >
             {content.linkText}

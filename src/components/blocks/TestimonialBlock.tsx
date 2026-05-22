@@ -62,7 +62,7 @@ export default function TestimonialBlock({ content, displaySettings }: Props) {
                   isSingle && 'text-center'
                 )}
               >
-                <Quote className="absolute top-6 right-6 w-8 h-8 text-accent opacity-30" aria-hidden strokeWidth={1.5} />
+                <Quote className="absolute top-6 right-6 w-8 h-8 text-brand opacity-30" aria-hidden strokeWidth={1.5} />
                 <blockquote
                   className={cn('text-lg md:text-xl leading-relaxed', isSingle && 'md:text-2xl')}
                   {...pa(`quote${item.key}`)}

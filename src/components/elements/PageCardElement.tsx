@@ -83,7 +83,7 @@ export default async function PageCardElement({ content: opti }: Props) {
         <CardBody>
           <Heading
             level="h3"
-            className="text-card-foreground mb-2 group-hover:text-accent transition-colors"
+            className="text-card-foreground mb-2 group-hover:text-brand transition-colors"
           >
             {heading}
           </Heading>

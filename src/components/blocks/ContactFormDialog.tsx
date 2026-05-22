@@ -53,7 +53,7 @@ export default function ContactFormDialog({ buttonLabel, heading, description }:
       <button
         type="button"
         onClick={openDialog}
-        className="inline-flex items-center bg-accent text-accent-foreground font-semibold px-7 py-3.5 rounded-md hover:opacity-90 transition-opacity"
+        className="inline-flex items-center bg-brand text-brand-foreground font-semibold px-7 py-3.5 rounded-md hover:opacity-90 transition-opacity"
       >
         {buttonLabel}
         <ArrowRight className="ml-2 w-4 h-4" aria-hidden />

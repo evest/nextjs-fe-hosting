@@ -69,10 +69,10 @@ export default function ProcessBlock({ content, displaySettings }: Props) {
                 {isHorizontal ? (
                   <div className="relative">
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="flex items-center justify-center w-12 h-12 bg-accent text-accent-foreground font-bold text-lg rounded-md flex-shrink-0">
+                      <div className="flex items-center justify-center w-12 h-12 bg-brand text-brand-foreground font-bold text-lg rounded-md flex-shrink-0">
                         {step.key}
                       </div>
-                      {Icon && <Icon className="w-7 h-7 text-accent" strokeWidth={1.5} aria-hidden />}
+                      {Icon && <Icon className="w-7 h-7 text-brand" strokeWidth={1.5} aria-hidden />}
                     </div>
                     {step.title && (
                       <h3 className="text-xl font-semibold mb-2" {...pa(`step${step.key}Title`)}>
@@ -91,14 +91,14 @@ export default function ProcessBlock({ content, displaySettings }: Props) {
                 ) : (
                   <>
                     <div className="flex flex-col items-center flex-shrink-0">
-                      <div className="flex items-center justify-center w-12 h-12 bg-accent text-accent-foreground font-bold text-lg rounded-md">
+                      <div className="flex items-center justify-center w-12 h-12 bg-brand text-brand-foreground font-bold text-lg rounded-md">
                         {step.key}
                       </div>
                       {!isLast && <div className="w-px flex-1 bg-border mt-2" />}
                     </div>
                     <div className="pb-8 flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        {Icon && <Icon className="w-6 h-6 text-accent" strokeWidth={1.5} aria-hidden />}
+                        {Icon && <Icon className="w-6 h-6 text-brand" strokeWidth={1.5} aria-hidden />}
                         {step.title && (
                           <h3 className="text-xl font-semibold" {...pa(`step${step.key}Title`)}>
                             {step.title}

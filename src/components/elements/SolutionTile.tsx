@@ -32,7 +32,7 @@ export default function SolutionTile({ content }: Props) {
         </p>
       )}
       {href && (
-        <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent group-hover:gap-3 transition-all">
+        <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand group-hover:gap-3 transition-all">
           {t('learnMore')} <ArrowRight className="w-4 h-4" aria-hidden />
         </span>
       )}

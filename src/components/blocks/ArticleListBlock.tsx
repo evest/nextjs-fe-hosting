@@ -139,13 +139,13 @@ function ArticleListRow({
             <time dateTime={article._metadata?.published ?? undefined}>{dateLabel}</time>
           </div>
         )}
-        <h3 className="text-xl md:text-2xl font-semibold tracking-tight group-hover:text-accent transition-colors">
+        <h3 className="text-xl md:text-2xl font-semibold tracking-tight group-hover:text-brand transition-colors">
           {heading}
         </h3>
         {article.ingress && (
           <p className="mt-2 text-base text-muted-foreground line-clamp-3">{article.ingress}</p>
         )}
-        <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent group-hover:gap-3 transition-all">
+        <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-brand group-hover:gap-3 transition-all">
           {readMoreLabel}
           <ArrowRight className="w-4 h-4" aria-hidden />
         </span>
@@ -182,7 +182,7 @@ function ArticleCard({ article, locale }: { article: ArticleListItem; locale: st
             <time dateTime={article._metadata?.published ?? undefined}>{dateLabel}</time>
           </div>
         )}
-        <h3 className="text-xl font-semibold tracking-tight group-hover:text-accent transition-colors">
+        <h3 className="text-xl font-semibold tracking-tight group-hover:text-brand transition-colors">
           {heading}
         </h3>
         {article.ingress && (

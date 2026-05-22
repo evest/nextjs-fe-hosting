@@ -51,7 +51,7 @@ export default function ContactFormFields({ variant = 'inline', onSuccess }: Pro
   if (status === 'success') {
     return (
       <div role="status" className="flex flex-col items-center text-center gap-4 py-12">
-        <CheckCircle2 className="w-14 h-14 text-accent" strokeWidth={1.5} aria-hidden />
+        <CheckCircle2 className="w-14 h-14 text-brand" strokeWidth={1.5} aria-hidden />
         <p className="text-lg font-semibold">{t('successTitle')}</p>
         <p className="text-base text-muted-foreground max-w-sm">{t('successBody')}</p>
       </div>
@@ -60,7 +60,7 @@ export default function ContactFormFields({ variant = 'inline', onSuccess }: Pro
 
   const inputClass = cn(
     'block w-full bg-background text-foreground border border-border px-4 py-3 text-base rounded-md',
-    'placeholder:text-muted-foreground focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors'
+    'placeholder:text-muted-foreground focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors'
   );
   const labelClass = 'block text-sm font-semibold mb-2';
 
@@ -143,7 +143,7 @@ export default function ContactFormFields({ variant = 'inline', onSuccess }: Pro
       <button
         type="submit"
         disabled={status === 'submitting'}
-        className="inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground font-semibold px-7 py-3.5 rounded-md hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+        className="inline-flex items-center justify-center gap-2 bg-brand text-brand-foreground font-semibold px-7 py-3.5 rounded-md hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {status === 'submitting' ? (
           <Loader2 className="w-5 h-5 animate-spin" aria-hidden />

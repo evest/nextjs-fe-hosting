@@ -5,7 +5,7 @@
 // latest draft.
 export default function PreviewBanner() {
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-accent px-4 py-2 text-center text-sm text-accent-foreground">
+    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-brand px-4 py-2 text-center text-sm text-brand-foreground">
       <span>Preview mode — you are viewing draft CMS content.</span>
       <button
         type="button"
