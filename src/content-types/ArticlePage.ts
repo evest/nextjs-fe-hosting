@@ -21,6 +21,17 @@ export const ArticlePageCT = contentType({
       isLocalized: true,
       sortOrder: 30
     },
+    additionalContent: {
+      type: 'array',
+      displayName: 'Additional Content',
+      description:
+        'Blocks shown at the bottom of the article — e.g. a contact CTA or related-article links.',
+      items: {
+        type: 'content',
+        allowedTypes: ['_component'],
+      },
+      sortOrder: 40,
+    },
     featuredImage: {
       type: 'contentReference',
       displayName: 'Featured Image',
