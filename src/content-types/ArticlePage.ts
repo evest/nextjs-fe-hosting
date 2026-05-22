@@ -1,4 +1,5 @@
 import { contentType } from '@optimizely/cms-sdk';
+import { PersonPageCT } from './PersonPage';
 import { SeoBlockCT } from './SeoBlock';
 
 export const ArticlePageCT = contentType({
@@ -7,6 +8,13 @@ export const ArticlePageCT = contentType({
   baseType: '_page',
   mayContainTypes: ['*'],
   properties: {
+    eyebrow: {
+      type: 'string',
+      displayName: 'Eyebrow',
+      description: 'Small uppercase label above the title.',
+      isLocalized: true,
+      sortOrder: 8,
+    },
     heading: {
       type: 'string',
       displayName: 'Heading',
@@ -50,6 +58,18 @@ export const ArticlePageCT = contentType({
       type: 'string',
       displayName: 'Introduction',
       sortOrder: 20
-    }
+    },
+    author: {
+      type: 'contentReference',
+      displayName: 'Author',
+      description: 'Person referenced as the article author.',
+      allowedTypes: [PersonPageCT],
+      sortOrder: 25,
+    },
+    hideDateAndReadTime: {
+      type: 'boolean',
+      displayName: 'Hide date and read time',
+      sortOrder: 45,
+    },
   },
 });

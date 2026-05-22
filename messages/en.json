@@ -13,8 +13,8 @@
       "implementation":{ "label": "Implementation",     "href": "/services/implementation" },
       "optimization":  { "label": "Optimization",       "href": "/services/optimization" },
       "training":      { "label": "Training",           "href": "/services/training" },
-      "blog":          { "label": "Blog",               "href": "/insights/blog" },
-      "caseStudies":   { "label": "Case Studies",       "href": "/insights/case-studies" },
+      "blog":          { "label": "Blog",               "href": "/blog" },
+      "caseStudies":   { "label": "Case Studies",       "href": "/customer-stories" },
       "guides":        { "label": "Guides",             "href": "/insights/guides" }
     }
   },
@@ -73,5 +73,8 @@
     "title": "404",
     "message": "The page you're looking for doesn't exist.",
     "back": "Back to homepage"
+  },
+  "Article": {
+    "minRead": "{count} min read"
   }
 }

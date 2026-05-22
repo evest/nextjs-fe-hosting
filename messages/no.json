@@ -13,8 +13,8 @@
       "implementation":{ "label": "Implementering",   "href": "/tjenester/implementering" },
       "optimization":  { "label": "Optimalisering",   "href": "/tjenester/optimalisering" },
       "training":      { "label": "Opplæring",        "href": "/tjenester/opplaering" },
-      "blog":          { "label": "Blogg",            "href": "/innsikt/blogg" },
-      "caseStudies":   { "label": "Kundecase",        "href": "/innsikt/kundecase" },
+      "blog":          { "label": "Blogg",            "href": "/blogg" },
+      "caseStudies":   { "label": "Kundecase",        "href": "/kundehistorier" },
       "guides":        { "label": "Guider",           "href": "/innsikt/guider" }
     }
   },
@@ -73,5 +73,8 @@
     "title": "404",
     "message": "Siden du leter etter finnes ikke.",
     "back": "Tilbake til forsiden"
+  },
+  "Article": {
+    "minRead": "{count} min lesetid"
   }
 }

@@ -24,3 +24,25 @@ export function decodeRichTextEntities<T>(node: T): T {
   }
   return next as T;
 }
+
+function extractText(node: unknown): string {
+  if (node == null) return '';
+  if (typeof node === 'string') return node;
+  if (Array.isArray(node)) return node.map(extractText).join(' ');
+  if (typeof node === 'object') {
+    const obj = node as Record<string, unknown>;
+    const parts: string[] = [];
+    if (typeof obj.text === 'string') parts.push(obj.text);
+    if (Array.isArray(obj.children)) parts.push(...obj.children.map(extractText));
+    return parts.join(' ');
+  }
+  return '';
+}
+
+/** Reading time in minutes from a Slate rich-text tree (~200 wpm), or null if empty. */
+export function getReadingTime(node: unknown, wordsPerMinute = 200): number | null {
+  const text = extractText(node).trim();
+  if (!text) return null;
+  const words = text.split(/\s+/).length;
+  return Math.max(1, Math.round(words / wordsPerMinute));
+}

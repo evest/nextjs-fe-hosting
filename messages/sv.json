@@ -73,5 +73,8 @@
     "title": "404",
     "message": "Sidan du letar efter finns inte.",
     "back": "Tillbaka till startsidan"
+  },
+  "Article": {
+    "minRead": "{count} min lästid"
   }
 }
