@@ -7,6 +7,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { Header, Footer } from '@/components/layout';
 import PreviewError from '@/components/layout/PreviewError';
+import PreviewBanner from '@/components/layout/PreviewBanner';
 import Script from 'next/script';
 
 // Editor-only route. Must reflect the latest CMS state on every request —
@@ -80,6 +81,7 @@ async function PreviewBody({ searchParams }: Props) {
 function Page({ searchParams }: Props) {
   return (
     <div className="flex-1 flex flex-col">
+      <PreviewBanner />
       <Script
         src={`${process.env.OPTIMIZELY_CMS_URL}/util/javascript/communicationinjector.js`}
         strategy="beforeInteractive"
