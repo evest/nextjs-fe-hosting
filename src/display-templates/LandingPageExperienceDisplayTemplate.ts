@@ -24,5 +24,15 @@ export const LandingPageExperienceDisplayTemplate = displayTemplate({
         light: { displayName: 'Light (for dark backgrounds)', sortOrder: 1 },
       },
     },
+    backgroundTreatment: {
+      editor: 'select',
+      displayName: 'Background treatment',
+      sortOrder: 2,
+      choices: {
+        none: { displayName: 'None (default)', sortOrder: 0 },
+        contours: { displayName: 'Nordic contours', sortOrder: 1 },
+        brandWash: { displayName: 'Soft brand wash', sortOrder: 2 },
+      },
+    },
   },
 });

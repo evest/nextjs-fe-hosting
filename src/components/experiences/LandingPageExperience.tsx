@@ -1,4 +1,4 @@
-import { ContentProps, damAssets } from '@optimizely/cms-sdk';
+import { ContentProps, damAssets, DisplayTemplates } from '@optimizely/cms-sdk';
 import {
   ComponentContainerProps,
   OptimizelyComposition,
@@ -6,6 +6,7 @@ import {
 } from '@optimizely/cms-sdk/react/server';
 import { LandingPageExperienceCT } from '@/content-types/LandingPageExperience';
 import { LandingPageExperienceDisplayTemplate } from '@/display-templates/LandingPageExperienceDisplayTemplate';
+import { BackgroundTreatment } from './BackgroundTreatment';
 import Image from 'next/image';
 
 type Props = {
@@ -25,15 +26,33 @@ function ComponentWrapper({ children, node }: ComponentContainerProps) {
 export default function LandingPageExperience({ content, displaySettings }: Props) {
   const { pa, src } = getPreviewUtils(content);
   const { getAlt } = damAssets(content);
+
+  // A top-level experience is rendered via <OptimizelyComponent content={...}>
+  // without a displaySettings prop — the SDK only parses and forwards display
+  // settings to nested composition nodes. So read the experience's own display
+  // template settings off the root composition node here.
+  const settings = (displaySettings ??
+    DisplayTemplates.parseDisplaySettings(content.composition?.displaySettings)) as
+    | ContentProps<typeof LandingPageExperienceDisplayTemplate>
+    | undefined;
+
   const hasBackground = !!src(content.backgroundImage);
-  const fullBleed = displaySettings?.fullBleedImage === 'on';
-  const headerStyle = displaySettings?.headerStyle ?? 'dark';
+  const fullBleed = settings?.fullBleedImage === 'on';
+  const headerStyle = settings?.headerStyle ?? 'dark';
+  const backgroundTreatment = settings?.backgroundTreatment ?? 'none';
+  const hasTreatment = backgroundTreatment !== 'none';
+
+  // A full-bleed image or a background treatment both sit behind the fixed
+  // header, so the experience extends up under it and the header goes
+  // transparent to let the background show through.
+  const extendBehindHeader = fullBleed || hasTreatment;
+  const headerTransparent = (hasBackground && fullBleed) || hasTreatment;
 
   const classes = [
     'landing-page-experience',
-    fullBleed ? '-mt-16' : '',
+    extendBehindHeader ? '-mt-16' : '',
     'relative',
-    hasBackground && fullBleed ? 'has-background-image' : '',
+    headerTransparent ? 'has-background-image' : '',
     headerStyle === 'light' ? 'header-light' : '',
   ].filter(Boolean).join(' ');
 
@@ -53,8 +72,11 @@ export default function LandingPageExperience({ content, displaySettings }: Prop
         </div>
       )}
 
-      {/* Content area — extra top padding when full-bleed to clear the header */}
-      <div className={`relative ${fullBleed ? 'pt-16' : ''}`}>
+      {/* Decorative background treatment (V1b / V1d) — none by default */}
+      <BackgroundTreatment treatment={backgroundTreatment} />
+
+      {/* Content area — extra top padding when extended behind the header */}
+      <div className={`relative ${extendBehindHeader ? 'pt-16' : ''}`}>
         <OptimizelyComposition
           nodes={content.composition?.nodes ?? []}
           ComponentWrapper={ComponentWrapper}

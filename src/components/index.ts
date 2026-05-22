@@ -29,3 +29,5 @@ export { default as ArticleListBlock } from './blocks/ArticleListBlock';
 
 // Phase 5b
 export { default as ContactFormBlock } from './blocks/ContactFormBlock';
+
+export { default as AdvancedHero } from './blocks/AdvancedHero';

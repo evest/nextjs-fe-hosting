@@ -28,3 +28,5 @@ export { ArticleListBlockCT } from './ArticleListBlock';
 
 // Phase 5b
 export { ContactFormBlockCT } from './ContactFormBlock';
+
+export { AdvancedHeroCT } from './AdvancedHero';

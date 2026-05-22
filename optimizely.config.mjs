@@ -28,6 +28,7 @@ export default buildConfig({
     './src/content-types/AccordionBlock.ts',
     './src/content-types/ArticleListBlock.ts',
     './src/content-types/ContactFormBlock.ts',
+    './src/content-types/AdvancedHero.ts',
 
     './src/display-templates/CallToActionElementDisplayTemplate.ts',
     './src/display-templates/TextElementDisplayTemplate.ts',

@@ -65,5 +65,7 @@ initReactComponentRegistry({
 
     // Phase 5b
     ContactFormBlock: components.ContactFormBlock,
+
+    AdvancedHero: components.AdvancedHero,
   },
 });

@@ -65,6 +65,8 @@
   --color-footer-heading: var(--footer-heading);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-instrument-serif);
+  --font-body: var(--font-manrope);
 }
 
 /* Section color scheme overrides — applied by BlankSection component */
