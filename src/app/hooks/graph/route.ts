@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { purgeCdnCache } from "@/lib/cdn-cache";
-import { CACHE_KEYS, getArticlesUnderTag } from "@/lib/cache/cache-keys";
+import { CACHE_KEYS, getArticlesUnderTag, getPageTag } from "@/lib/cache/cache-keys";
 
 const CALLBACK_API_KEY = process.env.OPTIMIZELY_GRAPH_CALLBACK_APIKEY;
 const singleKey = process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!;
@@ -57,11 +57,18 @@ async function revalidateDocId(docId: string): Promise<string> {
   const path = url.endsWith("/") ? url.slice(0, -1) : url;
   revalidatePath(path || "/");
 
+  const segments = path.split("/").filter(Boolean);
+
+  // Invalidate the per-page cache tag. getPageContent() and the PersonElement
+  // person lookup both tag their 'use cache' entries with getPageTag(); a
+  // PersonElement embedded in another page is only reachable via this tag,
+  // not via revalidatePath() of the person's own route.
+  revalidateTag(getPageTag(segments), "max");
+
   // Also invalidate any ArticleListBlock caches that include this URL as a
   // descendant. For `/no/blog/my-post`, candidate parents are `/no/` and
   // `/no/blog/`. revalidateTag on an unwritten tag is a no-op, so
   // over-invalidating costs nothing while keeping listings fresh on publish.
-  const segments = path.split("/").filter(Boolean);
   for (let i = 1; i < segments.length; i++) {
     const parent = `/${segments.slice(0, i).join("/")}/`;
     // 'max' matches the cacheLife profile inside getArticlesUnder so the
