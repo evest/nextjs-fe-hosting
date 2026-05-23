@@ -75,6 +75,17 @@
     "back": "Tillbaka till startsidan"
   },
   "Article": {
-    "minRead": "{count} min lästid"
+    "minRead": "{count} min lästid",
+    "categories": {
+      "content-strategy": "Innehållsstrategi",
+      "architecture": "Arkitektur",
+      "technical": "Teknik",
+      "seo": "SEO",
+      "geo": "GEO",
+      "ai": "AI",
+      "analytics": "Analys och mätning",
+      "cro": "Konverteringsoptimering",
+      "personalization": "Personalisering"
+    }
   }
 }

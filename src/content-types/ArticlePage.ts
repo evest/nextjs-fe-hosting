@@ -1,4 +1,5 @@
 import { contentType } from '@optimizely/cms-sdk';
+import { ARTICLE_CATEGORY_ENUM } from '@/lib/article-categories';
 import { PersonPageCT } from './PersonPage';
 import { SeoBlockCT } from './SeoBlock';
 
@@ -8,6 +9,15 @@ export const ArticlePageCT = contentType({
   baseType: '_page',
   mayContainTypes: ['*'],
   properties: {
+    category: {
+      type: 'string',
+      displayName: 'Category',
+      description:
+        'Topic category — used to group and filter articles. Labels are translated at render time.',
+      format: 'selectOne',
+      enum: ARTICLE_CATEGORY_ENUM,
+      sortOrder: 4,
+    },
     eyebrow: {
       type: 'string',
       displayName: 'Eyebrow',
@@ -45,7 +55,7 @@ export const ArticlePageCT = contentType({
       displayName: 'Featured Image',
       allowedTypes: ['_image'],
       description: 'Image shown on the top of the page',
-      sortOrder: 5
+      sortOrder: 25
     },
     seo: {
       type: 'component',
@@ -64,7 +74,7 @@ export const ArticlePageCT = contentType({
       displayName: 'Author',
       description: 'Person referenced as the article author.',
       allowedTypes: [PersonPageCT],
-      sortOrder: 25,
+      sortOrder: 22,
     },
     hideDateAndReadTime: {
       type: 'boolean',

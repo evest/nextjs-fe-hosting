@@ -75,6 +75,17 @@
     "back": "Tilbake til forsiden"
   },
   "Article": {
-    "minRead": "{count} min lesetid"
+    "minRead": "{count} min lesetid",
+    "categories": {
+      "content-strategy": "Innholdsstrategi",
+      "architecture": "Arkitektur",
+      "technical": "Teknisk",
+      "seo": "SEO",
+      "geo": "GEO",
+      "ai": "KI",
+      "analytics": "Analyse og måling",
+      "cro": "Konverteringsoptimalisering",
+      "personalization": "Personalisering"
+    }
   }
 }

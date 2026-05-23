@@ -12,6 +12,7 @@ import { ArticlePageCT } from '@/content-types/ArticlePage';
 import { Container, Prose } from '@/components/ui';
 import { decodeRichTextEntities, getReadingTime } from '@/lib/rich-text';
 import { getPerson } from '@/lib/optimizely/get-person';
+import { getCategoryFallback } from '@/lib/article-categories';
 
 type Props = {
   content: ContentProps<typeof ArticlePageCT>;
@@ -70,6 +71,17 @@ export default async function ArticlePage({ content }: Props) {
     ? damAssets(author).getAlt(author.image, author.name ?? 'Author')
     : '';
 
+  const categoryValue = content.category ?? null;
+  // Translation key for the current category, e.g. `categories.content-strategy`.
+  // If the locale file has no entry, fall back to the English displayName from
+  // the schema enum so editors still see a readable label everywhere.
+  const categoryKey = categoryValue ? (`categories.${categoryValue}` as const) : null;
+  const categoryLabel = categoryKey
+    ? t.has(categoryKey)
+      ? t(categoryKey)
+      : getCategoryFallback(categoryValue)
+    : null;
+
   const hideTimings = content.hideDateAndReadTime ?? false;
   const publishedDate = hideTimings ? null : formatPublished(content._metadata?.published, locale);
   const readingMinutes = hideTimings ? null : getReadingTime(content.body?.json);
@@ -88,13 +100,32 @@ export default async function ArticlePage({ content }: Props) {
     <>
       <Container size="narrow" className="py-8">
         <article>
-          {content.eyebrow && (
-            <span
-              className="block text-sm font-semibold uppercase tracking-[0.18em] text-highlight mb-4"
-              {...pa('eyebrow')}
-            >
-              {content.eyebrow}
-            </span>
+          {(categoryLabel || content.eyebrow) && (
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              {categoryLabel && (
+                <span
+                  className="inline-block text-xs font-semibold uppercase tracking-[0.15em] text-primary-foreground bg-primary rounded-full px-3 py-1"
+                  {...pa('category')}
+                >
+                  {categoryLabel}
+                </span>
+              )}
+
+              {categoryLabel && content.eyebrow && (
+                <span aria-hidden className="text-foreground text-base font-semibold">
+                  ›
+                </span>
+              )}
+
+              {content.eyebrow && (
+                <span
+                  className="text-sm font-semibold uppercase tracking-[0.18em] text-highlight"
+                  {...pa('eyebrow')}
+                >
+                  {content.eyebrow}
+                </span>
+              )}
+            </div>
           )}
 
           <h1
