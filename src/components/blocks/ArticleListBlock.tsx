@@ -16,7 +16,7 @@ type Props = {
 };
 
 const surfaceClass = {
-  light: 'bg-background text-foreground',
+  light: 'text-foreground',
   muted: 'section-muted bg-background text-foreground',
   dark: 'section-dark bg-background text-foreground',
 };
