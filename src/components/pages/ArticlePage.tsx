@@ -215,6 +215,7 @@ export default async function ArticlePage({ content }: Props) {
                 src={src(content.featuredImage)!}
                 alt={getAlt(content.featuredImage, 'Featured image')}
                 fill
+                priority
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 896px"
                 {...pa('featuredImage')}
