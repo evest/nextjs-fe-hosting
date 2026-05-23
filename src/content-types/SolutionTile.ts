@@ -1,10 +1,12 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 import { ICON_ENUM } from '@/lib/icons';
 
 export const SolutionTileCT = contentType({
   key: 'SolutionTile',
   displayName: 'Solution Tile',
+  description:
+    'Single solution or service tile with icon, name, tagline and link. Used as a child of Solutions Grid.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],
   properties: {

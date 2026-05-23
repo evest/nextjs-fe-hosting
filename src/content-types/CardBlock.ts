@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const CardBlockCT = contentType({
   key: 'CardBlock',
-  displayName: 'Card Block',
+  displayName: 'Card',
+  description:
+    'Generic card with image, title, rich-text body and a single link.',
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled', 'elementEnabled'],
   properties: {

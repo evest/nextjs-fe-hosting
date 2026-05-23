@@ -1,9 +1,11 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 import { SeoBlockCT } from './SeoBlock';
 
 export const PersonPageCT = contentType({
   key: 'PersonPage',
   displayName: 'Person Page',
+  description:
+    "Profile page for a team member or contributor. Referenced by articles as the author and embedded inline via the Person element.",
   baseType: '_page',
   mayContainTypes: ['*'],
   properties: {

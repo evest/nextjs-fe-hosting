@@ -1,9 +1,11 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 import { SolutionTileCT } from './SolutionTile';
 
 export const SolutionsGridCT = contentType({
   key: 'SolutionsGrid',
   displayName: 'Solutions Grid',
+  description:
+    'Grid of Solution Tile children showcasing services or offerings.',
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled'],
   properties: {

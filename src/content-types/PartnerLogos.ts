@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const PartnerLogosCT = contentType({
   key: 'PartnerLogos',
   displayName: 'Partner Logos',
+  description:
+    'Strip of partner or client logos for social proof.',
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled'],
   properties: {

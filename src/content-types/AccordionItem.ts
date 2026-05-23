@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const AccordionItemCT = contentType({
   key: 'AccordionItem',
   displayName: 'Accordion Item',
+  description:
+    'Single question-and-answer row used inside an Accordion.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],
   properties: {

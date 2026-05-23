@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const ArticleListBlockCT = contentType({
   key: 'ArticleListBlock',
-  displayName: 'Article List Block',
+  displayName: 'Article List',
+  description:
+    'Auto-generated list of articles under a parent page, newest first. Supports skip and max-items for pairing layouts (e.g. featured row + the rest).',
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled', 'elementEnabled'],
   properties: {

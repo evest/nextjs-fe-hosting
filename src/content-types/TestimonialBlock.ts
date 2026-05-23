@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const TestimonialBlockCT = contentType({
   key: 'TestimonialBlock',
-  displayName: 'Testimonial Block',
+  displayName: 'Testimonials',
+  description:
+    'Up to three customer quotes with author name, role, company and photo.',
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled', 'elementEnabled'],
   properties: {

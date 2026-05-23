@@ -1,4 +1,4 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 import { ARTICLE_CATEGORY_ENUM } from '@/lib/article-categories';
 import { PersonPageCT } from './PersonPage';
 import { SeoBlockCT } from './SeoBlock';
@@ -6,6 +6,8 @@ import { SeoBlockCT } from './SeoBlock';
 export const ArticlePageCT = contentType({
   key: 'ArticlePage',
   displayName: 'Article Page',
+  description:
+    'Long-form editorial or blog article. Has body, optional featured image, author reference, category and an Additional Content slot for blocks below the body.',
   baseType: '_page',
   mayContainTypes: ['*'],
   properties: {

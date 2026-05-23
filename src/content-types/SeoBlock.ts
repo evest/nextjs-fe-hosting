@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const SeoBlockCT = contentType({
   key: 'SeoBlock',
   displayName: 'SEO Settings',
+  description:
+    'Per-page SEO and social-share metadata. Attached as a nested settings block on pages and experiences — never placed on a page on its own.',
   baseType: '_component',
   properties: {
     metaTitle: {

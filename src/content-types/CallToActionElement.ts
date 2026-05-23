@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const CallToActionElementCT = contentType({
   key: 'CallToActionElement',
-  displayName: 'Call to Action Element',
+  displayName: 'Call to Action',
+  description:
+    'Single CTA button or link, placeable inline within other blocks.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],
   properties: {

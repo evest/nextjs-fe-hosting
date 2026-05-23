@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const ContactFormBlockCT = contentType({
   key: 'ContactFormBlock',
-  displayName: 'Contact Form Block',
+  displayName: 'Contact Form',
+  description:
+    'Lead-capture form with name, company, email, phone and message fields. Can render inline on a page or as a popup opened by a button.',
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled', 'elementEnabled'],
   properties: {

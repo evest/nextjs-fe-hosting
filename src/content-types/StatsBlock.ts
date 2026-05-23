@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const StatsBlockCT = contentType({
   key: 'StatsBlock',
-  displayName: 'Stats Block',
+  displayName: 'Stats',
+  description:
+    'Row of four headline statistics (value + label) for results, metrics or social proof.',
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled'],
   properties: {

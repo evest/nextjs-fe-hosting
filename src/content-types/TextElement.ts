@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const TextElementCT = contentType({
   key: 'TextElement',
-  displayName: 'Text Element',
+  displayName: 'Text',
+  description:
+    'Plain-text snippet — short headlines, labels or paragraphs placed inline.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],
   properties: {

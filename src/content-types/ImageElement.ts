@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const ImageElementCT = contentType({
   key: 'ImageElement',
-  displayName: 'Image Element',
+  displayName: 'Image',
+  description:
+    'Single image with required alt text and an optional caption.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],
   properties: {

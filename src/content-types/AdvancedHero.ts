@@ -1,10 +1,11 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const AdvancedHeroCT = contentType({
   key: 'AdvancedHero',
   displayName: 'Advanced Hero',
+  description:
+    'Editorial hero with markdown-emphasised headline, body text, dual CTAs and a trusted-by row. Section only — placeable in Visual Builder sections, not as an inline element.',
   baseType: '_component',
-  // Block only — placeable in Visual Builder sections, not as an inline element.
   compositionBehaviors: ['sectionEnabled'],
   properties: {
     eyebrow: {

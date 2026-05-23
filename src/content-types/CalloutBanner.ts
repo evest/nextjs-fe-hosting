@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const CalloutBannerCT = contentType({
   key: 'CalloutBanner',
   displayName: 'Callout Banner',
+  description:
+    'Attention-grabbing CTA banner with eyebrow, headline, body text and dual CTAs.',
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled', 'elementEnabled'],
   properties: {

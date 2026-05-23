@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const HeroBlockCT = contentType({
   key: 'HeroBlock',
-  displayName: 'Hero Block',
+  displayName: 'Hero',
+  description:
+    'Standard hero section with eyebrow, headline, subline, dual CTAs and an optional background image.',
   baseType: '_component',
   compositionBehaviors: ['sectionEnabled', 'elementEnabled'],
   properties: {

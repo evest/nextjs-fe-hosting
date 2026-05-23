@@ -1,4 +1,4 @@
-import { contentType } from "@optimizely/cms-sdk";
+import { contentType } from "@/lib/content-type";
 
 import { ICON_ENUM } from "@/lib/icons";
 
@@ -12,7 +12,9 @@ const iconProperty = (sortOrder: number, displayName: string) => ({
 
 export const ProcessBlockCT = contentType({
   key: "ProcessBlock",
-  displayName: "Process Block",
+  displayName: "Process",
+  description:
+    "Four-step process explainer — each step has an icon, title and description.",
   baseType: "_component",
   compositionBehaviors: ["sectionEnabled", "elementEnabled"],
   properties: {

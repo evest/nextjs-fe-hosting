@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const BannerElementCT = contentType({
   key: 'BannerElement',
-  displayName: 'Banner Element',
+  displayName: 'Banner',
+  description:
+    'Slim banner row with background image, heading, body text and a CTA link.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],
   properties: {

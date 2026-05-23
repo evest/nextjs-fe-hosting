@@ -1,8 +1,10 @@
-import { contentType } from '@optimizely/cms-sdk';
+import { contentType } from '@/lib/content-type';
 
 export const RichTextElementCT = contentType({
   key: 'RichTextElement',
-  displayName: 'Rich Text Element',
+  displayName: 'Rich Text',
+  description:
+    'Formatted long-form text with headings, lists, emphasis and inline links.',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],
   properties: {
