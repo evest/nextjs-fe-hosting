@@ -21,6 +21,25 @@ const surfaceClass = {
   dark: 'section-dark bg-background text-foreground',
 };
 
+// Vertical and horizontal padding scales for the editor-controlled spacing
+// settings. "medium" matches the previous list-layout default; the previous
+// grid default (py-16 md:py-24) is available as "large".
+const verticalPaddingClass = {
+  none: 'py-0',
+  small: 'py-6 md:py-8',
+  medium: 'py-10 md:py-14',
+  large: 'py-16 md:py-24',
+};
+
+// Horizontal padding is applied to the inner Container, overriding its
+// default px-4 sm:px-6 lg:px-8 via tailwind-merge in cn().
+const horizontalPaddingClass = {
+  none: 'px-0 sm:px-0 lg:px-0',
+  small: 'px-2 sm:px-3 lg:px-4',
+  medium: 'px-4 sm:px-6 lg:px-8',
+  large: 'px-6 sm:px-10 lg:px-16',
+};
+
 export default async function ArticleListBlock({ content, displaySettings }: Props) {
   const { pa } = getPreviewUtils(content);
   const locale = await getLocale();
@@ -28,6 +47,8 @@ export default async function ArticleListBlock({ content, displaySettings }: Pro
   const readMoreLabel = t('learnMore');
   const surface = (displaySettings?.surface ?? 'light') as keyof typeof surfaceClass;
   const layout = displaySettings?.layout ?? 'list';
+  const verticalPadding = (displaySettings?.verticalPadding ?? 'medium') as keyof typeof verticalPaddingClass;
+  const horizontalPadding = (displaySettings?.horizontalPadding ?? 'medium') as keyof typeof horizontalPaddingClass;
 
   const parentPath = content.parent?.url?.default;
   const allArticles = parentPath ? await getArticlesUnder(parentPath, locale) : [];
@@ -36,11 +57,10 @@ export default async function ArticleListBlock({ content, displaySettings }: Pro
   const articles = content.maxItems ? afterSkip.slice(0, content.maxItems) : afterSkip;
 
   const hasHeader = Boolean(content.heading || content.subheading);
-  const sectionPadding = layout === 'list' ? 'py-10 md:py-14' : 'py-16 md:py-24';
 
   return (
-    <section className={cn(surfaceClass[surface], sectionPadding)}>
-      <Container className="max-w-5xl">
+    <section className={cn(surfaceClass[surface], verticalPaddingClass[verticalPadding])}>
+      <Container className={cn('max-w-5xl', horizontalPaddingClass[horizontalPadding])}>
         {hasHeader && (
           <div className="max-w-3xl mb-8 md:mb-12">
             {content.heading && (

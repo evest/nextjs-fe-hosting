@@ -25,5 +25,27 @@ export const ArticleListBlockDisplayTemplate = displayTemplate({
         grid: { displayName: 'Card grid', sortOrder: 1 },
       },
     },
+    verticalPadding: {
+      editor: 'select',
+      displayName: 'Vertical padding',
+      sortOrder: 2,
+      choices: {
+        none: { displayName: 'None', sortOrder: 0 },
+        small: { displayName: 'Small', sortOrder: 1 },
+        medium: { displayName: 'Medium (default)', sortOrder: 2 },
+        large: { displayName: 'Large', sortOrder: 3 },
+      },
+    },
+    horizontalPadding: {
+      editor: 'select',
+      displayName: 'Horizontal padding',
+      sortOrder: 3,
+      choices: {
+        none: { displayName: 'None', sortOrder: 0 },
+        small: { displayName: 'Small', sortOrder: 1 },
+        medium: { displayName: 'Medium (default)', sortOrder: 2 },
+        large: { displayName: 'Large', sortOrder: 3 },
+      },
+    },
   },
 });
