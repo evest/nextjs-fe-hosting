@@ -7,7 +7,12 @@ import { setRequestLocale } from 'next-intl/server';
 import { getPageContent } from '@/lib/optimizely/get-page';
 import { getAllPagesPaths } from '@/lib/optimizely/all-pages';
 import { getSeoMetadata } from '@/lib/seo';
+import { getSiteSettings } from '@/lib/optimizely/get-site-settings';
+import { buildJsonLd } from '@/lib/json-ld';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { routing } from '@/i18n/routing';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ?? null;
 
 type Props = {
   params: Promise<{
@@ -47,16 +52,48 @@ function PageContent({ content }: { content: NonNullable<Awaited<ReturnType<type
   return <OptimizelyComponent content={content} />;
 }
 
+// JSON-LD lives in its own Suspense boundary so the body can stream
+// independently of the site-settings + author fetches the graph builder may
+// trigger. Empty graph → render nothing.
+async function PageJsonLd({
+  content,
+  locale,
+  isLocaleRoot,
+}: {
+  content: NonNullable<Awaited<ReturnType<typeof getPageContent>>>;
+  locale: string;
+  isLocaleRoot: boolean;
+}) {
+  const siteSettings = await getSiteSettings(locale);
+  const urlPath = ((content._metadata?.url as Record<string, unknown> | undefined)?.default as string | undefined) ?? null;
+  const pageUrl = urlPath && SITE_URL ? `${SITE_URL}${urlPath.replace(/\/$/, '') || '/'}` : null;
+  const data = await buildJsonLd(content as Record<string, unknown>, {
+    locale,
+    siteSettings,
+    siteUrl: SITE_URL,
+    pageUrl,
+    isLocaleRoot,
+  });
+  if (!data) return null;
+  return <JsonLd data={data} />;
+}
+
 async function Page({ params }: Props) {
   const { locale, slug } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
   const content = await getPageContent(fullSlug(locale, slug));
   if (!content) notFound();
+  const isLocaleRoot = !slug || slug.length === 0;
   return (
-    <Suspense>
-      <PageContent content={content} />
-    </Suspense>
+    <>
+      <Suspense>
+        <PageJsonLd content={content} locale={locale} isLocaleRoot={isLocaleRoot} />
+      </Suspense>
+      <Suspense>
+        <PageContent content={content} />
+      </Suspense>
+    </>
   );
 }
 

@@ -8,7 +8,12 @@ import { routing } from '@/i18n/routing';
 import { Header, Footer } from '@/components/layout';
 import PreviewError from '@/components/layout/PreviewError';
 import PreviewBanner from '@/components/layout/PreviewBanner';
+import { getSiteSettings } from '@/lib/optimizely/get-site-settings';
+import { buildJsonLd } from '@/lib/json-ld';
+import { JsonLd } from '@/components/seo/JsonLd';
 import Script from 'next/script';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ?? null;
 
 // Editor-only route. Must reflect the latest CMS state on every request —
 // freshness over performance. Under cacheComponents, the uncached
@@ -67,8 +72,24 @@ async function PreviewBody({ searchParams }: Props) {
     );
   }
 
+  // Build JSON-LD in preview too so editors can verify their SEO/GEO output
+  // against the live data without publishing. Preview pages are noindex via
+  // robots.ts, so emitted JSON-LD doesn't risk being crawled.
+  const siteSettings = await getSiteSettings(locale);
+  const previewContent = (response ?? {}) as Record<string, unknown>;
+  const urlPath = ((previewContent._metadata as Record<string, unknown> | undefined)?.url as Record<string, unknown> | undefined)?.default as string | undefined;
+  const pageUrl = urlPath && SITE_URL ? `${SITE_URL}${urlPath.replace(/\/$/, '') || '/'}` : null;
+  const jsonLd = await buildJsonLd(previewContent, {
+    locale,
+    siteSettings,
+    siteUrl: SITE_URL,
+    pageUrl: pageUrl ?? null,
+    isLocaleRoot: urlPath === `/${locale}` || urlPath === `/${locale}/`,
+  });
+
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
+      {jsonLd && <JsonLd data={jsonLd} />}
       <Header />
       <main className="flex-1">
         <OptimizelyComponent content={response} />

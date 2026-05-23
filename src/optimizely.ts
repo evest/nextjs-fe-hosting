@@ -36,6 +36,7 @@ initReactComponentRegistry({
   resolver: {
     ArticlePage: components.ArticlePage,
     PersonPage: components.PersonPage,
+    SiteSettings: components.SiteSettings,
     PersonElement: components.PersonElement,
     TextElement: components.TextElement,
     RichTextElement: components.RichTextElement,

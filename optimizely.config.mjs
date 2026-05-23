@@ -3,6 +3,7 @@ import { buildConfig } from '@optimizely/cms-sdk';
 export default buildConfig({
   components: [
     './src/content-types/SeoBlock.ts',
+    './src/content-types/SiteSettings.ts',
     './src/content-types/ArticlePage.ts',
     './src/content-types/PersonPage.ts',
     './src/content-types/PersonElement.ts',
@@ -53,6 +54,8 @@ export default buildConfig({
   propertyGroups: [
     { key: 'media', displayName: 'Media', sortOrder: 200 },
     { key: 'seo', displayName: 'SEO', sortOrder: 300 },
+    { key: 'schema', displayName: 'Structured data', sortOrder: 350 },
     { key: 'socialMedia', displayName: 'Social Media', sortOrder: 400 },
+    { key: 'organization', displayName: 'Organization', sortOrder: 500 },
   ],
 });

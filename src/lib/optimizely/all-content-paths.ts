@@ -17,11 +17,16 @@ const QUERY = `
           url { default }
           locale
           published
+          types
         }
       }
     }
   }
 `;
+
+// Content types that should never appear in the sitemap even if they have a
+// public URL. SiteSettings is a singleton used only by JSON-LD / llms.txt.
+const EXCLUDED_TYPES = new Set(['SiteSettings']);
 
 /**
  * Fetch every published item with a usable URL across all locales, used
@@ -47,6 +52,7 @@ export async function getAllContentPaths(): Promise<ContentPath[]> {
             url?: { default?: string | null } | null;
             locale?: string | null;
             published?: string | null;
+            types?: (string | null)[] | null;
           } | null;
         }> | null;
       } | null;
@@ -58,7 +64,9 @@ export async function getAllContentPaths(): Promise<ContentPath[]> {
       .map((item): ContentPath | null => {
         const url = item._metadata?.url?.default;
         const locale = item._metadata?.locale;
+        const types = item._metadata?.types ?? [];
         if (!url || !locale) return null;
+        if (types.some((t) => t && EXCLUDED_TYPES.has(t))) return null;
         if (!localePrefixes.some((p) => url.startsWith(p)) && !routing.locales.some((l) => url === `/${l}`)) {
           return null;
         }

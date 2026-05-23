@@ -12,7 +12,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { purgeCdnCache } from "@/lib/cdn-cache";
-import { CACHE_KEYS, getArticlesUnderTag, getPageTag } from "@/lib/cache/cache-keys";
+import { CACHE_KEYS, getArticlesUnderTag, getPageTag, getSiteSettingsTag } from "@/lib/cache/cache-keys";
+import { routing } from "@/i18n/routing";
 
 const CALLBACK_API_KEY = process.env.OPTIMIZELY_GRAPH_CALLBACK_APIKEY;
 const singleKey = process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!;
@@ -46,13 +47,30 @@ async function revalidateDocId(docId: string): Promise<string> {
     `
     query GetPath($id: String, $locale: Locales) {
       _Content(ids: [$id], locale: [$locale]) {
-        item { _metadata { url { default } } }
+        item { _metadata { url { default } types } }
       }
     }
   `,
     { id, locale },
   );
-  const url = response?._Content?.item?._metadata?.url?.default;
+  const meta = response?._Content?.item?._metadata;
+  const types: string[] = meta?.types ?? [];
+
+  // Always purge the LLM index — any page edit can change a title, ingress,
+  // body, or the noIndex flag, all of which feed /llms.txt and
+  // /llms-full.txt. Re-filling costs one Graph round-trip on the next request.
+  revalidateTag(CACHE_KEYS.LLMS_INDEX, "max");
+
+  // SiteSettings is a singleton fetched per locale and sits outside the URL
+  // tree. On a SiteSettings publish, purge every locale's settings cache so
+  // the next JSON-LD / llms.txt render picks up the new values.
+  if (types.includes("SiteSettings")) {
+    for (const l of routing.locales) {
+      revalidateTag(getSiteSettingsTag(l), "max");
+    }
+  }
+
+  const url = meta?.url?.default;
   if (!url) return "";
   const path = url.endsWith("/") ? url.slice(0, -1) : url;
   revalidatePath(path || "/");

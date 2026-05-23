@@ -26,16 +26,20 @@ export default function PersonPage({ content }: Props) {
   const { pa, src } = getPreviewUtils(content);
   const { getAlt } = damAssets(content);
 
-  const allSocials: Array<{ url: UrlValue | null; label: string; icon: React.ReactElement }> = [
-    { url: content.linkedIn, label: 'LinkedIn', icon: <LinkedInIcon className="w-5 h-5" /> },
-    { url: content.xtwitter, label: 'X', icon: <XIcon className="w-5 h-5" /> },
-    { url: content.facebook, label: 'Facebook', icon: <FacebookIcon className="w-5 h-5" /> },
-    { url: content.instagram, label: 'Instagram', icon: <InstagramIcon className="w-5 h-5" /> },
-    { url: content.youTube, label: 'YouTube', icon: <YouTubeIcon className="w-5 h-5" /> },
-    { url: content.tikTok, label: 'TikTok', icon: <TikTokIcon className="w-5 h-5" /> },
+  // url-typed properties come back as ContentUrl objects ({ default, ... }),
+  // not strings — coerce explicitly so href doesn't render "[object Object]".
+  const socialUrl = (u: UrlValue | null): string | null => u?.default ?? null;
+
+  const allSocials: Array<{ url: string | null; label: string; icon: React.ReactElement }> = [
+    { url: socialUrl(content.linkedIn), label: 'LinkedIn', icon: <LinkedInIcon className="w-5 h-5" /> },
+    { url: socialUrl(content.xtwitter), label: 'X', icon: <XIcon className="w-5 h-5" /> },
+    { url: socialUrl(content.facebook), label: 'Facebook', icon: <FacebookIcon className="w-5 h-5" /> },
+    { url: socialUrl(content.instagram), label: 'Instagram', icon: <InstagramIcon className="w-5 h-5" /> },
+    { url: socialUrl(content.youTube), label: 'YouTube', icon: <YouTubeIcon className="w-5 h-5" /> },
+    { url: socialUrl(content.tikTok), label: 'TikTok', icon: <TikTokIcon className="w-5 h-5" /> },
   ];
 
-  const socialLinks = allSocials.filter((link) => link.url);
+  const socialLinks = allSocials.filter((link): link is { url: string; label: string; icon: React.ReactElement } => link.url !== null);
 
   return (
     <Container size="narrow" className="py-12">
@@ -73,7 +77,7 @@ export default function PersonPage({ content }: Props) {
                 {socialLinks.map((link) => (
                   <a
                     key={link.label}
-                    href={String(link.url)}
+                    href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={link.label}

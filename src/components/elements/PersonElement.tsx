@@ -45,9 +45,9 @@ export default async function PersonElement({ content }: Props) {
         {person.title && (
           <p className="text-sm text-muted-foreground truncate">{person.title}</p>
         )}
-        {person.linkedIn && (
+        {person.linkedIn?.default && (
           <a
-            href={String(person.linkedIn)}
+            href={person.linkedIn.default}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mt-1"

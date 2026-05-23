@@ -12,6 +12,8 @@ export const CACHE_KEYS = {
   PAGE: 'opti-page',
   PATHS: 'opti-paths',
   ARTICLES_UNDER: 'opti-articles-under',
+  SITE_SETTINGS: 'opti-site-settings',
+  LLMS_INDEX: 'opti-llms-index',
 } as const;
 
 export type CacheKey = (typeof CACHE_KEYS)[keyof typeof CACHE_KEYS];
@@ -40,4 +42,13 @@ export function getPageTag(slug: string[]): string {
 export function getArticlesUnderTag(parentPath: string, locale: string): string {
   const parent = parentPath.endsWith('/') ? parentPath : `${parentPath}/`;
   return `${CACHE_KEYS.ARTICLES_UNDER}:${parent}:${locale}`;
+}
+
+/**
+ * Build a tag for the SiteSettings singleton at a given locale. The webhook
+ * purges every locale variant by issuing one revalidateTag call per locale
+ * when a SiteSettings publish event arrives.
+ */
+export function getSiteSettingsTag(locale: string): string {
+  return `${CACHE_KEYS.SITE_SETTINGS}:${locale}`;
 }

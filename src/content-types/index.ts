@@ -10,6 +10,7 @@ export { LandingPageExperienceCT } from './LandingPageExperience';
 export { PersonPageCT } from './PersonPage';
 export { PersonElementCT } from './PersonElement';
 export { SeoBlockCT } from './SeoBlock';
+export { SiteSettingsCT } from './SiteSettings';
 
 // Marketing blocks (Phase 4)
 export { HeroBlockCT } from './HeroBlock';

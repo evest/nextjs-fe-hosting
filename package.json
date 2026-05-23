@@ -10,10 +10,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "cms:login": "npx @optimizely/cms-cli@^2.0.0 login",
-    "cms:push-config": "npx @optimizely/cms-cli@^2.0.0 config push ./optimizely.config.mjs",
-    "cms:push-config-force": "npx @optimizely/cms-cli@^2.0.0 config push ./optimizely.config.mjs --force",
-    "cms:pull-config": "npx @optimizely/cms-cli@^2.0.0 config pull --output ./src/content-types --group",
+    "cms:login": "optimizely-cms-cli login",
+    "cms:push-config": "optimizely-cms-cli config push ./optimizely.config.mjs",
+    "cms:push-config-force": "optimizely-cms-cli config push ./optimizely.config.mjs --force",
+    "cms:pull-config": "optimizely-cms-cli config pull --output ./src/content-types --group",
     "deploy-test2": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Test2",
     "preinstall": "npx only-allow npm"
   },
@@ -35,6 +35,7 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@optimizely/cms-cli": "^2.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/he": "^1.2.3",
     "@types/node": "^20",
@@ -42,6 +43,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^16.2.6",
+    "schema-dts": "^2.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
