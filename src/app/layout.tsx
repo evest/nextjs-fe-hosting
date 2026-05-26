@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif, Manrope } from "next/font/google";
-import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 // Initialize Optimizely SDK registries
@@ -69,17 +68,20 @@ const rawSnippetId = process.env.OPTIMIZELY_WEB_EXP_SNIPPET_ID;
 const webExpSnippetId =
   rawSnippetId && /^[A-Za-z0-9_-]{1,32}$/.test(rawSnippetId) ? rawSnippetId : null;
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // next-intl resolves the locale from the request — works in the root
-  // layout because the layout is rendered per request. Falls back to the
-  // routing defaultLocale for non-localised routes (e.g. /diagnostics).
-  const locale = await getLocale();
+  // <html lang> is hard-coded to "en" because the root layout can't read
+  // the per-request locale without breaking cacheComponents prerendering
+  // (uncached request reads in the static shell are fatal). The visible
+  // page content is still rendered in the correct language via next-intl;
+  // this attribute is only "wrong" for /no, /sv, /da. Tracked in
+  // docs/todo-html-lang-per-locale.md — Option A migration (route groups
+  // with locale-specific <html>) is the proper fix.
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {webExpSnippetId && (
           // Synchronous, parser-blocking, in <head> — required for the
