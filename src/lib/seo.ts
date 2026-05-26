@@ -44,16 +44,61 @@ export function getSeoMetadata(content: Record<string, unknown>): Metadata {
     ((ogImage?.url as Record<string, unknown>)?.default as string | undefined) ||
     ((ogImage?.item as Record<string, unknown>)?.Url as string | undefined);
 
-  if (ogImageUrl) {
-    metadata.openGraph = { images: [ogImageUrl] };
-  }
-
   const urlPath =
     ((contentMeta?.url as Record<string, unknown>)?.default as string | undefined) ?? null;
-  if (urlPath && SITE_URL) {
-    const canonical = `${SITE_URL}${urlPath.replace(/\/$/, '') || '/'}`;
+  const canonical = urlPath && SITE_URL ? `${SITE_URL}${urlPath.replace(/\/$/, '') || '/'}` : null;
+  if (canonical) {
     metadata.alternates = { canonical };
   }
 
+  // Locale comes from the URL prefix (/no/..., /en/...). Map it to the
+  // BCP-47 form Open Graph expects ("nb_NO", "en_US", etc.); fall back to
+  // omitting `locale` if we can't tell.
+  const ogLocale = canonicalToOgLocale(urlPath);
+
+  // Always populate openGraph.title/description from the SEO block so
+  // scrapers that ignore <title>/<meta description> still get the right
+  // share preview. Falling back to the page's metaTitle keeps things
+  // sensible when only one is set.
+  const ogTitle = (seo?.metaTitle as string | undefined) ?? undefined;
+  const ogDescription = (seo?.metaDescription as string | undefined) ?? undefined;
+
+  if (ogTitle || ogDescription || ogImageUrl || canonical || ogLocale) {
+    metadata.openGraph = {
+      ...(ogTitle && { title: ogTitle }),
+      ...(ogDescription && { description: ogDescription }),
+      ...(ogImageUrl && { images: [ogImageUrl] }),
+      ...(canonical && { url: canonical }),
+      ...(ogLocale && { locale: ogLocale }),
+    };
+    // Twitter card mirrors the OG fields — most scrapers honour OG, but
+    // Twitter/X explicitly prefers its own tags when present.
+    metadata.twitter = {
+      ...(ogTitle && { title: ogTitle }),
+      ...(ogDescription && { description: ogDescription }),
+      ...(ogImageUrl && { images: [ogImageUrl] }),
+    };
+  }
+
   return metadata;
+}
+
+// Map the URL's leading locale segment ("/no/...") to the BCP-47 form
+// Open Graph wants. The list mirrors routing.locales — kept here as a
+// plain lookup so this module stays free of i18n imports.
+function canonicalToOgLocale(urlPath: string | null): string | null {
+  if (!urlPath) return null;
+  const seg = urlPath.split('/').filter(Boolean)[0]?.toLowerCase();
+  switch (seg) {
+    case 'no':
+      return 'nb_NO';
+    case 'en':
+      return 'en_US';
+    case 'sv':
+      return 'sv_SE';
+    case 'da':
+      return 'da_DK';
+    default:
+      return null;
+  }
 }

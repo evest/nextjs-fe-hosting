@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif, Manrope } from "next/font/google";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 // Initialize Optimizely SDK registries
@@ -28,9 +29,27 @@ const manrope = Manrope({
   subsets: ["latin"],
 });
 
+// metadataBase makes per-page openGraph.images and alternates.canonical
+// resolve as absolute URLs. Defaults to http://localhost:3000 in local dev
+// so the Next.js warning ("metadataBase property … not set") stays quiet.
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") || "http://localhost:3000";
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Content Gurus";
+
 export const metadata: Metadata = {
-  title: "Content Gurus",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: siteName,
+    template: `%s | ${siteName}`,
+  },
   description: "Optimizely SaaS CMS expertise for Nordic brands.",
+  applicationName: siteName,
+  openGraph: {
+    type: "website",
+    siteName,
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -50,13 +69,17 @@ const rawSnippetId = process.env.OPTIMIZELY_WEB_EXP_SNIPPET_ID;
 const webExpSnippetId =
   rawSnippetId && /^[A-Za-z0-9_-]{1,32}$/.test(rawSnippetId) ? rawSnippetId : null;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // next-intl resolves the locale from the request — works in the root
+  // layout because the layout is rendered per request. Falls back to the
+  // routing defaultLocale for non-localised routes (e.g. /diagnostics).
+  const locale = await getLocale();
   return (
-    <html suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {webExpSnippetId && (
           // Synchronous, parser-blocking, in <head> — required for the
