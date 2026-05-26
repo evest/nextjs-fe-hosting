@@ -73,6 +73,7 @@ export const ArticlePageCT = contentType({
       type: "string",
       displayName: "Introduction",
       sortOrder: 20,
+      isLocalized: true,
     },
     author: {
       type: "contentReference",
