@@ -31,6 +31,15 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: "Content Gurus",
   description: "Optimizely SaaS CMS expertise for Nordic brands.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  manifest: "/site.webmanifest",
 };
 
 // Optimizely Web Experimentation snippet ID, sourced from env so branches /
