@@ -104,6 +104,34 @@ async function connectToRedis(redisUrl) {
   return cluster;
 }
 
+// Next.js caches some route kinds (APP_ROUTE — robots.txt, sitemap.xml,
+// llms.txt, the image optimizer, etc.) with a Node `Buffer` body, while HTML
+// pages use a string body. Plain `JSON.stringify`/`JSON.parse` turns a Buffer
+// into `{type:"Buffer",data:[...]}` and never restores it, so Next serves the
+// plain object as the response body — which coerces to the literal string
+// `[object Object]`. These reviver/replacer helpers round-trip Buffers (and any
+// nested ones) so Buffer-bodied routes survive the Redis cache intact.
+function serializeEntry(entry) {
+  return JSON.stringify(entry, (_key, val) => {
+    // A JSON replacer runs *after* the value's own `toJSON()`, so a real Buffer
+    // arrives here already shaped as `{type:"Buffer",data:[...]}`. Match that
+    // shape (not `instanceof Buffer`) to capture the original bytes.
+    if (val && val.type === "Buffer" && Array.isArray(val.data)) {
+      return { __nextCacheBuffer: Buffer.from(val.data).toString("base64") };
+    }
+    return val;
+  });
+}
+
+function deserializeEntry(raw) {
+  return JSON.parse(raw, (_key, val) => {
+    if (val && typeof val === "object" && typeof val.__nextCacheBuffer === "string") {
+      return Buffer.from(val.__nextCacheBuffer, "base64");
+    }
+    return val;
+  });
+}
+
 async function withFallback(operation) {
   const redis = await getClient();
   if (!redis) return null;
@@ -125,7 +153,7 @@ export default class CacheHandler {
     const result = await withFallback(async (redis) => {
       const raw = await redis.get(`${CACHE_PREFIX}${key}`);
       if (!raw) return null;
-      const entry = JSON.parse(raw);
+      const entry = deserializeEntry(raw);
       return { value: entry.value, lastModified: entry.lastModified };
     });
     return result ?? memoryCache.get(key) ?? null;
@@ -135,7 +163,7 @@ export default class CacheHandler {
     const tags = context?.tags ?? [];
     const entry = { value, lastModified: Date.now(), tags };
     const stored = await withFallback(async (redis) => {
-      const serialized = JSON.stringify(entry);
+      const serialized = serializeEntry(entry);
       const ttl = context?.revalidate;
       if (ttl && typeof ttl === "number") {
         await redis.set(`${CACHE_PREFIX}${key}`, serialized, { EX: ttl });
