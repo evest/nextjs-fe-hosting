@@ -90,7 +90,15 @@ async function Page({ params }: Props) {
       <Suspense>
         <PageJsonLd content={content} locale={locale} isLocaleRoot={isLocaleRoot} />
       </Suspense>
-      <Suspense>
+      {/*
+        cacheComponents streams this dynamic content into the prerendered
+        shell. The shell also paints the layout's <Footer>, so without a
+        height-reserving fallback the footer flushes directly under the header
+        and then jumps down ~3000px when content streams in (CLS ~0.92, which
+        also invalidates the early LCP). The fallback reserves ~viewport height
+        so the footer starts below the fold and the shift is negligible.
+      */}
+      <Suspense fallback={<div className="min-h-svh" aria-hidden />}>
         <PageContent content={content} />
       </Suspense>
     </>
