@@ -15,12 +15,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Editorial display serif used by the Advanced Hero headline.
+// Editorial display serif used by the Advanced Hero headline — the LCP
+// element on most pages. `display: 'swap'` paints the headline in the
+// fallback font immediately, so LCP fires at first paint (~1.2s) instead of
+// waiting for the webfont download (which was pushing mobile LCP to ~4.2s).
+// next/font does NOT auto-emit a <link rel="preload"> here: the serif is
+// only reached via the --font-instrument-serif CSS variable, and the
+// preload heuristic doesn't connect it to the page under PPR. `swap` makes
+// that a non-issue (the late font just swaps in); a manual preload was
+// deliberately skipped to avoid hardcoding build-hashed font paths.
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
   subsets: ["latin"],
   weight: "400",
   style: ["normal", "italic"],
+  display: "swap",
 });
 
 const manrope = Manrope({

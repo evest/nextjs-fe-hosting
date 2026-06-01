@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
   cacheMaxMemorySize: 0,
 
   images: {
+    // Serve modern formats from the next/image optimizer. AVIF is not enabled
+    // by default (Next ships WebP only); adding it lets the optimizer pick the
+    // smallest encoding the browser accepts, which Lighthouse's
+    // image-delivery-insight flagged. AVIF is listed first so it's preferred,
+    // with WebP as the fallback for browsers that don't accept AVIF.
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -47,6 +53,21 @@ const nextConfig: NextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'unload=(self)',
+          },
+        ],
+      },
+      {
+        // Static, content-addressed public assets (logos, icons, fonts) are
+        // immutable for a given deploy. Lighthouse's cache-insight flagged the
+        // logo SVGs as cached only 4h; serve them with a 1-year immutable TTL
+        // so repeat visits hit cache. These files don't carry build hashes, so
+        // if a logo is *replaced* its filename should change (or this TTL
+        // shortened) to avoid stale caching.
+        source: '/:path*(svg|jpg|jpeg|png|gif|webp|avif|ico|woff|woff2)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
