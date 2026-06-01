@@ -57,6 +57,12 @@ Origin says `no-store`; Cloudflare bypasses. Every hit renders per-request
       HTML cache (or keys on `Vary` so they don't collide).
 - [ ] Confirm whether the edge honors a `public, s-maxage=...` from our origin
       by default, or if a separate per-env switch is also required.
+- [ ] Ask Optimizely to use a **long Edge TTL + short Browser TTL** split on the
+      HTML cache rule (Edge = respect origin `s-maxage`; Browser TTL = override
+      ~0/no-cache) so the edge caches but the browser never holds HTML we can't
+      purge. Suggested concrete Cloudflare rules are in
+      [`cdn-html-caching.md`](./cdn-html-caching.md) ("Suggested Cloudflare
+      rules for Optimizely").
 
 ### 1. Emit cacheable `Cache-Control` on CMS HTML routes (our side)
 - [ ] In `next.config.ts` `headers()` (or `src/proxy.ts`), send

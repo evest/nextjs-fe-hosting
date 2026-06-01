@@ -149,9 +149,84 @@ exclusion, the cache-HTML switch) are Optimizely's to configure.
 | --- | --- | --- |
 | Enable HTML caching at the edge | **Optimizely** | per-environment Cloudflare config |
 | Exclude RSC / `Next-Router-*` requests from the HTML cache | **Optimizely** | Cloudflare Cache Rule (assumed) |
+| Long edge TTL + short **browser** TTL on HTML | **Optimizely** | Cache Rule: Edge TTL = respect origin `s-maxage`, Browser TTL = override ~0 |
 | Emit cacheable `Cache-Control` on CMS HTML routes | **Us** | `next.config.ts` `headers()` / `proxy.ts` |
 | Keep `/preview`, `/hooks/*`, `/diagnostics` uncacheable | **Us** | `no-store` on those routes |
 | Purge the edge cache on publish | **Us — already done** | `purgeCdnCache()` from the webhook |
+
+### Suggested Cloudflare rules for Optimizely
+
+These are generic enough to work for most Next.js App Router sites on Frontend
+Hosting, given a setup like ours (fully-shared HTML, event-driven purge, RSC
+soft navigation). Cloudflare evaluates Cache Rules in order — list the bypass
+rules **before** the cache rule.
+
+**Rule 1 — Bypass RSC / soft-navigation payloads** *(the footgun guard; first)*
+- **When:** request header `RSC` is present **OR** `Next-Router-Prefetch` is
+  present **OR** `Next-Router-State-Tree` is present.
+- **Then:** Bypass cache.
+- *Why:* App Router serves an RSC flight payload (not HTML) at the same URL for
+  client-side navigation/prefetch. These must never be stored as, or served
+  from, the HTML cache.
+
+**Rule 2 — Bypass uncacheable routes**
+- **When:** request method is `POST`, **OR** URI path matches `/preview*`,
+  `/hooks/*`, `/diagnostics*`, or `/debug*`.
+- **Then:** Bypass cache.
+- *Why:* editor freshness, webhook POSTs, and dev tooling must always hit the
+  origin.
+
+**Rule 3 — Cache HTML documents** *(the main rule)*
+- **When:** method `GET` **AND** the request is *not* matched by Rules 1–2
+  (i.e. no RSC headers, not an uncacheable path). Optionally also require
+  `Accept contains text/html` as belt-and-suspenders.
+- **Then:** Cache eligible, with:
+  - **Edge Cache TTL:** long — *Respect origin* `s-maxage` (we send a 1-year
+    `s-maxage`; invalidation comes from the publish purge, not TTL).
+  - **Browser Cache TTL:** short — *Override to ~0 / no-cache* (see next
+    section: the browser should not hold HTML we can't purge).
+
+**Rule 4 — (already fine by default) static assets `/_next/static/*`**
+- Content-hashed and immutable; cache aggressively with a **long browser TTL
+  too**. The short-browser-TTL guidance is **HTML-only** — do not apply it to
+  `/_next/static`, or you lose repeat-visit asset caching.
+
+Additionally, the edge should **honor `Vary`** on the `RSC` / `Next-Router-*`
+headers, so even if an RSC request slips past Rule 1 it can never match a stored
+HTML entry.
+
+### Cache at the edge, but don't let the browser cache it
+
+This is the key pattern for purge-driven HTML caching: **you can purge the edge,
+but you cannot purge a browser.** So the edge may hold HTML for a long time
+(cleared on publish), while the browser should hold it for ~0 — every browser
+request re-asks Cloudflare, which answers from the edge instantly (no origin
+trip) and always reflects the last purge.
+
+Cloudflare splits the two TTLs independently, so this is straightforward two
+ways:
+
+1. **Pure HTTP semantics (preferred — no rewrite needed).** Origin sends both
+   directives in one header:
+
+   ```
+   Cache-Control: public, s-maxage=31536000, max-age=0, must-revalidate, stale-while-revalidate=86400
+   ```
+
+   `s-maxage` governs the **shared** cache (Cloudflare's edge → 1 year).
+   `max-age=0, must-revalidate` governs the **browser** → it revalidates every
+   time, which against Cloudflare is a fast edge hit. Standard caches already
+   honor this split; no Cloudflare rewrite required.
+
+2. **Cloudflare Browser TTL override (belt-and-suspenders).** In Rule 3, set
+   **Browser Cache TTL → Override to: 0 (or "no-cache")**. Cloudflare then
+   *rewrites* the `Cache-Control` it forwards to the browser regardless of what
+   the origin sent, while still caching at the edge per the Edge TTL. This is
+   the literal "cache, but don't bring that information forward to the browser"
+   behavior.
+
+Using both together is fine and most robust: origin emits the split header, and
+the Cloudflare rule enforces a short browser TTL as a backstop.
 
 ### Our side: cacheable origin headers (when we activate)
 
@@ -159,14 +234,16 @@ Today dynamic PPR routes emit `no-store`. To get edge hits, CMS HTML routes
 need something like:
 
 ```
-Cache-Control: public, s-maxage=31536000, stale-while-revalidate=86400
+Cache-Control: public, s-maxage=31536000, max-age=0, must-revalidate, stale-while-revalidate=86400
 ```
 
 A long `s-maxage` is correct here because **invalidation is event-driven via
 the existing purge**, not TTL — the same philosophy as `cacheLife('max')`. The
 edge holds the document "indefinitely" until a publish purges it; SWR lets a
 stale copy serve instantly while the edge refetches in the background as a
-safety net if a purge is ever missed.
+safety net if a purge is ever missed. The `max-age=0, must-revalidate` half
+keeps the **browser** from holding HTML we can't purge — see "Cache at the edge,
+but don't let the browser cache it" above.
 
 Routes that must stay `no-store`: `/preview` (editor freshness), `/hooks/*`
 (POST webhook), `/diagnostics` and `/debug` (dev tooling).
