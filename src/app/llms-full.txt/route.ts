@@ -1,7 +1,6 @@
 import { getLlmsIndex } from '@/lib/optimizely/get-llms-index';
 import { getSiteSettings } from '@/lib/optimizely/get-site-settings';
-import { renderRootLlmsFull } from '@/lib/llms-render';
-import { routing } from '@/i18n/routing';
+import { renderRootLlmsFull, ROOT_LLMS_LOCALE } from '@/lib/llms-render';
 
 const TEXT_HEADERS = {
   'Content-Type': 'text/plain; charset=utf-8',
@@ -9,9 +8,11 @@ const TEXT_HEADERS = {
 };
 
 export async function GET() {
+  // Root /llms-full.txt header uses the international default (English) — see
+  // the note in llms.txt/route.ts.
   const [entries, siteSettings] = await Promise.all([
     getLlmsIndex(),
-    getSiteSettings(routing.defaultLocale),
+    getSiteSettings(ROOT_LLMS_LOCALE),
   ]);
   const body = renderRootLlmsFull(entries, siteSettings);
   return new Response(body, { headers: TEXT_HEADERS });

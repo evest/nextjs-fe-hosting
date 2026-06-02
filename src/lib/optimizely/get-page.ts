@@ -2,6 +2,8 @@ import { getClient } from '@optimizely/cms-sdk';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getPageTag } from '@/lib/cache/cache-keys';
 import { PLACEHOLDER_SLUG_SEGMENT } from '@/lib/optimizely/all-pages';
+// Ensures config() has run before getClient() (see graph-config.ts).
+import '@/lib/optimizely/graph-config';
 
 /**
  * Fetch a CMS page by slug, cached indefinitely and tagged for on-demand

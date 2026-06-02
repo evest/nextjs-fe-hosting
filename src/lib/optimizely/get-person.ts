@@ -2,6 +2,8 @@ import { ContentProps, getClient } from '@optimizely/cms-sdk';
 import { cacheLife, cacheTag } from 'next/cache';
 import { PersonPageCT } from '@/content-types/PersonPage';
 import { getPageTag } from '@/lib/cache/cache-keys';
+// Ensures config() has run before getClient() (see graph-config.ts).
+import '@/lib/optimizely/graph-config';
 
 export type PersonData = ContentProps<typeof PersonPageCT>;
 

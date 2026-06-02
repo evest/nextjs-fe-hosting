@@ -5,6 +5,12 @@ import { routing } from '@/i18n/routing';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ?? '';
 
+// Locale used for the *root* /llms.txt and /llms-full.txt header (site name +
+// description). The root files are the locale-agnostic entry point, so they
+// present in English — the international default — independent of
+// routing.defaultLocale (which is 'no'). Per-locale routes use their own locale.
+export const ROOT_LLMS_LOCALE = 'en';
+
 // Section + locale labels live here (not in the i18n message catalog) because
 // the llms.txt audience is LLM crawlers — we only need three section headers
 // and four language names. Keeping them inline avoids cluttering the editor-
@@ -67,7 +73,9 @@ function renderLocaleBlock(locale: string, entries: LlmsEntry[], depth: '##' | '
   return sections.filter(Boolean).join('\n');
 }
 
-function renderHeader(siteSettings: SiteSettings, locale: string): string {
+// The header (name + description) reflects whichever locale's SiteSettings the
+// caller fetched — callers pick the locale, this just renders it.
+function renderHeader(siteSettings: SiteSettings): string {
   const name = siteSettings.siteName ?? 'Site';
   const description =
     siteSettings.llmsDescription ?? siteSettings.organization.description ?? null;
@@ -86,19 +94,19 @@ export function renderLocaleLlms(
   siteSettings: SiteSettings,
 ): string {
   const localeEntries = entries.filter((e) => e.locale === locale);
-  return renderHeader(siteSettings, locale) + renderLocaleBlock(locale, localeEntries, '###').trim() + '\n';
+  return renderHeader(siteSettings) + renderLocaleBlock(locale, localeEntries, '###').trim() + '\n';
 }
 
 /**
  * Render the slim /llms.txt at the site root. Lists every locale's content
- * under a per-locale heading. Default locale appears first.
+ * under a per-locale heading. The international default locale appears first.
  */
 export function renderRootLlms(entries: LlmsEntry[], siteSettings: SiteSettings): string {
-  const locales = [routing.defaultLocale, ...routing.locales.filter((l) => l !== routing.defaultLocale)];
+  const locales = [ROOT_LLMS_LOCALE, ...routing.locales.filter((l) => l !== ROOT_LLMS_LOCALE)];
   const blocks = locales
     .map((locale) => renderLocaleBlock(locale, entries.filter((e) => e.locale === locale), '##'))
     .filter((b) => b.trim().length > 0);
-  return renderHeader(siteSettings, routing.defaultLocale) + blocks.join('\n').trim() + '\n';
+  return renderHeader(siteSettings) + blocks.join('\n').trim() + '\n';
 }
 
 function renderFullArticleBody(e: LlmsEntry): string {
@@ -141,17 +149,17 @@ export function renderLocaleLlmsFull(
   siteSettings: SiteSettings,
 ): string {
   const localeEntries = entries.filter((e) => e.locale === locale);
-  return renderHeader(siteSettings, locale) + renderFullLocaleBlock(locale, localeEntries) + '\n';
+  return renderHeader(siteSettings) + renderFullLocaleBlock(locale, localeEntries) + '\n';
 }
 
 /**
  * Render the root /llms-full.txt — every locale's full content concatenated
- * with locale headers. Default locale first.
+ * with locale headers. The international default locale appears first.
  */
 export function renderRootLlmsFull(entries: LlmsEntry[], siteSettings: SiteSettings): string {
-  const locales = [routing.defaultLocale, ...routing.locales.filter((l) => l !== routing.defaultLocale)];
+  const locales = [ROOT_LLMS_LOCALE, ...routing.locales.filter((l) => l !== ROOT_LLMS_LOCALE)];
   const blocks = locales
     .map((locale) => renderFullLocaleBlock(locale, entries.filter((e) => e.locale === locale)))
     .filter((b) => b.trim().length > 0);
-  return renderHeader(siteSettings, routing.defaultLocale) + blocks.join('\n\n') + '\n';
+  return renderHeader(siteSettings) + blocks.join('\n\n') + '\n';
 }

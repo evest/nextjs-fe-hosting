@@ -1,6 +1,9 @@
 import { getClient } from '@optimizely/cms-sdk';
 import { cacheLife, cacheTag } from 'next/cache';
 import { CACHE_KEYS } from '@/lib/cache/cache-keys';
+// Ensures config() has run — called from the standalone sitemap route handler
+// that doesn't import @/optimizely via the root layout.
+import '@/lib/optimizely/graph-config';
 import { routing } from '@/i18n/routing';
 
 export type ContentPath = {
@@ -11,7 +14,7 @@ export type ContentPath = {
 
 const QUERY = `
   query AllContentPaths($locales: [Locales]) {
-    _Content(locale: $locales, limit: 1000) {
+    _Content(locale: $locales, limit: 100) {
       items {
         _metadata {
           url { default }

@@ -1,6 +1,9 @@
 import { getClient } from '@optimizely/cms-sdk';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getSiteSettingsTag } from '@/lib/cache/cache-keys';
+// Ensures config() has run — called from standalone route handlers (llms.txt,
+// llms-full.txt) that don't import @/optimizely via the root layout.
+import '@/lib/optimizely/graph-config';
 
 /**
  * Merged site-settings shape used by buildJsonLd / llms.txt. Values come from

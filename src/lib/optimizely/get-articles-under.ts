@@ -1,6 +1,8 @@
 import { getClient } from '@optimizely/cms-sdk';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getArticlesUnderTag } from '@/lib/cache/cache-keys';
+// Ensures config() has run before getClient() (see graph-config.ts).
+import '@/lib/optimizely/graph-config';
 
 /**
  * One article in the listing. The Graph response includes the metadata

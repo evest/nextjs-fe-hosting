@@ -1,5 +1,8 @@
 import { getClient } from '@optimizely/cms-sdk';
 import { cacheLife, cacheTag } from 'next/cache';
+// Ensures config() has run — this lib is called from standalone route handlers
+// (llms.txt) that don't import @/optimizely via the root layout.
+import '@/lib/optimizely/graph-config';
 import { CACHE_KEYS } from '@/lib/cache/cache-keys';
 import { routing } from '@/i18n/routing';
 
@@ -58,7 +61,7 @@ const QUERY = `
   query LlmsIndex($locales: [Locales]) {
     ArticlePage(
       locale: $locales
-      limit: 1000
+      limit: 100
       orderBy: { _metadata: { published: DESC } }
     ) {
       items {
@@ -69,7 +72,7 @@ const QUERY = `
         _metadata { url { default } locale published displayName }
       }
     }
-    PersonPage(locale: $locales, limit: 1000) {
+    PersonPage(locale: $locales, limit: 100) {
       items {
         name
         title
@@ -78,7 +81,7 @@ const QUERY = `
         _metadata { url { default } locale displayName }
       }
     }
-    LandingPageExperience(locale: $locales, limit: 1000) {
+    LandingPageExperience(locale: $locales, limit: 100) {
       items {
         seo { metaTitle metaDescription noIndex }
         _metadata { url { default } locale displayName published }
