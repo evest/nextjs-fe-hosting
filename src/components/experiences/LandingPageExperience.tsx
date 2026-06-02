@@ -1,3 +1,4 @@
+import { cloneElement, isValidElement } from 'react';
 import { ContentProps, damAssets, DisplayTemplates } from '@optimizely/cms-sdk';
 import {
   ComponentContainerProps,
@@ -14,17 +15,26 @@ type Props = {
   displaySettings?: ContentProps<typeof LandingPageExperienceDisplayTemplate>;
 };
 
-function ComponentWrapper({ children, node }: ComponentContainerProps) {
+// OptimizelyComposition passes a component node's parsed displaySettings to this
+// wrapper but NOT to the inner <OptimizelyComponent> it renders as `children`
+// (unlike OptimizelyGridSection, which forwards them). Without re-injecting them,
+// a component placed directly in this experience — e.g. a HeroBlock — never gets
+// its display template settings and falls back to defaults (Hero stays dark,
+// the background-image surface can't be selected).
+function ComponentWrapper({ children, node, displaySettings }: ComponentContainerProps) {
   const { pa } = getPreviewUtils(node);
+  const child = isValidElement(children)
+    ? cloneElement(children as React.ReactElement<{ displaySettings?: unknown }>, { displaySettings })
+    : children;
   return (
     <div className="mb-2" {...pa(node)}>
-      {children}
+      {child}
     </div>
   );
 }
 
 export default function LandingPageExperience({ content, displaySettings }: Props) {
-  const { pa, src } = getPreviewUtils(content);
+  const { src } = getPreviewUtils(content);
   const { getAlt } = damAssets(content);
 
   // A top-level experience is rendered via <OptimizelyComponent content={...}>
