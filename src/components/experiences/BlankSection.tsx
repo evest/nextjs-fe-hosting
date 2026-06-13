@@ -32,7 +32,7 @@ const sectionVariants = cva(
   }
 );
 
-const rowVariants = cva('vb:row flex flex-row last:mb-0', {
+const rowVariants = cva('vb:row flex flex-col md:flex-row last:mb-0', {
   variants: {
     columnGap: {
       none: 'gap-0',
@@ -55,7 +55,7 @@ const rowVariants = cva('vb:row flex flex-row last:mb-0', {
   },
 });
 
-const columnVariants = cva('vb:col flex-1 flex-col min-w-0', {
+const columnVariants = cva('vb:col w-full md:flex-1 flex-col min-w-0', {
   variants: {
     elementGap: {
       none: 'gap-0',
