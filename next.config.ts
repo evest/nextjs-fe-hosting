@@ -20,30 +20,20 @@ const nextConfig: NextConfig = {
   cacheMaxMemorySize: 0,
 
   images: {
-    // Serve modern formats from the next/image optimizer. AVIF is not enabled
-    // by default (Next ships WebP only); adding it lets the optimizer pick the
-    // smallest encoding the browser accepts, which Lighthouse's
-    // image-delivery-insight flagged. AVIF is listed first so it's preferred,
-    // with WebP as the fallback for browsers that don't accept AVIF.
-    formats: ['image/avif', 'image/webp'],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '*.cms.optimizely.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cdn.optimizely.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.cmp.optimizely.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-      },
-    ],
+    // Custom loader: resize at the Optimizely image CDNs (Cloudflare for CMS
+    // assets, the CMP/DAM CDN for DAM assets) instead of the built-in
+    // `/_next/image` optimizer, which runs on our single-region Azure origin.
+    // Edge resizing happens in every region and skips the origin hop — the LCP
+    // win on throttled mobile. See src/lib/image-loader.ts + image-cdn.ts for
+    // the per-host URL contracts.
+    //
+    // With a custom loader, `images.formats` and `images.remotePatterns` no
+    // longer apply — they only configure the built-in optimizer, which is now
+    // bypassed. Format negotiation moves to the CDN (`format=auto` for CMS;
+    // the CMP CDN picks its own). Hosts the loader doesn't recognise
+    // (placehold.co, local assets) are served unoptimized at their natural size.
+    loader: 'custom',
+    loaderFile: './src/lib/image-loader.ts',
   },
   async headers() {
     return [
