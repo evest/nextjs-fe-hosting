@@ -43,6 +43,12 @@ To learn more about Next.js, take a look at the following resources:
 
 ## Deploy to Optimizely Frontend Hosting
 
-The easiest way to deploy is using the `deploy.ps1` PowerShell script in the root of the project. It will package up the necessary files and deploy using the Optimizely Deployment API.
+Deploy with the npm script:
+
+```bash
+npm run deploy-test2
+```
+
+This runs `opticloud ship` to package the app and deploy it to the Test2 environment via the Optimizely Deployment API.
 
 Make sure all the environment variables are set.

@@ -15,9 +15,8 @@ npm run lint                 # ESLint (flat config, core-web-vitals + typescript
 npm run cms:login            # Authenticate with Optimizely CMS CLI
 npm run cms:push-config      # Push content type definitions to CMS
 npm run cms:push-config-force  # Force push (overwrites existing types)
+npm run deploy-test2         # Deploy to Test2 (opticloud ship; requires OPTI_* env vars in .env)
 ```
-
-Deploy via PowerShell: `.\deploy.ps1` (requires `OPTI_*` env vars in `.env`).
 
 ## Architecture
 
