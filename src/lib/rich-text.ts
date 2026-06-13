@@ -25,7 +25,12 @@ export function decodeRichTextEntities<T>(node: T): T {
   return next as T;
 }
 
-function extractText(node: unknown): string {
+/**
+ * Flatten a Slate rich-text tree to a single whitespace-joined plain-text
+ * string. Used for derived text (reading time, JSON-LD answer bodies) where
+ * markup must be stripped. Returns '' for empty/non-text input.
+ */
+export function extractText(node: unknown): string {
   if (node == null) return '';
   if (typeof node === 'string') return node;
   if (Array.isArray(node)) return node.map(extractText).join(' ');

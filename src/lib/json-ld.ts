@@ -1,9 +1,11 @@
 import type {
   Article,
+  FAQPage,
   ImageObject,
   Organization,
   Person,
   ProfilePage,
+  Question,
   SpeakableSpecification,
   Thing,
   WebPage,
@@ -12,6 +14,7 @@ import type {
 } from 'schema-dts';
 import { getPerson } from '@/lib/optimizely/get-person';
 import type { SiteSettings } from '@/lib/optimizely/get-site-settings';
+import { decodeRichTextEntities, extractText } from '@/lib/rich-text';
 
 const SCHEMA_CONTEXT = 'https://schema.org';
 
@@ -304,6 +307,58 @@ function buildWebPage(content: Content, ctx: JsonLdContext): WebPage {
   return node;
 }
 
+// ── FAQPage (derived from Accordion blocks in a page's content area) ─────────
+
+// Pull the list of types off a block node. Composition blocks carry their
+// content-type key in `_metadata.types` (e.g. ['AccordionBlock', '_component']),
+// same shape as a page.
+function blockHasType(block: unknown, key: string): boolean {
+  const meta = (block as Content | undefined)?._metadata as Content | undefined;
+  const types = (meta?.types as unknown[] | undefined) ?? [];
+  return types.some((t) => t === key);
+}
+
+// One Accordion row → a schema.org Question. `summary` is a plain string; the
+// answer body is RichText (Slate JSON) flattened to text — rich answers aren't
+// allowed in FAQPage answer text. Entities are decoded first so e.g. Norwegian
+// letters stored as `&aring;` don't leak into the answer.
+function accordionItemToQuestion(item: unknown): Question | null {
+  const obj = item as Content | undefined;
+  const name = readString(obj?.summary);
+  if (!name) return null;
+  const bodyJson = (obj?.body as Content | undefined)?.json;
+  const answer = extractText(decodeRichTextEntities(bodyJson)).trim();
+  if (!answer) return null;
+  return {
+    '@type': 'Question',
+    name,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  };
+}
+
+// Walk a page's `additionalContent` slot, collect every AccordionBlock's items,
+// and emit a single FAQPage covering all of them. Returns null when there are
+// no usable Q&A pairs (no accordion, or every item missing summary/body) so the
+// caller can skip it.
+//
+// NOTE: AccordionBlock.items are not localized (see project memory) — on a
+// non-default-locale page the questions/answers carry the canonical-locale
+// text. Acceptable: the schema still describes real on-page content.
+function buildFaqPage(content: Content): FAQPage | null {
+  const blocks = (content.additionalContent as unknown[] | undefined) ?? [];
+  const questions: Question[] = [];
+  for (const block of blocks) {
+    if (!blockHasType(block, 'AccordionBlock')) continue;
+    const items = ((block as Content).items as unknown[] | undefined) ?? [];
+    for (const item of items) {
+      const q = accordionItemToQuestion(item);
+      if (q) questions.push(q);
+    }
+  }
+  if (questions.length === 0) return null;
+  return { '@type': 'FAQPage', mainEntity: questions };
+}
+
 // ── top-level dispatcher ────────────────────────────────────────────────────
 
 function withContext(node: Thing): WithContext<Thing> {
@@ -345,6 +400,12 @@ export async function buildJsonLd(
   } else {
     graph.push(buildWebPage(content, ctx));
   }
+
+  // Derive a FAQPage from any Accordion block in the page's content area.
+  // Eligible for FAQ rich results in Search and a strong GEO/AEO signal. Added
+  // alongside the primary node (Article/WebPage/etc.) in the same @graph.
+  const faq = buildFaqPage(content);
+  if (faq) graph.push(faq);
 
   // Add site identity at the locale root (homepage). Google + LLM crawlers
   // pick these up regardless of which page they crawl, but emitting them on
