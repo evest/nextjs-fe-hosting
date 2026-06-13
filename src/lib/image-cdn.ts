@@ -60,13 +60,25 @@ function cmsResizeUrl(parsed: URL, { width, quality }: ResizeOptions): string {
   return `${parsed.origin}${CLOUDFLARE_PREFIX}${opts}${parsed.pathname}${parsed.search}`;
 }
 
+// The CMP/DAM CDN does no format conversion (PNG/JPEG stay as-is, no WebP/AVIF)
+// and — unlike Cloudflare — does not clamp the requested width to the source.
+// So `width=3840` returns the full-resolution original: an 8.5 MB PNG for a
+// 48px avatar (verified live). next/image always sets the bare `src` to the
+// largest srcSet width as a fallback, so a `sizes`-ignoring consumer (some
+// crawlers, an OG/JSON-LD reference) can pull that multi-MB file. Cap the width
+// at a realistic display ceiling so no generated URL can request the original.
+// 1920 covers a full-width image on a 2× desktop; larger srcSet entries reuse
+// the 1920 render, which is imperceptible at those sizes but bounds the payload.
+const CMP_MAX_WIDTH = 1920;
+
 /**
- * Append `?width=…` to a CMP/DAM URL. Quality/format aren't supported by this
- * CDN, so they're dropped. A pre-existing `width` param is overwritten so a
- * responsive `srcSet` produces distinct widths rather than repeating the source's.
+ * Append `?width=…` to a CMP/DAM URL, clamped to {@link CMP_MAX_WIDTH}.
+ * Quality/format aren't supported by this CDN, so they're dropped. A pre-existing
+ * `width` param is overwritten so a responsive `srcSet` produces distinct widths
+ * rather than repeating the source's.
  */
 function cmpResizeUrl(parsed: URL, { width }: ResizeOptions): string {
-  parsed.searchParams.set('width', String(width));
+  parsed.searchParams.set('width', String(Math.min(width, CMP_MAX_WIDTH)));
   return parsed.href;
 }
 
