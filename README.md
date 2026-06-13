@@ -49,6 +49,6 @@ Deploy with the npm script:
 npm run deploy-test2
 ```
 
-This runs `opticloud ship` to package the app and deploy it to the Test2 environment via the Optimizely Deployment API.
+This runs `opticloud ship` to package the app and deploy it to the Test2 environment via the Optimizely Deployment API. The `opticloud` CLI is the `@kunalshetye/opticloud` devDependency, so `npm install` provides it — no global install needed. Packaging respects `.zipignore`.
 
 Make sure all the environment variables are set.

@@ -35,6 +35,7 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@kunalshetye/opticloud": "^0.0.6",
     "@optimizely/cms-cli": "^2.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/he": "^1.2.3",
