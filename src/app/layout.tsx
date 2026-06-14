@@ -75,13 +75,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Web Experimentation snippet ID is now a runtime CMS setting
+  // Web Experimentation snippet ID is a runtime CMS setting
   // (SiteSettings.webExperimentationSnippetId), so editors can toggle it on/off
   // without a redeploy. Reading it here keeps the snippet parser-blocking in
   // <head> (required for anti-flicker). getWebExperimentationSnippetId() is
   // locale-agnostic and cached under the SiteSettings tag, which the
   // /hooks/graph webhook purges (whole-site) on any SiteSettings publish.
-  // Falls back to the OPTIMIZELY_WEB_EXP_SNIPPET_ID env var, then null (off).
+  // The CMS field is the sole source: blank field → null → no snippet.
   const webExpSnippetId = await getWebExperimentationSnippetId();
 
   // <html lang> is hard-coded to "en" because the root layout can't read

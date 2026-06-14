@@ -129,13 +129,6 @@ export async function getSiteSettings(locale: string): Promise<SiteSettings> {
 // value can never inject an arbitrary <script src>.
 const SNIPPET_ID_RE = /^[A-Za-z0-9_-]{1,32}$/;
 
-// Env-var fallback so the snippet still loads if the CMS field is blank or
-// Graph is unreachable (e.g. preview deploys that pre-date the CMS field).
-const FALLBACK_SNIPPET_ID = (() => {
-  const raw = process.env.OPTIMIZELY_WEB_EXP_SNIPPET_ID;
-  return raw && SNIPPET_ID_RE.test(raw) ? raw : null;
-})();
-
 const SNIPPET_QUERY = `
   query WebExpSnippetQuery($locale: [Locales]) {
     SiteSettings(locale: $locale, limit: 1) {
@@ -154,8 +147,14 @@ const SNIPPET_QUERY = `
  * variant. We query the default locale only — this lets the root layout read
  * it WITHOUT touching the per-request locale, which it cannot do without
  * breaking cacheComponents prerendering (see RootLayout / docs/
- * todo-html-lang-per-locale.md). Returns the validated ID, or the env-var
- * fallback, or null (snippet off).
+ * todo-html-lang-per-locale.md).
+ *
+ * The CMS field is the SINGLE source of truth: returns the validated ID, or
+ * null (snippet off) when the field is blank, invalid, or Graph is
+ * unreachable. There is intentionally NO env-var fallback — that made the
+ * snippet impossible to turn off without chasing a server-side env change,
+ * which defeats the purpose of a runtime CMS toggle. Blank CMS field =
+ * snippet off, guaranteed.
  *
  * Shares the SiteSettings cache tag (default locale) so the existing publish
  * webhook already invalidates it.
@@ -181,5 +180,5 @@ export async function getWebExperimentationSnippetId(): Promise<string | null> {
   } catch (e) {
     console.error('[get-site-settings] web-exp snippet query failed:', e);
   }
-  return FALLBACK_SNIPPET_ID;
+  return null;
 }
