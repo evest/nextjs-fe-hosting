@@ -24,7 +24,7 @@ Two complementary tools:
 ## Commands
 
 ```bash
-npm run lh                       # test2 /en, mobile, median of 3 runs
+npm run lh                       # Test2 (test.contentgurus.no) /en, mobile, median of 3 runs
 npm run lh -- --url https://test.contentgurus.no/no
 npm run lh -- --label after-snippet-removed   # tag the run in history
 npm run lh -- --runs 5                          # more runs = more stable median

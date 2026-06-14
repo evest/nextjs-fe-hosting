@@ -16,7 +16,32 @@ npm run cms:login            # Authenticate with Optimizely CMS CLI
 npm run cms:push-config      # Push content type definitions to CMS
 npm run cms:push-config-force  # Force push (overwrites existing types)
 npm run deploy-test2         # Deploy to Test2 (opticloud ship; requires OPTI_* env vars in .env)
+npm run lh                   # Lighthouse on Test2 (test.contentgurus.no/en), median of 3, stores result
+npm run lh:trim              # Agent-friendly markdown summary of the latest Lighthouse report
+npm run lh:history           # Score trend across runs (▲/▼ deltas)
 ```
+
+## Performance testing (Lighthouse harness)
+
+`scripts/lighthouse/` runs the global `lighthouse` CLI against the **Test2
+environment** (`https://test.contentgurus.no` — the Test2 deploy's public host;
+note `test2.contentgurus.no` does **not** resolve) and stores results so scores
+can be tracked over time. Measure against Test2, not localhost — only the
+deployed environment has the production-like caching that yields representative
+numbers.
+
+- `npm run lh [-- --url … --runs N --label … --desktop]` — median-of-N run;
+  saves `report.json` to a timestamped folder and appends a row to
+  `scripts/lighthouse/results/history.jsonl`.
+- `npm run lh:trim [path]` — extracts the sub-0.9 audits + ranked offenders from
+  a report (defaults to the latest); paste to Claude for a fix plan.
+- `npm run lh:history` — prints the trend table.
+
+`history.jsonl` is tracked in git (the trend persists); per-run report folders
+are gitignored. Lighthouse is noisy — trust the median and report a range, not a
+point. The Chrome DevTools MCP ([`.mcp.json`](.mcp.json)) is the interactive
+complement for deeper traces (LCP phase breakdown, render-blocking). Full
+details: [`scripts/lighthouse/README.md`](scripts/lighthouse/README.md).
 
 ## Architecture
 
