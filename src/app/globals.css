@@ -37,9 +37,16 @@
   --accent-foreground: #171717;
 
   /* Highlight — Content Gurus logo orange. Use sparingly for "guru" moments:
-     eyebrow text, stat values, tile stripes. Never for primary CTAs. */
+     stat values, tile stripes, decorative accents. Never for primary CTAs. */
   --highlight: #F37021;
   --highlight-foreground: #ffffff;
+  /* Accessible highlight — a darkened brand orange (#C24E08, 4.79:1 on white)
+     for SMALL text on light backgrounds (eyebrows, labels) where #F37021
+     (2.93:1) fails WCAG AA. Use `text-highlight-accessible` for orange text;
+     keep `--highlight` for large display text (>=24px / >=18.66px bold, where
+     3:1 suffices) and non-text decoration. On dark sections it's overridden
+     back to the vivid brand orange (see .section-dark). */
+  --highlight-accessible: #C24E08;
 
   /* Cards */
   --card: #ffffff;
@@ -81,6 +88,7 @@
   --color-brand-foreground: var(--brand-foreground);
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
+  --color-highlight-accessible: var(--highlight-accessible);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -113,6 +121,9 @@
   --secondary-foreground: #ededed;
   --brand: #7C9DFF;
   --brand-foreground: #171717;
+  /* On dark backgrounds the vivid brand orange has ample contrast, so the
+     accessible variant reverts to it — no need for the darkened light-bg value. */
+  --highlight-accessible: var(--highlight);
   --accent: #404040;
   --accent-foreground: #ededed;
   --card: #262626;

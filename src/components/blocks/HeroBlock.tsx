@@ -31,7 +31,10 @@ const surfaceClass = {
   dark: 'section-dark bg-background text-foreground',
   light: 'bg-background text-foreground',
   muted: 'section-muted bg-background text-foreground',
-  image: 'text-white',
+  // Eyebrow uses text-highlight-accessible (a darkened orange tuned for light
+  // backgrounds). On the dark image surface, revert it to the vivid brand
+  // orange — the darkened value would have *less* contrast over the image.
+  image: 'text-white [--highlight-accessible:var(--highlight)]',
 };
 
 export default function HeroBlock({ content, displaySettings }: Props) {
@@ -69,7 +72,7 @@ export default function HeroBlock({ content, displaySettings }: Props) {
         <div className={cn('flex flex-col justify-center max-w-3xl', alignClass)}>
           {content.eyebrow && (
             <span
-              className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-highlight"
+              className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-highlight-accessible"
               {...pa('eyebrow')}
             >
               {content.eyebrow}

@@ -40,7 +40,7 @@ export default function CalloutBanner({ content, displaySettings }: Props) {
       >
         <div className={isCenter ? 'max-w-3xl' : 'md:flex-1 max-w-2xl'}>
           {content.eyebrow && (
-            <div className="text-sm font-semibold uppercase tracking-[0.18em] text-highlight mb-4" {...pa('eyebrow')}>
+            <div className="text-sm font-semibold uppercase tracking-[0.18em] text-highlight-accessible mb-4" {...pa('eyebrow')}>
               {content.eyebrow}
             </div>
           )}

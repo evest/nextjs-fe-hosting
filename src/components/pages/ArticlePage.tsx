@@ -119,7 +119,7 @@ export default async function ArticlePage({ content }: Props) {
 
               {content.eyebrow && (
                 <span
-                  className="text-sm font-semibold uppercase tracking-[0.18em] text-highlight"
+                  className="text-sm font-semibold uppercase tracking-[0.18em] text-highlight-accessible"
                   {...pa('eyebrow')}
                 >
                   {content.eyebrow}
