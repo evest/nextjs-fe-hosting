@@ -15,6 +15,10 @@
     "cms:push-config-force": "optimizely-cms-cli config push ./optimizely.config.mjs --force",
     "cms:pull-config": "optimizely-cms-cli config pull --output ./src/content-types --group",
     "deploy-test2": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Test2",
+    "lh": "node scripts/lighthouse/run.mjs",
+    "lh:desktop": "node scripts/lighthouse/run.mjs --desktop",
+    "lh:trim": "node scripts/lighthouse/trim.mjs",
+    "lh:history": "node scripts/lighthouse/history.mjs",
     "preinstall": "npx only-allow npm"
   },
   "dependencies": {

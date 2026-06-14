@@ -42,6 +42,11 @@ yarn-error.log*
 *.report.html
 *.report.json
 
+# lighthouse harness: ignore the bulky per-run report folders, but KEEP
+# history.jsonl tracked so the score trend persists across machines/time.
+/scripts/lighthouse/results/*/
+!/scripts/lighthouse/results/history.jsonl
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

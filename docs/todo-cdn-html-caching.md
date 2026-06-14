@@ -116,3 +116,84 @@ Incremental, not transformative: our origin render is already cheap (data
 cached, PPR shell static), so the win is **TTFB + origin offload + resilience**,
 not unblocking a slow render. Most impactful for repeat/shared traffic and under
 load. Biggest single lever is removing the origin round-trip on warm hits.
+
+---
+
+## UPDATE 2026-06-14 — the `no-store` source is the next-intl middleware, not PPR
+
+A Lighthouse audit of `/en` surfaced two symptoms that both trace to the **same
+origin header** this doc is about:
+
+1. **bf-cache disabled** — Lighthouse `bf-cache` audit fails with *"Pages with
+   cache-control:no-store header cannot enter back/forward cache."* So beyond
+   the CDN miss, the browser's back/forward cache (instant back-button nav) is
+   also off. Same root cause, second symptom.
+2. **`cf-cache-status: DYNAMIC`** — the edge miss this doc already describes.
+
+### Correction to the earlier root-cause claim
+
+The sections above attribute the `no-store` to *"dynamic PPR routes emit
+`no-store`"* (a render-shape consequence of `cacheComponents`). **That is not
+the actual cause.** A controlled comparison on 2026-06-14 proves it's the
+**next-intl middleware** (`src/proxy.ts` → `createMiddleware(routing)`):
+
+```
+# Routes that go THROUGH the next-intl middleware:
+$ curl -sI https://test.contentgurus.no/en   → Cache-Control: private, no-cache, no-store, ...
+$ curl -sI https://test.contentgurus.no/no   → Cache-Control: private, no-cache, no-store, ...
+
+# Routes EXCLUDED by the middleware matcher (negative-lookahead) — also PPR-dynamic:
+$ curl -sI https://test.contentgurus.no/diagnostics → Cache-Control: s-maxage=2592000, stale-while-revalidate=...
+$ curl -sI https://test.contentgurus.no/llms.txt    → Cache-Control: public, max-age=300, s-maxage=3600
+```
+
+`/diagnostics` is a `◐` partial-prerender (dynamic) route in the build table,
+exactly like `/en` — yet it emits a **cacheable** header. The *only* difference
+is that `/diagnostics`, `/llms.txt`, `/robots.txt` are excluded by the
+`proxy.ts` matcher and `/en`, `/no/...` are not. So PPR dynamic-ness does **not**
+force `no-store`; **the middleware does.**
+
+### Why next-intl sets `no-store`
+
+next-intl's `createMiddleware` sets the `NEXT_LOCALE` cookie and, in doing so,
+marks the response as personalized — Next.js then emits
+`private, no-cache, no-store, max-age=0, must-revalidate`. Confirmed it's
+**unconditional**: the header is present even when `NEXT_LOCALE` is already set
+(no `Set-Cookie` on the repeat request, but still `no-store`). It's not the
+cookie *write* — it's the middleware being in the request path at all.
+
+### What this changes about the fix
+
+The earlier framing — *"blocked on Optimizely's Cloudflare config"* — is only
+half right. The edge **caching** (and RSC exclusion) is still Optimizely's to
+enable. But **the `no-store` that bypasses the edge is OURS**, emitted by our
+middleware. Even with Optimizely's edge cache turned on, an origin `no-store`
+will keep bypassing it. So this is now partly an **origin-side** task we can act
+on independently:
+
+- [ ] **Override the `Cache-Control` for CMS HTML routes after the next-intl
+      middleware runs.** Wrap `createMiddleware(routing)` in `src/proxy.ts` so
+      that, for full-document GETs to locale pages, the response header is
+      replaced with the cacheable
+      `public, s-maxage=31536000, max-age=0, must-revalidate, stale-while-revalidate=86400`
+      (per the split-TTL pattern in `cdn-html-caching.md`). Keep `no-store` for
+      RSC / `Next-Router-*` requests and for `/preview`, `/hooks/*`,
+      `/diagnostics`, `/debug`.
+- [ ] **Verify the cookie behaviour still works** after overriding the header —
+      next-intl needs `NEXT_LOCALE` to persist locale choice. Overriding
+      `Cache-Control` must not drop the `Set-Cookie`. (A page that `Vary`s on
+      cookie or carries `Set-Cookie` may still be treated as uncacheable by some
+      CDNs — check whether the edge caches a response that also sets a cookie,
+      or whether locale persistence needs to move out of the cookie path for
+      cacheable routes.)
+- [ ] **bf-cache** will recover automatically once the document is no longer
+      `no-store` — re-check the Lighthouse `bf-cache` audit after the change.
+
+### ⚠️ Caution — this is load-bearing and interacts with i18n
+
+`src/proxy.ts` is the locale-routing entry point (the `/` → `/no` redirect,
+locale detection, `NEXT_LOCALE` persistence all run here). Overriding its
+response headers risks breaking locale detection or soft-navigation if done
+carelessly. Land this **in isolation**, measure TTFB/LCP before & after, and
+test: locale switching, the `/` redirect, soft navigation between pages, and
+that `/preview` stays `no-store`. Do **not** bundle it with other perf work.
