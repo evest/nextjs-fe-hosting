@@ -119,81 +119,176 @@ load. Biggest single lever is removing the origin round-trip on warm hits.
 
 ---
 
-## UPDATE 2026-06-14 — the `no-store` source is the next-intl middleware, not PPR
+## UPDATE 2026-06-14 — root cause is dynamic rendering (NOT middleware/cookie)
 
-A Lighthouse audit of `/en` surfaced two symptoms that both trace to the **same
-origin header** this doc is about:
+A Lighthouse audit of `/en` re-surfaced the `no-store` problem (it also fails
+the `bf-cache` audit: *"Pages with cache-control:no-store header cannot enter
+back/forward cache"* — same header, second symptom). A focused spike chased
+down the **true** cause. Two earlier hypotheses were investigated and
+**disproven** — recorded here so nobody repeats them:
 
-1. **bf-cache disabled** — Lighthouse `bf-cache` audit fails with *"Pages with
-   cache-control:no-store header cannot enter back/forward cache."* So beyond
-   the CDN miss, the browser's back/forward cache (instant back-button nav) is
-   also off. Same root cause, second symptom.
-2. **`cf-cache-status: DYNAMIC`** — the edge miss this doc already describes.
+| Hypothesis | Test | Verdict |
+| --- | --- | --- |
+| The `NEXT_LOCALE` cookie forces `no-store` | Set `localeCookie: false`, redeploy-equivalent local build | ❌ `Set-Cookie` gone, but `/en` **still** `no-store` |
+| The next-intl **middleware running** forces `no-store` | Scoped the `proxy.ts` matcher to `/` only (so `/en` skips middleware), rebuilt | ❌ `/en` **still** `no-store` with no middleware on it |
+| Override `Cache-Control` inside the middleware | `response.headers.set('Cache-Control', …)` in `proxy.ts` | ❌ Next.js **overwrites** middleware-set `Cache-Control` for dynamic pages — the override never reached the client |
 
-### Correction to the earlier root-cause claim
+> The earlier `/diagnostics` comparison (cacheable) vs `/en` (no-store) was a
+> red herring: they differ in *render mode*, not just middleware. `/diagnostics`
+> is `○ Static`; `/en` is `ƒ Dynamic`. That render-mode difference — not the
+> matcher — is the whole story.
 
-The sections above attribute the `no-store` to *"dynamic PPR routes emit
-`no-store`"* (a render-shape consequence of `cacheComponents`). **That is not
-the actual cause.** A controlled comparison on 2026-06-14 proves it's the
-**next-intl middleware** (`src/proxy.ts` → `createMiddleware(routing)`):
+### The actual cause: the catch-all renders dynamically
 
-```
-# Routes that go THROUGH the next-intl middleware:
-$ curl -sI https://test.contentgurus.no/en   → Cache-Control: private, no-cache, no-store, ...
-$ curl -sI https://test.contentgurus.no/no   → Cache-Control: private, no-cache, no-store, ...
+Per the Next.js build route table, `/[locale]/[[...slug]]` is **`ƒ (Dynamic)`**.
+Per the [official CDN-caching guide](https://nextjs.org/docs/app/guides/cdn-caching),
+Next.js sets `Cache-Control` strictly by render mode:
 
-# Routes EXCLUDED by the middleware matcher (negative-lookahead) — also PPR-dynamic:
-$ curl -sI https://test.contentgurus.no/diagnostics → Cache-Control: s-maxage=2592000, stale-while-revalidate=...
-$ curl -sI https://test.contentgurus.no/llms.txt    → Cache-Control: public, max-age=300, s-maxage=3600
-```
+- **Static**: `s-maxage=31536000`
+- **ISR** (revalidate): `s-maxage={revalidate}, stale-while-revalidate=…`
+- **Dynamic**: `private, no-cache, no-store, max-age=0, must-revalidate` ← us
 
-`/diagnostics` is a `◐` partial-prerender (dynamic) route in the build table,
-exactly like `/en` — yet it emits a **cacheable** header. The *only* difference
-is that `/diagnostics`, `/llms.txt`, `/robots.txt` are excluded by the
-`proxy.ts` matcher and `/en`, `/no/...` are not. So PPR dynamic-ness does **not**
-force `no-store`; **the middleware does.**
+So the `no-store` is emitted by **Next.js itself for a dynamic route**, and it
+cannot be overridden from middleware. Neither the cookie nor the middleware is
+the cause; the page being dynamic is.
 
-### Why next-intl sets `no-store`
+**Why the catch-all is dynamic:** `generateStaticParams` in
+[`src/lib/optimizely/all-pages.ts`](../src/lib/optimizely/all-pages.ts) returns
+**only a placeholder slug**, not real CMS paths. (That placeholder exists for a
+reason: Cache Components forbids `generateStaticParams` returning `[]`.) With no
+real params prerendered, every actual page renders per-request → dynamic →
+`no-store`. The `'use cache'` wrapper on `getPageContent` removes the *Graph*
+latency, but the *route* is still dynamic.
 
-next-intl's `createMiddleware` sets the `NEXT_LOCALE` cookie and, in doing so,
-marks the response as personalized — Next.js then emits
-`private, no-cache, no-store, max-age=0, must-revalidate`. Confirmed it's
-**unconditional**: the header is present even when `NEXT_LOCALE` is already set
-(no `Set-Cookie` on the repeat request, but still `no-store`). It's not the
-cookie *write* — it's the middleware being in the request path at all.
+This is confirmed by the Next.js discussion on exactly this case
+([vercel/next.js#85551](https://github.com/vercel/next.js/discussions/85551)):
+a user with a CMS blog reports *"I add a generateStaticParams. The static params
+covered blog return s-maxage and swr now."*
 
-### What this changes about the fix
+### What this means for the Optimizely dependency
 
-The earlier framing — *"blocked on Optimizely's Cloudflare config"* — is only
-half right. The edge **caching** (and RSC exclusion) is still Optimizely's to
-enable. But **the `no-store` that bypasses the edge is OURS**, emitted by our
-middleware. Even with Optimizely's edge cache turned on, an origin `no-store`
-will keep bypassing it. So this is now partly an **origin-side** task we can act
-on independently:
+You were right that Optimizely will likely need to enable edge HTML caching
+regardless. But note the ordering: **even if CF is set to "respect origin," it
+caches nothing today** because the origin says `no-store`. Whatever solution we
+pick below, the origin must emit `s-maxage`/`swr` first — otherwise the edge has
+nothing cacheable to respect. The two halves are: (1) **origin emits cacheable
+headers** = ours (this doc); (2) **edge actually caches + excludes RSC** =
+Optimizely's.
 
-- [ ] **Override the `Cache-Control` for CMS HTML routes after the next-intl
-      middleware runs.** Wrap `createMiddleware(routing)` in `src/proxy.ts` so
-      that, for full-document GETs to locale pages, the response header is
-      replaced with the cacheable
-      `public, s-maxage=31536000, max-age=0, must-revalidate, stale-while-revalidate=86400`
-      (per the split-TTL pattern in `cdn-html-caching.md`). Keep `no-store` for
-      RSC / `Next-Router-*` requests and for `/preview`, `/hooks/*`,
-      `/diagnostics`, `/debug`.
-- [ ] **Verify the cookie behaviour still works** after overriding the header —
-      next-intl needs `NEXT_LOCALE` to persist locale choice. Overriding
-      `Cache-Control` must not drop the `Set-Cookie`. (A page that `Vary`s on
-      cookie or carries `Set-Cookie` may still be treated as uncacheable by some
-      CDNs — check whether the edge caches a response that also sets a cookie,
-      or whether locale persistence needs to move out of the cookie path for
-      cacheable routes.)
-- [ ] **bf-cache** will recover automatically once the document is no longer
-      `no-store` — re-check the Lighthouse `bf-cache` audit after the change.
+### ✅ Done already (2026-06-14) — and what it did/didn't do
 
-### ⚠️ Caution — this is load-bearing and interacts with i18n
+- `routing.localeCookie: false` — removes the `NEXT_LOCALE` `Set-Cookie`. This
+  did **not** fix `no-store` (the cause is render mode), but it's a prerequisite:
+  a cacheable response must not also carry a per-user `Set-Cookie`. Keep it.
+- `routing.defaultLocale: 'en'` — unrelated to caching; bundled in the same
+  change. `/` now redirects to `/en`.
 
-`src/proxy.ts` is the locale-routing entry point (the `/` → `/no` redirect,
-locale detection, `NEXT_LOCALE` persistence all run here). Overriding its
-response headers risks breaking locale detection or soft-navigation if done
-carelessly. Land this **in isolation**, measure TTFB/LCP before & after, and
-test: locale switching, the `/` redirect, soft navigation between pages, and
-that `/preview` stays `no-store`. Do **not** bundle it with other perf work.
+---
+
+## Solution options for the dynamic→cacheable problem
+
+The goal: make CMS HTML routes emit `s-maxage`/`stale-while-revalidate` so the
+edge (once Optimizely enables it) can cache them, while keeping the on-demand,
+webhook-purged freshness model. Four options, with the **scaling tradeoff** that
+should drive the decision.
+
+### The core tradeoff: on-demand vs. prerender-all
+
+The **current** design (placeholder `generateStaticParams` + `'use cache'`) is
+*on-demand-then-cache*: a page is rendered the first time it's requested, then
+the data cache serves it cheaply until a publish purges it. **This scales to any
+site size** — a 5-page site and a 5,000-page site both pay a one-time render
+penalty per page, only for pages anyone actually visits. The cost is the
+`no-store` header (no edge HTML caching, full origin round-trip per request).
+
+Full prerender (`generateStaticParams` returns every CMS path) gives cacheable
+headers but **builds every page at deploy time** — for a large CMS that's
+thousands of Graph fetches per build, slow/fragile builds, and prerendering
+pages nobody visits. It trades the per-request penalty for a per-deploy one that
+grows with content. **This is the key reason the current placeholder design was
+chosen** — don't discard it lightly.
+
+### Option A — Prerender all CMS paths (`generateStaticParams` returns real paths)
+
+Make `getAllPagesPaths()` fetch every published path (like the sitemap's
+[`getAllContentPaths`](../src/lib/optimizely/all-content-paths.ts) already does)
+across all locales.
+
+- ✅ Pages become ISR/static → Next emits `s-maxage`+`swr` → edge-cacheable.
+  Verified mechanism (Next #85551).
+- ✅ bf-cache recovers (no more `no-store`).
+- ❌ **Doesn't scale.** Build time grows with page count; thousands of pages =
+  thousands of build-time Graph fetches. `getAllContentPaths` is already capped
+  at Graph's `limit: 100` (see [[project_graph_locales_and_limit]]) — would need
+  pagination.
+- ❌ Build now hard-depends on Graph reachability (the placeholder exists partly
+  to keep `next build` working when the DXP build container can't reach Graph).
+- ⚠️ Best for **small/bounded** sites. Reconsider if the CMS is or will be large.
+
+### Option B — Prerender the top-N, leave the long tail on-demand
+
+`generateStaticParams` returns only high-traffic paths (e.g. start page, top
+blog posts, key landing pages — sourced from analytics or a curated list);
+everything else stays dynamic via `dynamicParams: true`.
+
+- ✅ The pages that matter most for traffic/SEO get cacheable headers; build
+  cost is bounded by N, not total content.
+- ✅ Keeps the on-demand model for the long tail.
+- ❌ Mixed cache behavior (some routes cacheable, some `no-store`) — harder to
+  reason about; needs the curated/analytics-driven list maintained.
+- ⚠️ A pragmatic middle ground if full prerender doesn't scale but we want the
+  important pages edge-cached.
+
+### Option C — Custom cache handler / route-level header (investigate)
+
+Investigate whether Next 16 + `cacheComponents` exposes a supported way to emit
+`s-maxage` for an on-demand-rendered route **without** prerendering it (e.g. a
+`cacheLife`/`cacheTag` profile that propagates to the response `Cache-Control`,
+or a custom `cacheHandler` hook). The Next #85551 thread suggests this is **not
+currently possible** for truly dynamic routes (the maintainer pointed to
+`generateStaticParams` as the answer), but verify against the installed Next
+version — the framework is evolving (the docs describe an in-progress
+"pathname-based cache keying" direction).
+
+- ✅ Would preserve the scaling properties of on-demand AND give cacheable
+  headers — the ideal if it exists.
+- ❌ May not be supported today; needs a spike against our exact Next version
+  before committing.
+
+### Option D — Accept dynamic, optimize the render instead
+
+If edge HTML caching can't be unblocked cleanly, accept `no-store` and minimize
+the per-request cost: the data is already `'use cache'` (no Graph hit), the PPR
+shell is static. Push TTFB down via origin/region tuning rather than edge HTML
+caching.
+
+- ✅ Zero risk to the scaling model; nothing architectural changes.
+- ❌ Leaves the TTFB/origin-round-trip cost and the bf-cache audit failure on
+  the table. Doesn't achieve edge HTML caching at all.
+
+### Recommendation (for a decision later, not now)
+
+Given the site is CMS-backed and **could grow to thousands of pages**, full
+prerender (Option A) is the wrong default — it sacrifices the scaling property
+that the current design was built for. Lean toward:
+
+1. **Spike Option C** first — if Next exposes a route-level cacheable header
+   without prerender, it's strictly best (keeps on-demand scaling + cacheable).
+2. If C isn't possible, **Option B** (prerender top-N) as the pragmatic balance.
+3. Reserve **Option A** for if/when the total page count is known to stay small.
+
+Whichever we pick, the RSC-exclusion + edge-enable half is still Optimizely's
+(see "Suggested Cloudflare rules" in [`cdn-html-caching.md`](./cdn-html-caching.md)),
+and the existing publish→`purgeCdnCache` webhook already covers invalidation.
+
+### ⚠️ Cautions for whoever implements
+
+- **Don't break `next build` offline.** The placeholder in `all-pages.ts` keeps
+  the build working when Graph is unreachable; any real-path fetch needs a
+  graceful fallback to the placeholder on Graph failure.
+- **Graph `limit: 100`** — `getAllContentPaths` is capped; a full enumeration
+  needs pagination (see [[project_graph_locales_and_limit]]).
+- **Measure in isolation** — land the caching change alone, capture TTFB/LCP
+  and `cf-cache-status` before/after, so the one variable is clear.
+- **Verify RSC isn't served as HTML** once the edge caches (the footgun in
+  [`cdn-html-caching.md`](./cdn-html-caching.md)).
