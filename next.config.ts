@@ -43,9 +43,14 @@ const nextConfig: NextConfig = {
   // ENTRYPOINT, and the widely-cited `resolve.alias` workaround targets the
   // wrong module (`polyfill-module`) so it's a no-op. Entry-filtering is
   // fragile webpack-internals hacking for a 13 KiB gain on a load-bearing
-  // config. Deliberately NOT done — wait for the upstream fix (PRs #87270 /
-  // #88551). If revisiting: verify via the deployed Lighthouse legacy-javascript
-  // audit, not a local grep (can't distinguish polyfill-install from app code).
+  // config. Deliberately NOT done — wait for the upstream fix. If revisiting:
+  // verify via the deployed Lighthouse legacy-javascript audit, not a local
+  // grep (can't distinguish polyfill-install from app code).
+  //
+  // TRACK — re-evaluate when this lands in our Next.js version:
+  //   Issue: https://github.com/vercel/next.js/issues/86785
+  //   PRs:   https://github.com/vercel/next.js/pull/87270
+  //          https://github.com/vercel/next.js/pull/88551
   async headers() {
     return [
       {

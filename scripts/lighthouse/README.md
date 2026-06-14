@@ -106,6 +106,10 @@ Restart Claude Code after adding `.mcp.json` so it picks up the server.
 ### Known un-fixed audit
 
 The `legacy-javascript` audit (~13 KiB of ES polyfills) does **not** clear — it's
-an open Next.js bug (vercel/next.js#86785) with no clean fix; see the note in
-`next.config.ts`. Not worth fragile webpack hacking for 13 KiB; revisit when the
-upstream fix lands.
+an open Next.js bug with no clean fix; see the note in `next.config.ts`. Not
+worth fragile webpack hacking for 13 KiB; revisit when the upstream fix lands.
+
+Track:
+- Issue: <https://github.com/vercel/next.js/issues/86785>
+- PRs: <https://github.com/vercel/next.js/pull/87270>,
+  <https://github.com/vercel/next.js/pull/88551>
