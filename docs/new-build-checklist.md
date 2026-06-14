@@ -117,11 +117,54 @@ re-fetched on every visit.
 fingerprinted/stable static assets; a content-changing asset gets a new filename
 (or a shortened TTL) so the immutable cache doesn't serve a stale version.
 
+### Lighthouse measurement methodology (don't chase noise)
+Lighthouse scores are noisy and some audits flap. Treating a single run as truth
+leads to chasing phantom regressions and phantom failures. Two specific traps
+seen in practice: (1) Performance/LCP swing several points across identical runs
+on the same deployed code — network/origin/throttling jitter, not a real change;
+(2) deterministic-looking audits flap — e.g. `meta-description` reported missing
+on one run while the tag is provably in the HTML on every fetch (a streaming /
+timing false-negative). Also: measure the **deployed** environment with
+production-like caching, not local dev, and run **incognito** (extensions skew
+results).
+**Check:** take the **median of 3–5 runs**, not one; report a *range* not a point;
+before "fixing" a failing audit, verify the underlying fact directly (e.g. `curl`
+the HTML for the meta tag) — a flaky audit needs no code change; store results
+over time so a real trend is distinguishable from jitter; measure against the
+deployed (cached) URL.
+
 ### Modern JS baseline
 A too-old browserslist target ships a large legacy-polyfill bundle to modern
-browsers for no benefit.
+browsers for no benefit. Caveat: the framework may inject polyfills
+*independent of* browserslist — Next.js ships a `polyfill-nomodule` bundle
+(~13 KiB of `Array.prototype.at`, `Object.hasOwn`, etc.) unconditionally, so a
+modern browserslist floor alone does **not** clear the Lighthouse
+`legacy-javascript` audit (see vercel/next.js#86785). The commonly-cited
+`resolve.alias` of `polyfill-module` is a no-op (wrong module). Don't sink time
+into fragile webpack-internals workarounds for a small payload — confirm whether
+it's an open framework bug first and track it.
 **Check:** a modern browserslist floor is set; audit for a legacy-JavaScript
-bundle (Lighthouse flags it); confirm the polyfill payload is gone.
+bundle (Lighthouse flags it); if it persists despite a modern floor, verify
+whether it's a framework-level unconditional polyfill (open bug) before
+attempting a workaround; verify any "fix" against the deployed Lighthouse audit,
+not a local bundle grep (can't distinguish polyfill-install from app code).
+
+## Accessibility
+
+### Brand-color contrast on small text (WCAG AA)
+Brand accent colors are tuned to look good, not to pass contrast — a vivid logo
+color used for small text on white commonly fails WCAG AA (needs **4.5:1** for
+normal text; large text ≥24px or ≥18.66px-bold only needs 3:1). Eyebrows/labels,
+muted metadata (date, byline), and link colors are the usual offenders. The fix
+shouldn't mute the brand everywhere: add a darker **accessible variant** of the
+brand color scoped to small-text-on-light uses, and keep the vivid brand for
+large display text and non-text decoration. Make it background-aware — the
+accessible (darkened) value is *worse* on dark surfaces, so revert it to the
+vivid brand there.
+**Check:** run the Lighthouse/axe `color-contrast` audit; small text on light
+backgrounds hits 4.5:1; large display text hits 3:1; brand color isn't muted
+globally to fix one element (use a scoped token); the accessible variant adapts
+per surface (light vs dark/image) rather than one value everywhere.
 
 ## PWA & Manifest
 
@@ -180,6 +223,26 @@ headers or the edge bypasses entirely.
 origin emits shareable cache headers (not `no-store`) for cacheable routes; an
 edge/browser TTL split (long shared TTL, short browser TTL) so a publish-purge is
 honored quickly; verify `cf-cache-status`/equivalent shows HIT, not DYNAMIC.
+
+### Why the origin emits `no-store` — it's the render mode, not middleware
+When a route serves `Cache-Control: private, no-store`, the cause is almost
+always that the framework classifies it as **dynamic** (rendered per-request) —
+Next.js sets `Cache-Control` purely by render mode (static → `s-maxage=1y`,
+ISR → `s-maxage`+`swr`, dynamic → `no-store`). Easy false leads that waste time:
+blaming the i18n cookie, blaming the middleware running, or trying to override
+`Cache-Control` *in* middleware (the framework overwrites it for dynamic pages).
+A common reason a CMS catch-all is dynamic: `generateStaticParams` returns a
+placeholder (not real paths), so nothing prerenders and every page is on-demand.
+Note the tradeoff — on-demand-then-cache scales to large sites (one-time penalty
+per visited page); prerendering all CMS paths gives cacheable headers but a
+build cost that grows with content. Prerendering is *not* automatically the right
+answer for a large site.
+**Check:** confirm the route's render mode in the build output (static `○` /
+PPR `◐` / dynamic `ƒ`) before chasing the header; verify with a controlled test
+(does the header change when the suspected cause is removed?) rather than
+assuming; decide the prerender-vs-on-demand tradeoff against the *expected* page
+count, not the current one; a per-user `Set-Cookie` (e.g. an i18n locale cookie)
+also blocks shared caching — drop it if locale is URL-derived and unread.
 
 ### CDN purge targets the public hostname
 A publish-time CDN purge must target the hostname the CDN actually fronts. If it
@@ -245,12 +308,20 @@ only available via a gated endpoint, masked.
 
 ### Experimentation / anti-flicker snippets load correctly
 A/B-testing snippets that need to run before first paint must be synchronous in
-the head; deferring them causes flicker. But they also bring third-party-cookie
-and Best-Practices-score costs to weigh.
+the head; deferring them causes flicker. But they also bring real costs to weigh:
+the snippet is typically the single biggest render-blocking request *and* sets a
+third-party cookie that tanks the Best-Practices score — measure with it on vs.
+off so the tradeoff is explicit (it can hide a non-trivial FCP/Best-Practices
+hit). Prefer making it a **runtime toggle** (a CMS/settings flag) rather than a
+build-time env var, so it can be flipped without a redeploy. If a toggle has both
+a CMS value and an env fallback, beware: a stale env fallback can make it
+impossible to turn off via the CMS — pick a single source of truth.
 **Check:** anti-flicker snippet is the synchronous, parser-blocking form it
-requires (not a deferred loader); it's env-gated so branches/previews can opt out;
-third-party cookie / SameSite warnings are reviewed; targeting (e.g. excluding
-preview) is configured in the product, not the page.
+requires (not a deferred loader); runtime-toggleable (and toggling off has a
+single authoritative source — no env fallback silently overriding the CMS off);
+measure FCP/LCP/Best-Practices with it on and off; third-party cookie / SameSite
+warnings reviewed; targeting (e.g. excluding preview) configured in the product,
+not the page; a settings change that affects every page clears the whole cache.
 
 ## CMS & Content Modeling
 
