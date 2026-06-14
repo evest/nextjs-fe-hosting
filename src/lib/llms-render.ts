@@ -7,8 +7,9 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ?? '';
 
 // Locale used for the *root* /llms.txt and /llms-full.txt header (site name +
 // description). The root files are the locale-agnostic entry point, so they
-// present in English — the international default — independent of
-// routing.defaultLocale (which is 'no'). Per-locale routes use their own locale.
+// present in English — the international default. Pinned to 'en' explicitly
+// (rather than routing.defaultLocale) so it stays English even if the default
+// locale changes. Per-locale routes use their own locale.
 export const ROOT_LLMS_LOCALE = 'en';
 
 // Section + locale labels live here (not in the i18n message catalog) because
