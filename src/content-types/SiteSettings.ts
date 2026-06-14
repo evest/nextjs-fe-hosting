@@ -97,5 +97,12 @@ export const SiteSettingsCT = contentType({
       group: 'organization',
       sortOrder: 160,
     },
+    webExperimentationSnippetId: {
+      type: 'string',
+      displayName: 'Web Experimentation snippet ID',
+      description:
+        'Optimizely Web Experimentation project/snippet ID (the part before .js in https://cdn.optimizely.com/js/<ID>.js). Set it to load the experimentation snippet site-wide; leave blank to turn it off. Not localized — one Optimizely project serves all languages. Saving clears the whole site cache so the change goes live everywhere.',
+      sortOrder: 200,
+    },
   },
 });

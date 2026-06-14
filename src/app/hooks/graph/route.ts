@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { purgeCdnCache } from "@/lib/cdn-cache";
 import { CACHE_KEYS, getArticlesUnderTag, getPageTag, getSiteSettingsTag } from "@/lib/cache/cache-keys";
+import { getAllContentPaths } from "@/lib/optimizely/all-content-paths";
 import { routing } from "@/i18n/routing";
 
 const CALLBACK_API_KEY = process.env.OPTIMIZELY_GRAPH_CALLBACK_APIKEY;
@@ -34,9 +35,15 @@ async function graphRequest(query: string, variables: Record<string, unknown>) {
   return json.data;
 }
 
+// Sentinel returned by revalidateDocId for a SiteSettings publish: the POST
+// handler reads it and purges the ENTIRE CDN (purgeCdnCache() with no args)
+// instead of a single resolved path, because settings affect every page.
+const SITE_SETTINGS_FULL_PURGE = "__full_purge__" as const;
+
 /** Resolve the path for a specific docId and revalidate it. Returns the
- *  resolved path (without trailing slash) on success, or "" if the doc
- *  cannot be resolved.
+ *  resolved path (without trailing slash) on success, "" if the doc
+ *  cannot be resolved, or SITE_SETTINGS_FULL_PURGE for a SiteSettings
+ *  publish (signals a whole-site CDN purge).
  *
  *  docId format: `{UUID}_{language}_Published` */
 async function revalidateDocId(docId: string): Promise<string> {
@@ -64,10 +71,23 @@ async function revalidateDocId(docId: string): Promise<string> {
   // SiteSettings is a singleton fetched per locale and sits outside the URL
   // tree. On a SiteSettings publish, purge every locale's settings cache so
   // the next JSON-LD / llms.txt render picks up the new values.
-  if (types.includes("SiteSettings")) {
+  //
+  // SiteSettings also drives the root layout (the Web Experimentation snippet
+  // ID lives there), so a settings change affects EVERY page, not just the
+  // pages that happen to fetch settings. revalidating the per-locale settings
+  // tags alone would leave already-cached page shells serving the old snippet
+  // state. So we additionally blow away every page tag and the layout, then
+  // purge the whole CDN below — guaranteeing the new snippet state goes live
+  // site-wide immediately. This is heavy but settings publishes are rare.
+  const isSiteSettings = types.includes("SiteSettings");
+  if (isSiteSettings) {
     for (const l of routing.locales) {
       revalidateTag(getSiteSettingsTag(l), "max");
     }
+    // Drops the prerendered shell for the entire app (root layout included),
+    // so the next request to any path re-renders with the current snippet ID.
+    revalidatePath("/", "layout");
+    return SITE_SETTINGS_FULL_PURGE;
   }
 
   const url = meta?.url?.default;
@@ -111,7 +131,35 @@ export async function POST(request: NextRequest) {
   const { subject, action } = payload.type;
   if (subject === "doc" && (action === "updated" || action === "expired")) {
     const path = await revalidateDocId(payload.data.docId);
-    if (path) {
+    if (path === SITE_SETTINGS_FULL_PURGE) {
+      // SiteSettings changed → purge the whole CDN. The edge-cache purge API
+      // takes exact URLs (no wildcard), so enumerate every public path and
+      // purge them all, plus the locale roots and "/". revalidatePath('/',
+      // 'layout') (done above) already cleared the Next.js cache for every
+      // route; this clears the matching edge entries so visitors don't keep
+      // getting the old snippet state from the CDN.
+      const hostname = process.env.OPTIMIZELY_SITE_HOSTNAME?.replace(/^https?:\/\//, "");
+      if (hostname) {
+        void (async () => {
+          try {
+            const base = `https://${hostname}`;
+            const paths = await getAllContentPaths();
+            // Dedupe: content URLs + every locale root + the bare root.
+            const urls = new Set<string>([`${base}/`]);
+            for (const l of routing.locales) urls.add(`${base}/${l}`);
+            for (const p of paths) {
+              urls.add(`${base}${p.url.endsWith("/") ? p.url.slice(0, -1) || "/" : p.url}`);
+            }
+            await purgeCdnCache([...urls]);
+          } catch (err) {
+            console.error(
+              "[hooks] CDN full purge failed:",
+              err instanceof Error ? err.message : err,
+            );
+          }
+        })();
+      }
+    } else if (path) {
       // Replace this with the public-facing hostname which should have its
       // cache purged. The cache purge endpoint takes an array and multiple
       // domains/paths can be purged.

@@ -4,6 +4,7 @@ import "./globals.css";
 
 // Initialize Optimizely SDK registries
 import "@/optimizely";
+import { getWebExperimentationSnippetId } from "@/lib/optimizely/get-site-settings";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,19 +70,20 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
-// Optimizely Web Experimentation snippet ID, sourced from env so branches /
-// preview deploys can opt out by leaving it blank. Format-validated against
-// Optimizely's alphanumeric ID shape — anything else is treated as missing
-// and the snippet is not rendered.
-const rawSnippetId = process.env.OPTIMIZELY_WEB_EXP_SNIPPET_ID;
-const webExpSnippetId =
-  rawSnippetId && /^[A-Za-z0-9_-]{1,32}$/.test(rawSnippetId) ? rawSnippetId : null;
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Web Experimentation snippet ID is now a runtime CMS setting
+  // (SiteSettings.webExperimentationSnippetId), so editors can toggle it on/off
+  // without a redeploy. Reading it here keeps the snippet parser-blocking in
+  // <head> (required for anti-flicker). getWebExperimentationSnippetId() is
+  // locale-agnostic and cached under the SiteSettings tag, which the
+  // /hooks/graph webhook purges (whole-site) on any SiteSettings publish.
+  // Falls back to the OPTIMIZELY_WEB_EXP_SNIPPET_ID env var, then null (off).
+  const webExpSnippetId = await getWebExperimentationSnippetId();
+
   // <html lang> is hard-coded to "en" because the root layout can't read
   // the per-request locale without breaking cacheComponents prerendering
   // (uncached request reads in the static shell are fatal). The visible

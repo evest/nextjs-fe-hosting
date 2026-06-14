@@ -25,6 +25,7 @@ type Props = {
 const GROUP_LABELS: Record<string, string> = {
   _general: 'General',
   organization: 'Organization (schema.org)',
+  experimentation: 'Experimentation',
 };
 
 type PropertyDef = {

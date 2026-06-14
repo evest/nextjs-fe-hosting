@@ -1,6 +1,7 @@
 import { getClient } from '@optimizely/cms-sdk';
 import { cacheLife, cacheTag } from 'next/cache';
 import { getSiteSettingsTag } from '@/lib/cache/cache-keys';
+import { routing } from '@/i18n/routing';
 // Ensures config() has run — called from standalone route handlers (llms.txt,
 // llms-full.txt) that don't import @/optimizely via the root layout.
 import '@/lib/optimizely/graph-config';
@@ -121,4 +122,64 @@ export async function getSiteSettings(locale: string): Promise<SiteSettings> {
     console.error('[get-site-settings] graph query failed:', e);
     return merge(null);
   }
+}
+
+// Optimizely Web Experimentation snippet IDs are short alphanumerics
+// (project IDs). Anything outside this shape is treated as unset so a typo'd
+// value can never inject an arbitrary <script src>.
+const SNIPPET_ID_RE = /^[A-Za-z0-9_-]{1,32}$/;
+
+// Env-var fallback so the snippet still loads if the CMS field is blank or
+// Graph is unreachable (e.g. preview deploys that pre-date the CMS field).
+const FALLBACK_SNIPPET_ID = (() => {
+  const raw = process.env.OPTIMIZELY_WEB_EXP_SNIPPET_ID;
+  return raw && SNIPPET_ID_RE.test(raw) ? raw : null;
+})();
+
+const SNIPPET_QUERY = `
+  query WebExpSnippetQuery($locale: [Locales]) {
+    SiteSettings(locale: $locale, limit: 1) {
+      items {
+        webExperimentationSnippetId
+      }
+    }
+  }
+`;
+
+/**
+ * Fetch the Web Experimentation snippet ID from the SiteSettings singleton.
+ *
+ * Deliberately locale-agnostic: `webExperimentationSnippetId` is a
+ * non-localized field, so the same value is stored against every locale
+ * variant. We query the default locale only — this lets the root layout read
+ * it WITHOUT touching the per-request locale, which it cannot do without
+ * breaking cacheComponents prerendering (see RootLayout / docs/
+ * todo-html-lang-per-locale.md). Returns the validated ID, or the env-var
+ * fallback, or null (snippet off).
+ *
+ * Shares the SiteSettings cache tag (default locale) so the existing publish
+ * webhook already invalidates it.
+ */
+export async function getWebExperimentationSnippetId(): Promise<string | null> {
+  'use cache';
+  if (process.env.NODE_ENV === 'production') {
+    cacheLife('max');
+  } else {
+    cacheLife('minutes');
+  }
+  cacheTag(getSiteSettingsTag(routing.defaultLocale));
+
+  try {
+    const client = getClient();
+    const data = (await client.request(SNIPPET_QUERY, {
+      locale: [routing.defaultLocale],
+    })) as {
+      SiteSettings?: { items?: { webExperimentationSnippetId?: string | null }[] | null } | null;
+    };
+    const raw = data?.SiteSettings?.items?.[0]?.webExperimentationSnippetId ?? null;
+    if (raw && SNIPPET_ID_RE.test(raw)) return raw;
+  } catch (e) {
+    console.error('[get-site-settings] web-exp snippet query failed:', e);
+  }
+  return FALLBACK_SNIPPET_ID;
 }
