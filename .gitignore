@@ -37,6 +37,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# lighthouse reports (kept locally for diffing, not committed)
+/lh/
+*.report.html
+*.report.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
