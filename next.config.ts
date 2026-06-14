@@ -35,6 +35,24 @@ const nextConfig: NextConfig = {
     loader: 'custom',
     loaderFile: './src/lib/image-loader.ts',
   },
+  // Strip Next.js's legacy-browser polyfill bundle. Next loads
+  // `polyfill-module` UNCONDITIONALLY — independent of our (modern)
+  // browserslist — so it ships ~13 KiB of polyfills for Array.prototype.at,
+  // Object.hasOwn, String.prototype.trimStart, etc. that every browser we
+  // target (Chrome/Edge 111+, Safari 16.4+) supports natively. Lighthouse
+  // flags this as "legacy JavaScript". Aliasing the module to `false` removes
+  // it from the bundle. Tracked upstream in vercel/next.js#86785.
+  //
+  // NOTE: `next build` here uses webpack (no --turbopack flag). If the build
+  // ever switches to Turbopack, this won't apply — Turbopack needs
+  // `turbopack.resolveAlias` pointing at an empty module instead.
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'next/dist/build/polyfills/polyfill-module': false,
+    };
+    return config;
+  },
   async headers() {
     return [
       {
