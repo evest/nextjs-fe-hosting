@@ -1,5 +1,6 @@
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { Container } from '@/components/ui';
+import { getImageMediaMeta } from '@/lib/optimizely/get-image-media-meta';
 
 // Editor preview for the built-in `ImageMedia` asset type.
 //
@@ -22,14 +23,23 @@ import { Container } from '@/components/ui';
 type ImageMediaContent = {
   __typename: string;
   __context?: { edit: boolean; preview_token: string };
+  // _metadata is reliably fetched for a registered media type (the SDK's
+  // base-type fragments include MediaMetadata via an inline fragment): so
+  // displayName, url, mimeType, status, dates are dependable here.
   _metadata?: {
+    key?: string | null;
     displayName?: string | null;
     url?: { default?: string | null } | null;
     types?: (string | null)[] | null;
     status?: string | null;
     created?: string | null;
     lastModified?: string | null;
+    mimeType?: string | null;
   } | null;
+  // _assetMetadata / _imageMetadata are top-level ImageMedia fields, NOT part
+  // of the base-type fragments — so they may be absent depending on how the
+  // payload was fetched. Read as best-effort; the UI shows "— not set —" when
+  // missing rather than failing.
   _assetMetadata?: {
     fileSize?: number | null;
     mimeType?: string | null;
@@ -58,6 +68,31 @@ function formatFileSize(bytes: number | null | undefined): string | null {
   return `${size.toFixed(size >= 100 ? 0 : 1)} ${units[unit]}`;
 }
 
+// Derive a filename from an asset URL. CMS asset URLs are either
+// `.../globalassets/content-journey-mapping.png` (filename in the last segment)
+// or `.../globalassets/blog-og-image--.../ ` (a route-segment folder with no
+// extension). Return the last non-empty path segment; null if there isn't one.
+function filenameFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const { pathname } = new URL(url);
+    const segments = pathname.split('/').filter(Boolean);
+    const last = segments[segments.length - 1];
+    return last ? decodeURIComponent(last) : null;
+  } catch {
+    return null;
+  }
+}
+
+// Map a MIME type to a file extension for assets whose URL carries no
+// extension (route-segment folder URLs). e.g. "image/png" -> "PNG".
+function formatFromMime(mime: string | null | undefined): string | null {
+  if (!mime) return null;
+  const sub = mime.split('/')[1];
+  if (!sub) return null;
+  return sub.replace('jpeg', 'jpg').toUpperCase();
+}
+
 function formatDate(iso: string | null | undefined): string | null {
   if (!iso) return null;
   const d = new Date(iso);
@@ -82,21 +117,56 @@ function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-export default function ImageMedia({ content }: Props) {
+// Colour the status by publish state: green when Published, amber otherwise
+// (Draft / InReview / Scheduled / Rejected / Expired — i.e. not live), so an
+// editor instantly sees whether the image is published. Null status → muted.
+function StatusBadge({ status }: { status: string | null | undefined }) {
+  if (!status) return <span className="text-sm italic text-muted-foreground">— not set —</span>;
+  const isPublished = status.toLowerCase() === 'published';
+  const cls = isPublished
+    ? 'bg-green-100 text-green-800'
+    : 'bg-amber-100 text-amber-800';
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${cls}`}>
+      {status}
+    </span>
+  );
+}
+
+export default async function ImageMedia({ content }: Props) {
   const { src } = getPreviewUtils(content);
 
   const meta = content._metadata ?? {};
   const asset = content._assetMetadata ?? {};
-  const image = content._imageMetadata ?? {};
+  const inlineImage = content._imageMetadata ?? {};
+
+  // The SDK preview payload omits _imageMetadata/_assetMetadata, so fetch them
+  // by content key (proven to return width/height/fileSize). Merge: prefer any
+  // values already in the payload, fall back to the separate fetch. Degrades to
+  // the inline (possibly empty) values if the asset isn't indexed yet.
+  const extra = await getImageMediaMeta(meta.key);
+  const image = {
+    width: inlineImage.width ?? extra?.width ?? null,
+    height: inlineImage.height ?? extra?.height ?? null,
+  };
+  const fileSizeBytes = asset.fileSize ?? extra?.fileSize ?? null;
 
   // src() appends the preview token in edit mode so the asset URL resolves in
   // the CMS preview iframe. Prefer the asset URL, fall back to the metadata URL.
   const imageUrl = src(asset.url ?? meta.url?.default ?? undefined);
 
   const displayName = meta.displayName ?? 'Untitled image';
+  // The CMS display name often has no file extension (it's an editor-given
+  // title, not the filename). Surface the real filename (from the asset URL)
+  // and the format (from MIME) separately so editors aren't confused by a
+  // name like "Information Architecture Hero" with no .png/.jpg.
+  const assetUrl = asset.url ?? meta.url?.default ?? null;
+  const filename = filenameFromUrl(assetUrl);
+  const mimeType = meta.mimeType ?? asset.mimeType ?? null;
+  const format = formatFromMime(mimeType);
   const dimensions =
     image.width != null && image.height != null ? `${image.width} × ${image.height} px` : null;
-  const fileSize = formatFileSize(asset.fileSize);
+  const fileSize = formatFileSize(fileSizeBytes);
   const aspectRatio =
     image.width != null && image.height != null && image.height !== 0
       ? (image.width / image.height).toFixed(2)
@@ -150,11 +220,13 @@ export default function ImageMedia({ content }: Props) {
           </h2>
           <dl>
             <MetaRow label="Name" value={meta.displayName} />
+            <MetaRow label="Filename" value={filename} />
+            <MetaRow label="Format" value={format} />
             <MetaRow label="Dimensions" value={dimensions} />
             <MetaRow label="Aspect ratio" value={aspectRatio} />
             <MetaRow label="File size" value={fileSize} />
-            <MetaRow label="MIME type" value={asset.mimeType} />
-            <MetaRow label="Status" value={meta.status} />
+            <MetaRow label="MIME type" value={mimeType} />
+            <MetaRow label="Status" value={<StatusBadge status={meta.status} />} />
             <MetaRow label="Created" value={formatDate(meta.created)} />
             <MetaRow label="Last modified" value={formatDate(meta.lastModified)} />
             <MetaRow
