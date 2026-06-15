@@ -10,6 +10,10 @@ import { initContentTypeRegistry, initDisplayTemplateRegistry, BlankExperienceCo
 import { initReactComponentRegistry } from '@optimizely/cms-sdk/react/server';
 // This loads all the content types from the /content-types/index.ts file.
 import * as contentTypes from '@/content-types';
+// Built-in CMS media type registered for FETCHING (not authored, not pushed to
+// the CMS). Without it in the content-type registry, getPreviewContent() for an
+// image asset throws GraphMissingContentTypeError. See content-types/ImageMedia.
+import { ImageMediaContentType } from '@/content-types/ImageMedia';
 import * as displayTemplates from '@/display-templates';
 import * as components from '@/components';
 // Configures the Graph client (config()). Lives in its own side-effect module
@@ -18,7 +22,7 @@ import * as components from '@/components';
 import '@/lib/optimizely/graph-config';
 
 // Initialize content type registry with all content types
-const allContentTypes = [...Object.values(contentTypes), BlankExperienceContentType];
+const allContentTypes = [...Object.values(contentTypes), BlankExperienceContentType, ImageMediaContentType];
 initContentTypeRegistry(allContentTypes);
 
 // Initialize display template registry
