@@ -61,5 +61,13 @@ initReactComponentRegistry({
     ContactFormBlock: components.ContactFormBlock,
 
     AdvancedHero: components.AdvancedHero,
+
+    // Built-in media types. ImageMedia is a CMS-native asset type (not authored
+    // in src/content-types). This component renders ONLY when an ImageMedia is
+    // the content passed to <OptimizelyComponent> — i.e. an editor opening the
+    // asset in preview/edit mode. Images embedded in pages render via the
+    // parent's getPreviewUtils().src(), which never consults this registry, so
+    // this entry does not change anything for end users.
+    ImageMedia: components.ImageMedia,
   },
 });

@@ -32,3 +32,6 @@ export { default as ArticleListBlock } from './blocks/ArticleListBlock';
 export { default as ContactFormBlock } from './blocks/ContactFormBlock';
 
 export { default as AdvancedHero } from './blocks/AdvancedHero';
+
+// Built-in media types — editor preview only (see components/media/ImageMedia)
+export { default as ImageMedia } from './media/ImageMedia';
