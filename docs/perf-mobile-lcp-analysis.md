@@ -2,9 +2,17 @@
 
 Working notes from chasing the stubborn ~3s mobile LCP on Test2. Measured with
 the Lighthouse harness (`npm run lh`, mobile, median of 3) against
-`https://test.contentgurus.no`. **The Chrome DevTools MCP was not connected**
-this session, so there's no interactive trace here — the conclusions are from
-the harness reports + the live HTML/CDN.
+`https://test.contentgurus.no`, and — in the **DevTools-trace addendum at the
+bottom** — confirmed with real Chrome performance traces via the Chrome DevTools
+MCP (mobile-emulated: 412px, 4× CPU, Slow 4G).
+
+> **If you're here because an SEO/GEO tool (Opal, etc.) says "the hero image at
+> width=3840 is the LCP root cause — add fetchpriority/preload": that is WRONG
+> for this site.** Real Chrome traces prove the LCP element is **text**, not the
+> hero image (the `width=3840` is only the ignored `src` fallback; the browser
+> downloads `width=750` via srcset). Adding `fetchpriority="high"` / `preload`
+> to the hero would divert bandwidth to a non-LCP image and can make the real
+> (text) LCP *worse*. See the DevTools addendum. Do not implement that advice.
 
 ## TL;DR
 
@@ -115,3 +123,77 @@ edge HTML caching — which is the parked Optimizely dependency, not a code fix.
 The article (94) is close to its ceiling for the current architecture; the home
 page (84) had the most to gain from the Manrope-swap removal + card-image
 right-sizing + preconnect, so it's the one to watch on the re-measure.
+
+---
+
+## DevTools-trace addendum (2026-06-16, MCP now connected)
+
+Ran real Chrome performance traces through the Chrome DevTools MCP (mobile
+emulation: 412×823 @1.75 DPR, 4× CPU, Slow 4G) to settle the recurring
+"hero-image-is-the-LCP" claim and to decompose the render delay. This is
+ground-truth from Chrome's own trace engine, not Lighthouse's simulated model.
+
+### 1. The LCP element is text — proven, not inferred
+
+Chrome's LCP-breakdown insight, verbatim, on both pages:
+
+> The LCP element (`P …`) **is text and was not fetched from the network**.
+
+- Article LCP node: `P.text-xl.md:text-2xl…` (the ingress paragraph).
+- Home LCP node: `P.max-w-md.text-[17px]…` (AdvancedHero body text).
+
+The breakdown has only **2 phases (TTFB + render delay)**, not the 4 phases an
+image LCP shows. **There is no resource-load phase** — categorical proof the
+hero image is not the LCP. The network trace confirms the hero is fetched at
+`width=750` (not 3840) via srcset, as designed.
+
+### 2. Real LCP is ~1.0–1.1 s — far below Lighthouse's simulated 3–4.5 s
+
+Observed LCP across traces: **article 1005 ms, home 997–1135 ms.** The
+big Lighthouse/Opal numbers are the *simulated-throttling projection*, not what
+Chrome actually observed. Real-user CrUX field data: n/a (page not in CrUX yet).
+
+### 3. TTFB is the dominant, volatile lever — and it's the `no-store` problem
+
+LCP phase split varied run-to-run because **TTFB swings** (home: 229 ms → 735 ms
+across traces). DevTools `DocumentLatency` insight on the worst run:
+
+- **"Server responded quickly: FAILED."** Document download *completed* at
+  840 ms but actual download time was only **94 ms** → ~735 ms was spent waiting
+  for the first byte.
+- Response headers (live): `cache-control: private, no-cache, no-store, …` and
+  **`cf-cache-status: DYNAMIC`** — every request bypasses the edge and pays a
+  full origin round-trip over the throttled link.
+- **Chrome's own estimated savings for fixing this: FCP 621 ms, LCP 621 ms** —
+  the single largest lever in the entire trace.
+
+Decomposing TTFB (unthrottled curl ×5): origin think-time is **~150–205 ms**
+(connect ~5–20 ms) — already fast (data is `'use cache'`, PPR shell static).
+Under Slow 4G that ~200 ms inflates to 700 ms+ because the DYNAMIC bypass forces
+the round-trip onto the slow client link. **Edge-cached HTML removes that
+round-trip** → this is the [edge-caching dependency](./todo-cdn-html-caching.md),
+quantified by Chrome at ~621 ms.
+
+### 4. Render delay is NOT JavaScript — no hydration cost to cut
+
+Main-thread analysis of the first 1200 ms (from the raw trace):
+
+- Total `EvaluateScript` ≈ **46 ms**; largest single script **16 ms**. TBT 3–7 ms.
+- No long task blocks the text paint. The render delay is the normal pipeline:
+  receive HTML → parse → fetch+apply render-blocking CSS → layout → paint.
+- **There is no expensive JS/hydration running before LCP** — the app is already
+  lean. Confirms why the font/image micro-optimizations helped only at the
+  margins: there was never a JS bottleneck to remove.
+
+### Conclusion (what to do / not do)
+
+- **Do NOT** add hero `fetchpriority="high"` / `preload` (Opal's advice). The
+  hero isn't the LCP; it would regress the real text LCP. Same class of mistake
+  as the reverted `inlineCss`.
+- **The only lever with real headroom is TTFB** via HTML edge caching
+  (Chrome-estimated ~621 ms FCP/LCP). That's the parked Optimizely dependency +
+  our origin-emits-cacheable-headers work in
+  [`todo-cdn-html-caching.md`](./todo-cdn-html-caching.md).
+- Real LCP (~1.0 s) is already good; the "failing" number is a simulated-model
+  artifact amplified by the DYNAMIC origin round-trip. Fixing caching fixes both
+  the real TTFB *and* the simulated score.
