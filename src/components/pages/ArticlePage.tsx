@@ -217,7 +217,15 @@ export default async function ArticlePage({ content }: Props) {
                 fill
                 priority
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 896px"
+                // The hero lives in Container size="narrow" (max-w-4xl = 896px)
+                // with horizontal padding, so the rendered box never exceeds
+                // ~832px on desktop and the viewport (minus 2rem) below 896px.
+                // The old `100vw` on mobile made next/image request the 1920
+                // bucket and DPR-double toward 3840 — ~10× the pixels a
+                // 256–384px-tall hero needs (it's the mobile LCP element).
+                // Capping the upper bound at 896px lets the browser pick a
+                // ~1200-wide candidate at 2–3× DPR instead.
+                sizes="(max-width: 896px) 100vw, 896px"
                 {...pa('featuredImage')}
               />
             </div>
