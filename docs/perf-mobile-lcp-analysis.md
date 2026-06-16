@@ -73,6 +73,28 @@ and preconnect is the one most likely to show up in the LCP metric.
    (~3 KB); the rest is utilities actually in use. Not a promising lever without
    a framework-level change. Don't rabbit-hole here.
 
+   - **`@source not` for dev-only routes (kept):** excluding `/diagnostics` +
+     `/debug` from Tailwind v4's CSS scan dropped ~2.9 KB raw of utilities that
+     never render publicly. Small but free and safe. (Tailwind v4 has no
+     `content`/`purge`/`safelist` — use `@source not "…"` at-rules in the CSS.)
+   - **`experimental.inlineCss` — TRIED & REVERTED (2026-06-16).** Next 16's
+     flag inlines the whole sheet as a `<style>`, removing the render-blocking
+     `<link>`. It's the only first-party lever for this (critters = no-op on
+     App Router; beasties = webpack-only, streaming-incompatible). A/B on Test2
+     (Lighthouse median-of-5) **regressed both pages**: article 95→92, LCP
+     2925→3386 ms, and **FCP went UP** on both (article +49 ms, home +140 ms).
+     Mechanism: our HTML is currently dynamic / `no-store` (no edge caching),
+     so inlining ~79 KB into every uncached HTML response inflates the document
+     and the larger download outweighs the saved CSS request. **Reconsider only
+     after HTML edge caching lands** — once the bigger HTML is CDN-cached the
+     tradeoff may flip. Re-measure against the cached-HTML setup before
+     re-enabling; do not turn it on blind. (Reverted in next.config.ts; the
+     comment there records the same.)
+
+   This reinforces the headline finding: with `no-store` HTML, **TTFB / edge
+   caching is the gate** — CSS-delivery tricks can't get around it and can even
+   hurt by enlarging the uncached document.
+
 4. **Move/lighten the LCP element.** On both pages the LCP is a paragraph below
    a tall hero. There's no easy structural win — the content is what it is — but
    if a future redesign puts a smaller above-the-fold element first, LCP fires
