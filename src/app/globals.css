@@ -102,14 +102,16 @@
   --color-footer-muted: var(--footer-muted);
   --color-footer-border: var(--footer-border);
   --color-footer-heading: var(--footer-heading);
-  /* Geist Sans/Mono were removed from the webfont set (unused on public pages;
-     Geist Mono only on internal diagnostics). These tokens now resolve to
-     system stacks so the Tailwind font-sans / font-mono utilities keep working
-     without shipping the @font-face rules in the render-blocking CSS. */
+  /* Geist Sans/Mono and Manrope were removed from the webfont set for perf
+     (unused, internal-only, or holding back LCP — see layout.tsx). These tokens
+     now resolve to system stacks so the Tailwind font-sans / font-mono / the
+     font-body utility keep working without shipping @font-face rules in the
+     render-blocking CSS. Only the display serif remains a webfont.
+     To restore Manrope: repoint --font-body to var(--font-manrope). */
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "Liberation Mono", monospace;
   --font-display: var(--font-instrument-serif);
-  --font-body: var(--font-manrope);
+  --font-body: var(--font-sans);
 }
 
 /* Section color scheme overrides — applied by BlankSection component */
