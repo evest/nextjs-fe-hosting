@@ -37,7 +37,7 @@ const CLOUDFLARE_PREFIX = '/cdn-cgi/image/';
 
 type ResizeOptions = {
   width: number;
-  /** Cloudflare quality (1-100). Ignored by the CMP CDN, which has no quality knob. */
+  /** Cloudflare quality (1-100). */
   quality?: number;
 };
 
@@ -50,61 +50,74 @@ function isCmpHost(hostname: string): boolean {
 }
 
 /**
- * Rewrite a CMS asset URL to the Cloudflare path-prefix transform for a given
- * render width. `format=auto` lets the edge negotiate WebP/AVIF per request.
- * No height: width-only keeps the source aspect ratio, which is what a
- * responsive `srcSet` wants. Idempotent — a URL already carrying the prefix is
- * left untouched so we never double-wrap.
+ * True if the host is an Optimizely image CDN fronted by Cloudflare Image
+ * Transformations (the `/cdn-cgi/image/<options>/<path>` form). Both the CMS
+ * asset zone and the CMP/DAM zone qualify (verified 2026-06: the DAM moved to
+ * Cloudflare and supports the same transform options — width, height, fit,
+ * quality, format=auto).
  */
-function cmsResizeUrl(parsed: URL, { width, quality }: ResizeOptions): string {
-  if (parsed.pathname.startsWith(CLOUDFLARE_PREFIX)) return parsed.href;
-  const opts = `width=${width},quality=${quality ?? 75},format=auto`;
-  return `${parsed.origin}${CLOUDFLARE_PREFIX}${opts}${parsed.pathname}${parsed.search}`;
-}
-
-// The CMP/DAM CDN is now (2026-06) fronted by Cloudflare Image Transformations,
-// reached via the same `/cdn-cgi/image/<options>/<path>` path-prefix form as the
-// CMS zone — so it CAN convert formats. Unlike the CMS zone, the DAM does NOT
-// set `format=auto` by default (a bare asset URL returns the original PNG/JPEG),
-// so we force it: `format=auto` negotiates AVIF/WebP per the request's Accept
-// header, falling back to the original format otherwise. Verified live: a 12.8 KB
-// PNG avatar comes back as a 1.5 KB AVIF with format=auto (~88% smaller).
-//
-// The CDN still does NOT clamp the requested width to the source, so a large
-// `width` returns a large render (width=4000 on a small asset → ~1 MB, verified).
-// next/image sets the bare `src` to the largest srcSet width as a fallback, which
-// a `sizes`-ignoring consumer (some crawlers, an OG/JSON-LD reference) can pull —
-// so we keep capping width at a realistic display ceiling. 1920 covers a
-// full-width image on a 2× desktop; larger srcSet entries reuse the 1920 render,
-// imperceptible at those sizes but bounding the payload.
-const CMP_MAX_WIDTH = 1920;
-
-/**
- * Rewrite a CMP/DAM asset URL to the Cloudflare path-prefix transform: forces
- * `format=auto` (the DAM doesn't set it), a width clamped to {@link CMP_MAX_WIDTH},
- * and a quality cap. Idempotent — a URL already carrying the prefix is left
- * untouched so we never double-wrap. Any existing query string on the asset is
- * preserved (the CDN honors it alongside the prefix).
- */
-function cmpResizeUrl(parsed: URL, { width, quality }: ResizeOptions): string {
-  if (parsed.pathname.startsWith(CLOUDFLARE_PREFIX)) return parsed.href;
-  const opts = `format=auto,width=${Math.min(width, CMP_MAX_WIDTH)},quality=${quality ?? 75}`;
-  return `${parsed.origin}${CLOUDFLARE_PREFIX}${opts}${parsed.pathname}${parsed.search}`;
+export function isCloudflareImageHost(hostname: string): boolean {
+  return isCmsHost(hostname) || isCmpHost(hostname);
 }
 
 /**
- * Resize an absolute image URL to `width` via whichever Optimizely image CDN
- * owns its host. Returns the input unchanged for any other host, or for an
- * unparseable value — callers can hand the result straight to `<img>`/`next/image`.
+ * Rewrite any Cloudflare-fronted Optimizely asset URL (CMS or CMP/DAM) through
+ * the `/cdn-cgi/image/<options>/<path>` transform. `transform` is the raw
+ * Cloudflare options string, e.g. `format=auto,width=1200,height=630,fit=cover`.
+ *
+ * Returns the URL unchanged when: it's unparseable, the host isn't a Cloudflare
+ * image host (so we never hand a scraper/loader a broken link), or it already
+ * carries the prefix (idempotent — no double-wrapping). Any existing query
+ * string on the asset is preserved.
+ *
+ * This is the single place that knows the prefix shape; cmsResizeUrl,
+ * cmpResizeUrl, and the OG-image builder in seo.ts all compose their options
+ * and delegate here.
  */
-export function resizeImageUrl(rawUrl: string, options: ResizeOptions): string {
+export function cloudflareTransformUrl(rawUrl: string | undefined, transform: string): string | undefined {
+  if (!rawUrl) return rawUrl;
   let parsed: URL;
   try {
     parsed = new URL(rawUrl);
   } catch {
     return rawUrl;
   }
-  if (isCmsHost(parsed.hostname)) return cmsResizeUrl(parsed, options);
-  if (isCmpHost(parsed.hostname)) return cmpResizeUrl(parsed, options);
-  return rawUrl;
+  if (!isCloudflareImageHost(parsed.hostname)) return rawUrl;
+  if (parsed.pathname.startsWith(CLOUDFLARE_PREFIX)) return rawUrl;
+  return `${parsed.origin}${CLOUDFLARE_PREFIX}${transform}${parsed.pathname}${parsed.search}`;
+}
+
+// Both CDN zones (CMS and CMP/DAM) are Cloudflare-fronted and accept the same
+// transform options. They differ in two ways the resize path cares about:
+//   - The CMP/DAM CDN does NOT clamp the requested width to the source, so a
+//     large `width` returns a large render (width=4000 on a small asset → ~1 MB,
+//     verified). next/image sets the bare `src` to the largest srcSet width as a
+//     fallback, which a `sizes`-ignoring consumer (crawlers, an OG/JSON-LD
+//     reference) can pull — so we cap CMP widths. 1920 covers a full-width image
+//     on a 2× desktop; larger srcSet entries reuse the 1920 render, imperceptible
+//     at those sizes but bounding the payload. (The CMS zone clamps to source, so
+//     it needs no cap.)
+//   - `format=auto`: the CMS zone sets it by default; the CMP/DAM zone does NOT
+//     (a bare asset URL returns the original PNG/JPEG), so we force it on both
+//     here for consistency. Verified: a 12.8 KB DAM PNG → 1.2 KB AVIF at width=96.
+const CMP_MAX_WIDTH = 1920;
+
+/**
+ * Resize an absolute image URL to `width` via whichever Optimizely image CDN
+ * owns its host. Returns the input unchanged for any other host, or for an
+ * unparseable value — callers can hand the result straight to `<img>`/`next/image`.
+ * No height: width-only keeps the source aspect ratio, which is what a responsive
+ * `srcSet` wants.
+ */
+export function resizeImageUrl(rawUrl: string, { width, quality }: ResizeOptions): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    return rawUrl;
+  }
+  // CMP/DAM widths are capped (it doesn't clamp to source); CMS is left as-is.
+  const w = isCmpHost(parsed.hostname) ? Math.min(width, CMP_MAX_WIDTH) : width;
+  const transform = `format=auto,width=${w},quality=${quality ?? 75}`;
+  return cloudflareTransformUrl(rawUrl, transform) ?? rawUrl;
 }

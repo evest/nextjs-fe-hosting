@@ -1,39 +1,30 @@
 import type { Metadata } from 'next';
+import { cloudflareTransformUrl } from '@/lib/image-cdn';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '');
 
-// Open Graph cards want a 1.91:1 image at 1200×630. The CMS asset CDN
-// (*.cms.optimizely.com) is fronted by Cloudflare with Image Transformations
-// enabled — but only via the /cdn-cgi/image/<options>/<path> *path-prefix*
-// form. Query-string params (?width=…&height=…) are silently ignored on this
-// zone: they return the untouched original (verified — a 16:9 source stays
-// 1.2 MB and uncropped). So we must rewrite the URL, not append params.
+// Open Graph cards want a 1.91:1 image at 1200×630. Both Optimizely asset CDNs
+// — the CMS zone (*.cms.optimizely.com) and the CMP/DAM zone
+// (*.cmp.optimizely.com) — are fronted by Cloudflare Image Transformations,
+// reached via the /cdn-cgi/image/<options>/<path> path-prefix form. An OG image
+// can come from either source (managed asset or DAM), so we transform both the
+// same way; cloudflareTransformUrl passes through any non-Cloudflare host (and
+// is idempotent / preserves query strings).
 //
 // fit=cover center-crops to the exact box without stretching; a 16:9 (1.78:1)
 // source loses ~7% top/bottom reaching 1.91:1, which is imperceptible on a
-// share card. quality=85 + format=auto keeps the payload small (~75 KB vs the
-// 1.2 MB original) and serves WebP/AVIF to scrapers that accept it.
+// share card. quality=85 + format=auto keeps the payload small and serves
+// WebP/AVIF to scrapers that accept it (verified: a 1.4 MB DAM PNG → 43 KB WebP).
 const OG_TRANSFORM = 'width=1200,height=630,fit=cover,quality=85,format=auto';
 
 /**
- * Rewrite an absolute CMS asset URL into the Cloudflare path-prefix form that
- * yields an exact 1200×630 OG crop. Only touches *.cms.optimizely.com URLs —
- * anything else (or an unparseable value) is returned unchanged so we never
- * hand a scraper a broken link. Idempotent: a URL already carrying the prefix
- * is left alone.
+ * Rewrite an absolute Optimizely asset URL (CMS or DAM) into the Cloudflare
+ * path-prefix form that yields an exact 1200×630 OG crop. Non-Cloudflare hosts
+ * (and unparseable values) pass through unchanged so we never hand a scraper a
+ * broken link; already-prefixed URLs are left alone.
  */
 function ogImageUrlFor(rawUrl: string | undefined): string | undefined {
-  if (!rawUrl) return undefined;
-  let parsed: URL;
-  try {
-    parsed = new URL(rawUrl);
-  } catch {
-    return rawUrl;
-  }
-  if (!parsed.hostname.endsWith('.cms.optimizely.com')) return rawUrl;
-  if (parsed.pathname.startsWith('/cdn-cgi/image/')) return rawUrl;
-  // Preserve any existing query string on the source asset.
-  return `${parsed.origin}/cdn-cgi/image/${OG_TRANSFORM}${parsed.pathname}${parsed.search}`;
+  return cloudflareTransformUrl(rawUrl, OG_TRANSFORM);
 }
 
 // A CMS contentReference to an _image arrives in one of two shapes depending on
