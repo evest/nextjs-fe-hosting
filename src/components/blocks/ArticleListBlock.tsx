@@ -192,7 +192,9 @@ function ArticleCard({ article, locale }: { article: ArticleListItem; locale: st
             alt={heading}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            // 3-col grid within max-w-7xl → card never exceeds ~390px CSS wide;
+            // cap at 400px instead of 33vw (which oversized on wide screens).
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
           />
         </div>
       )}

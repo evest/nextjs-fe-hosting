@@ -75,7 +75,10 @@ export default async function PageCardElement({ content: opti }: Props) {
               alt={heading}
               fill
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              // Same card grid as CardBlock (1/2/3-col within max-w-7xl): the
+              // slot never exceeds ~390px CSS wide, so cap at 400px rather than
+              // 33vw to stop wide screens pulling an oversized render.
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
             />
           </CardMedia>
         )}

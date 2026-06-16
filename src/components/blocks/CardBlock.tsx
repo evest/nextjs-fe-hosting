@@ -24,7 +24,12 @@ export default function CardBlock({ content }: Props) {
             alt={getAlt(content.image, 'Card image')}
             fill
             className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            // Card grid is 1-col <640px, 2-col <1024px, 3-col above, inside a
+            // max-w-7xl (1280px) Container — so a card never exceeds ~390px CSS
+            // wide (3-col minus padding+gaps). Cap the top end at 400px instead
+            // of 33vw, which on a wide screen overstated the box and pulled a
+            // 750w+ render for a ~390px slot. Breakpoints match the real grid.
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
             {...pa('image')}
           />
         </CardMedia>
