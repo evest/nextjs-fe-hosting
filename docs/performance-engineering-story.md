@@ -1,5 +1,13 @@
 # Engineering a Fast Front-End on Optimizely SaaS CMS
 
+> **⚠️ Before publishing externally:** this draft contains internal identifiers
+> — the live host `test.contentgurus.no` and the asset hostname
+> `app-epsacmsguru2ad8jt002.cms.optimizely.com`. **Redact or generalize these**
+> (e.g. `https://example.com`, `https://<your-instance>.cms.optimizely.com`)
+> before sharing as a public blog post. They're fine for the internal/colleague
+> version. Also re-check that the numbers and "what's left" status are still
+> current at publish time.
+
 *How we took a Next.js 16 site on Optimizely Frontend Hosting from a 72 to the
 mid-90s on mobile Lighthouse — what worked, what didn't, and the one thing left
 that decides whether mobile "passes."*
