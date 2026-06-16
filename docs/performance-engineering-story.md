@@ -45,6 +45,13 @@ long-lived image caching and HTML edge caching — and once they land, this stac
 is a strong candidate for a **gold-standard reference implementation** for
 performant sites on Optimizely SaaS CMS.
 
+A note on scope: this report measures the site with third-party scripts (e.g.
+the Optimizely Web Experimentation snippet) made opt-in rather than always-on.
+Those scripts — plus analytics and cookie consent — are coming back, by design.
+The point of optimizing everything we control is precisely to **make room** for
+them, so their cost is proportional to their value (see "A note on third-party
+scripts" below).
+
 ---
 
 ## The stack (and why it's a good foundation)
@@ -108,7 +115,7 @@ the home page (`/en`, a Visual Builder composition) and an article
 | Milestone | Page | Perf | FCP | LCP | Notes |
 |---|---|---|---|---|---|
 | First measurement | home | **72** | 2.7 s | 5.7 s | Best Practices 77 |
-| Removed an always-on third-party snippet | home | 84 | 1.0 s | 4.5 s | BP 77→100, FCP 2.7→1.0 s |
+| Made the Web Experimentation snippet opt-in | home | 84 | 1.0 s | 4.5 s | BP 77→100, FCP 2.7→1.0 s |
 | Fixed contrast / a11y | article | 90–94 | 1.0 s | 3.0–3.6 s | Accessibility → 100 |
 | Right-sized hero image | article | 94 | 1.0 s | 3.0 s | — |
 | Fonts + cards + preconnect | **home** | **91** | 1.0 s | **3.5 s** | LCP −1.0 s on home |
@@ -125,16 +132,32 @@ Headline deltas over the campaign:
 
 ## What worked (and why)
 
-### 1. Remove things that block the main thread before content
+### 1. Load third-party scripts deliberately, not by default
 
-The single biggest jump (72 → 84, FCP 2.7 s → 1.0 s) came from making an
-always-on **third-party experimentation snippet** a *runtime CMS setting*
-instead of a hard-coded `<script>`. Editors can still toggle it per environment,
-but it's no longer loaded by default. **Best Practices jumped 77 → 100** at the
-same time (the third-party iframe/cookie warnings disappeared).
+The single biggest jump (72 → 84, FCP 2.7 s → 1.0 s) came from making the
+**Optimizely Web Experimentation snippet** a *runtime CMS setting* rather than a
+hard-coded, always-on `<script>` in the document head. **Best Practices jumped
+77 → 100** at the same time.
 
-*Lesson:* the cheapest performance win is often deleting a request, not
-optimizing one.
+It's worth being precise about *why* this snippet costs what it costs — and
+fair to the product. A client-side experimentation snippet has to load early and
+parser-blocking, because it needs to apply variations *before* first paint to
+avoid flicker (the user seeing the original, then a flash to the variant). That
+is exactly the position in the critical path that hurts FCP/LCP. This isn't a
+flaw unique to Optimizely — **any** client-side A/B tool that prevents flicker
+behaves this way. The only way to run experiments *without* that front-end cost
+is to **experiment at the edge** (server/edge-side variation assignment), which
+was out of scope for this round.
+
+**So the goal was never to remove experimentation — it's coming back.** The
+change was to stop loading it *unconditionally on every page*. With it behind a
+CMS setting, we can be **considerate about where it loads**: e.g. not on the
+start page unless we're actually running a test there, and only on the pages and
+campaigns that need it. You pay the snippet's cost where it earns its keep, and
+nowhere else.
+
+*Lesson:* the cheapest performance win is often not loading something where it
+isn't needed — not deleting it everywhere.
 
 ### 2. Right-size every image with accurate `sizes`
 
@@ -239,6 +262,40 @@ bandwidth to a non-LCP image and risked making the real (text) LCP *slower*.
 
 *Lesson:* tooling pattern-matches on `width=3840` in the markup. A trace shows
 ground truth. We trusted the trace.
+
+---
+
+## A note on third-party scripts: the goal isn't zero, it's groundwork
+
+It would be easy to read this story as "we made it fast by stripping things out."
+That's not the point, and it's worth stating plainly.
+
+Real sites need third-party scripts. Ours will be no exception: the
+**Web Experimentation snippet is coming back** (selectively), we'll add an
+**analytics tool**, and we'll likely add a **cookie-consent banner** — each of
+which has a real cost to Core Web Vitals, and each of which is there for a good
+reason (running experiments, understanding usage, respecting privacy law). The
+goal was never to get rid of them.
+
+The goal is **to measure and improve what we control first.** Third-party
+scripts are, by definition, *not* in our control — we can't make someone else's
+tag smaller or faster. What we *can* do is make the first-party foundation as
+lean as possible: a static PPR shell, a tiny render-blocking stylesheet, only
+the fonts we use, right-sized images, near-zero blocking JavaScript, and (soon)
+edge-cached HTML. When that groundwork is solid, **the budget a third-party
+script consumes is the script's own cost — not its cost plus the cost of a
+sloppy foundation.**
+
+Put differently: a fast base means the inevitable third-party tags land on a
+page that can absorb them. And being **considerate about *where* each script
+loads** (experimentation only where we're testing, consent only where required,
+analytics loaded with the right strategy) keeps their impact proportional to
+their value. Optimizing the parts we own is what *earns us the room* to add the
+parts we don't.
+
+That's also why this report measures the site with those scripts removed: not to
+flatter the score, but to isolate the first-party work and establish the clean
+baseline against which the cost of each future addition can be judged honestly.
 
 ---
 
