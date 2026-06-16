@@ -1,30 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Instrument_Serif, Manrope } from "next/font/google";
+import { Instrument_Serif, Manrope } from "next/font/google";
 import "./globals.css";
 
 // Initialize Optimizely SDK registries
 import "@/optimizely";
 import { getWebExperimentationSnippetId } from "@/lib/optimizely/get-site-settings";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// Fonts: only the two families actually rendered on public pages are loaded as
+// webfonts — the editorial serif (--font-display) and the body sans
+// (--font-body). Geist Sans / Geist Mono were removed: nothing renders in Geist
+// Sans (the body uses the Arial system stack, see globals.css), and Geist Mono
+// was used only by internal /diagnostics + preview-error tooling. Each unused
+// family added @font-face rules to the single render-blocking CSS chunk (~25
+// @font-face rules, ~86 KB decoded) for no visible benefit — and on these pages
+// the LCP element is system-font *text*, gated by that CSS download, not by an
+// image. --font-sans / --font-mono now resolve to system stacks in globals.css
+// so the Tailwind font-sans / font-mono utilities still work everywhere.
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Editorial display serif used by the Advanced Hero headline — the LCP
-// element on most pages. `display: 'swap'` paints the headline in the
-// fallback font immediately, so LCP fires at first paint (~1.2s) instead of
-// waiting for the webfont download (which was pushing mobile LCP to ~4.2s).
-// next/font does NOT auto-emit a <link rel="preload"> here: the serif is
-// only reached via the --font-instrument-serif CSS variable, and the
-// preload heuristic doesn't connect it to the page under PPR. `swap` makes
-// that a non-issue (the late font just swaps in); a manual preload was
-// deliberately skipped to avoid hardcoding build-hashed font paths.
+// Editorial display serif used by the Advanced Hero headline + article H1.
+// `display: 'swap'` paints in the fallback immediately so the headline never
+// blocks LCP waiting on the webfont download. next/font does NOT auto-emit a
+// <link rel="preload"> here: the serif is only reached via the
+// --font-instrument-serif CSS variable, and the preload heuristic doesn't
+// connect it to the page under PPR. `swap` makes that a non-issue.
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
   subsets: ["latin"],
@@ -36,6 +34,7 @@ const instrumentSerif = Instrument_Serif({
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
+  display: "swap",
 });
 
 // metadataBase makes per-page openGraph.images and alternates.canonical
@@ -105,7 +104,7 @@ export default async function RootLayout({
         )}
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} ${manrope.variable} antialiased min-h-screen flex flex-col`}
+        className={`${instrumentSerif.variable} ${manrope.variable} antialiased min-h-screen flex flex-col`}
       >
         {children}
       </body>
