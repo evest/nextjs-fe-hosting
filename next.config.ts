@@ -11,21 +11,16 @@ const nextConfig: NextConfig = {
   // editor edits on every load.
   cacheComponents: true,
 
-  experimental: {
-    // Inline the global stylesheet as a <style> in <head> instead of a
-    // render-blocking <link rel="stylesheet">. Purpose-built for atomic CSS
-    // (Tailwind) per the Next docs: our sheet is ~15 KB gzipped and the mobile
-    // LCP element is render-blocked text, so removing the CSS request from the
-    // critical path is the one first-party lever that targets it (critters/
-    // beasties are no-ops on the App Router). EXPERIMENTAL + production-only
-    // (no effect in `next dev`): validated on Test2 with the Lighthouse harness.
-    // Trade-off: CSS rides inside every HTML response (no separately-cacheable
-    // file); fine here since the sheet is small and most HTML is PPR/CDN-cached.
-    // Next falls back to <link> when navigating to prerendered pages, so it
-    // composes with cacheComponents. Revert by removing this block if it
-    // regresses TTFB or misbehaves.
-    inlineCss: true,
-  },
+  // TRIED & REVERTED (2026-06-16): experimental.inlineCss (inline the ~79 KB
+  // Tailwind sheet as a <style> instead of a render-blocking <link>). A/B on
+  // Test2 (Lighthouse median-of-5) REGRESSED both pages: article 95→92,
+  // LCP 2925→3386ms, and FCP went UP on both (article +49ms, home +140ms).
+  // Reason: our HTML is currently dynamic / `no-store` (no edge caching yet —
+  // see docs/todo-cdn-html-caching.md), so inlining just inflates every
+  // uncached HTML response; the larger document outweighs the saved CSS
+  // request. RECONSIDER once HTML edge-caching is enabled — then the bigger
+  // HTML is CDN-cached and the tradeoff may flip. Do NOT re-enable without
+  // re-measuring against the cached-HTML setup.
 
   // Optimizely DXP shared Redis cache handler. With `cacheMaxMemorySize: 0`
   // Next.js does not keep a duplicate in-process LRU; the handler (Redis
