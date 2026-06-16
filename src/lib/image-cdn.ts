@@ -14,10 +14,12 @@
  *      negotiation).
  *
  *   2. CMP / DAM assets — `images-cdn.optimizely.com`, `*.cmp.optimizely.com`
- *      Resized via **query string** only, and a much smaller option set:
- *      `width`, `height`, `center_width`, `center_height`. No quality or format
- *      control — the DAM picks those. Aspect ratio is preserved (crop/letterbox).
- *      Docs: https://docs.developers.optimizely.com/content-marketing-platform/docs/feed-api#dynamically-resize-images-from-the-optimizely-cmp-api
+ *      Now (2026-06) also fronted by Cloudflare Image Transformations, addressed
+ *      via the SAME `/cdn-cgi/image/<options>/<path>` path-prefix form as the CMS
+ *      zone — so it supports width, quality, and format conversion. The key
+ *      difference: the DAM does NOT set `format=auto` by default (a bare asset
+ *      URL returns the original PNG/JPEG), so we force it. Width is not clamped
+ *      to the source, so we cap it (see CMP_MAX_WIDTH).
  *
  * Anything else (placehold.co, local `/…` assets, already-transformed URLs,
  * unparseable values) is returned unchanged — the loader is global and must be
@@ -60,26 +62,34 @@ function cmsResizeUrl(parsed: URL, { width, quality }: ResizeOptions): string {
   return `${parsed.origin}${CLOUDFLARE_PREFIX}${opts}${parsed.pathname}${parsed.search}`;
 }
 
-// The CMP/DAM CDN does no format conversion (PNG/JPEG stay as-is, no WebP/AVIF)
-// and — unlike Cloudflare — does not clamp the requested width to the source.
-// So `width=3840` returns the full-resolution original: an 8.5 MB PNG for a
-// 48px avatar (verified live). next/image always sets the bare `src` to the
-// largest srcSet width as a fallback, so a `sizes`-ignoring consumer (some
-// crawlers, an OG/JSON-LD reference) can pull that multi-MB file. Cap the width
-// at a realistic display ceiling so no generated URL can request the original.
-// 1920 covers a full-width image on a 2× desktop; larger srcSet entries reuse
-// the 1920 render, which is imperceptible at those sizes but bounds the payload.
+// The CMP/DAM CDN is now (2026-06) fronted by Cloudflare Image Transformations,
+// reached via the same `/cdn-cgi/image/<options>/<path>` path-prefix form as the
+// CMS zone — so it CAN convert formats. Unlike the CMS zone, the DAM does NOT
+// set `format=auto` by default (a bare asset URL returns the original PNG/JPEG),
+// so we force it: `format=auto` negotiates AVIF/WebP per the request's Accept
+// header, falling back to the original format otherwise. Verified live: a 12.8 KB
+// PNG avatar comes back as a 1.5 KB AVIF with format=auto (~88% smaller).
+//
+// The CDN still does NOT clamp the requested width to the source, so a large
+// `width` returns a large render (width=4000 on a small asset → ~1 MB, verified).
+// next/image sets the bare `src` to the largest srcSet width as a fallback, which
+// a `sizes`-ignoring consumer (some crawlers, an OG/JSON-LD reference) can pull —
+// so we keep capping width at a realistic display ceiling. 1920 covers a
+// full-width image on a 2× desktop; larger srcSet entries reuse the 1920 render,
+// imperceptible at those sizes but bounding the payload.
 const CMP_MAX_WIDTH = 1920;
 
 /**
- * Append `?width=…` to a CMP/DAM URL, clamped to {@link CMP_MAX_WIDTH}.
- * Quality/format aren't supported by this CDN, so they're dropped. A pre-existing
- * `width` param is overwritten so a responsive `srcSet` produces distinct widths
- * rather than repeating the source's.
+ * Rewrite a CMP/DAM asset URL to the Cloudflare path-prefix transform: forces
+ * `format=auto` (the DAM doesn't set it), a width clamped to {@link CMP_MAX_WIDTH},
+ * and a quality cap. Idempotent — a URL already carrying the prefix is left
+ * untouched so we never double-wrap. Any existing query string on the asset is
+ * preserved (the CDN honors it alongside the prefix).
  */
-function cmpResizeUrl(parsed: URL, { width }: ResizeOptions): string {
-  parsed.searchParams.set('width', String(Math.min(width, CMP_MAX_WIDTH)));
-  return parsed.href;
+function cmpResizeUrl(parsed: URL, { width, quality }: ResizeOptions): string {
+  if (parsed.pathname.startsWith(CLOUDFLARE_PREFIX)) return parsed.href;
+  const opts = `format=auto,width=${Math.min(width, CMP_MAX_WIDTH)},quality=${quality ?? 75}`;
+  return `${parsed.origin}${CLOUDFLARE_PREFIX}${opts}${parsed.pathname}${parsed.search}`;
 }
 
 /**
