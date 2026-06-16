@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Keep dev-only routes out of the production CSS scan. /diagnostics and /debug
+   use ad-hoc utilities (bg-gray-*, text-red-*, the mono stack, etc.) that never
+   render on public pages; excluding them from Tailwind v4's auto-detection
+   drops those utilities from the single render-blocking stylesheet. Paths are
+   relative to this file (src/app/). Do NOT add PreviewError/ImageMedia/forms —
+   those are real components that can render (editor preview, contact form). */
+@source not "./diagnostics";
+@source not "./debug";
+
 /* shadcn/ui components ship `dark:` utilities. Bind that variant to an
    explicit `.dark` ancestor (which this project never sets) rather than the
    OS `prefers-color-scheme`, so the .section-* colour schemes below stay the

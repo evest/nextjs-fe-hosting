@@ -11,6 +11,22 @@ const nextConfig: NextConfig = {
   // editor edits on every load.
   cacheComponents: true,
 
+  experimental: {
+    // Inline the global stylesheet as a <style> in <head> instead of a
+    // render-blocking <link rel="stylesheet">. Purpose-built for atomic CSS
+    // (Tailwind) per the Next docs: our sheet is ~15 KB gzipped and the mobile
+    // LCP element is render-blocked text, so removing the CSS request from the
+    // critical path is the one first-party lever that targets it (critters/
+    // beasties are no-ops on the App Router). EXPERIMENTAL + production-only
+    // (no effect in `next dev`): validated on Test2 with the Lighthouse harness.
+    // Trade-off: CSS rides inside every HTML response (no separately-cacheable
+    // file); fine here since the sheet is small and most HTML is PPR/CDN-cached.
+    // Next falls back to <link> when navigating to prerendered pages, so it
+    // composes with cacheComponents. Revert by removing this block if it
+    // regresses TTFB or misbehaves.
+    inlineCss: true,
+  },
+
   // Optimizely DXP shared Redis cache handler. With `cacheMaxMemorySize: 0`
   // Next.js does not keep a duplicate in-process LRU; the handler (Redis
   // in production, in-memory Map locally) is the sole source of truth.
