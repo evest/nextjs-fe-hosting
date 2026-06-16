@@ -81,6 +81,10 @@ and preconnect is the one most likely to show up in the LCP metric.
 5. **Already ruled out:** image bytes (LCP isn't an image), JS/TBT (4 ms),
    CLS (0), font swap on the LCP text (removed by dropping Manrope).
 
+> **Note — SEO "meta-description" audit flaps (92↔100):** the meta description
+> IS present (verified directly); Lighthouse intermittently fails to see it.
+> Treat that audit as noise, not a missing tag — don't chase it.
+
 ## Honest expectation
 
 With preconnect deployed, expect a modest LCP improvement (handshake overlap).
