@@ -1,7 +1,9 @@
 import type {
   Article,
+  BreadcrumbList,
   FAQPage,
   ImageObject,
+  ListItem,
   Organization,
   Person,
   ProfilePage,
@@ -12,6 +14,7 @@ import type {
   WebSite,
   WithContext,
 } from 'schema-dts';
+import type { BreadcrumbCrumb } from '@/lib/optimizely/get-breadcrumb-trail';
 import { getPerson } from '@/lib/optimizely/get-person';
 import type { SiteSettings } from '@/lib/optimizely/get-site-settings';
 import { decodeRichTextEntities, extractText } from '@/lib/rich-text';
@@ -24,6 +27,10 @@ export type JsonLdContext = {
   siteUrl: string | null;
   pageUrl: string | null;
   isLocaleRoot: boolean;
+  // Ordered breadcrumb trail (Home → … → self) resolved from the page's URL
+  // ancestry. Built in the route (it triggers Graph fetches) and passed in so
+  // this module stays fetch-free. Undefined/short trails emit no BreadcrumbList.
+  breadcrumbTrail?: BreadcrumbCrumb[];
 };
 
 type Content = Record<string, unknown>;
@@ -359,6 +366,25 @@ function buildFaqPage(content: Content): FAQPage | null {
   return { '@type': 'FAQPage', mainEntity: questions };
 }
 
+// ── BreadcrumbList (derived from the page's URL ancestry) ────────────────────
+
+// Emit a schema.org BreadcrumbList from a resolved trail. The trail already
+// excludes folder segments and noIndex ancestors (see get-breadcrumb-trail), so
+// here we only map it to ListItems. A trail with fewer than two crumbs isn't a
+// breadcrumb (just Home, or just self) → null, so shallow pages and the locale
+// root emit nothing. Each ListItem's `item` is the absolute URL, including the
+// final self crumb (Google accepts and prefers this).
+function buildBreadcrumbList(trail: BreadcrumbCrumb[] | undefined): BreadcrumbList | null {
+  if (!trail || trail.length < 2) return null;
+  const itemListElement = trail.map<ListItem>((crumb, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: crumb.name,
+    item: crumb.url,
+  }));
+  return { '@type': 'BreadcrumbList', itemListElement };
+}
+
 // ── top-level dispatcher ────────────────────────────────────────────────────
 
 function withContext(node: Thing): WithContext<Thing> {
@@ -406,6 +432,13 @@ export async function buildJsonLd(
   // alongside the primary node (Article/WebPage/etc.) in the same @graph.
   const faq = buildFaqPage(content);
   if (faq) graph.push(faq);
+
+  // BreadcrumbList from the page's URL ancestry. Skipped at the locale root
+  // (the homepage has no meaningful trail) and whenever the trail is too short.
+  if (!ctx.isLocaleRoot) {
+    const breadcrumbs = buildBreadcrumbList(ctx.breadcrumbTrail);
+    if (breadcrumbs) graph.push(breadcrumbs);
+  }
 
   // Add site identity at the locale root (homepage). Google + LLM crawlers
   // pick these up regardless of which page they crawl, but emitting them on

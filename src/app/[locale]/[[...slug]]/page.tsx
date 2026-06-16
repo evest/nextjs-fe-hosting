@@ -9,7 +9,10 @@ import { getAllPagesPaths } from '@/lib/optimizely/all-pages';
 import { getSeoMetadata } from '@/lib/seo';
 import { getSiteSettings } from '@/lib/optimizely/get-site-settings';
 import { buildJsonLd } from '@/lib/json-ld';
+import { getBreadcrumbTrail, type BreadcrumbCrumb } from '@/lib/optimizely/get-breadcrumb-trail';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { Breadcrumbs, type BreadcrumbItem } from '@/components/layout';
+import { Container } from '@/components/ui';
 import { routing } from '@/i18n/routing';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ?? null;
@@ -27,6 +30,42 @@ export async function generateStaticParams() {
 
 function fullSlug(locale: string, slug?: string[]): string[] {
   return [locale, ...(slug ?? [])];
+}
+
+// Page types that get a breadcrumb (visible trail + BreadcrumbList JSON-LD).
+// LandingPageExperience is intentionally excluded (campaign pages rarely sit in
+// a real hierarchy). The trail self-suppresses when too shallow, so enabling a
+// type is safe even for shallow instances.
+const BREADCRUMB_TYPES = new Set(['ArticlePage', 'PersonPage', 'WebPage']);
+
+function contentTypes(content: Record<string, unknown>): string[] {
+  const meta = content._metadata as Record<string, unknown> | undefined;
+  const types = (meta?.types as unknown[] | undefined) ?? [];
+  return types.filter((t): t is string => typeof t === 'string');
+}
+
+// A page is breadcrumb-eligible if any of its types is enabled. Generic pages
+// resolve as 'WebPage'; Article/Person carry their specific type. The base
+// '_page' is ignored.
+function isBreadcrumbEligible(content: Record<string, unknown>): boolean {
+  return contentTypes(content).some((t) => BREADCRUMB_TYPES.has(t));
+}
+
+function selfDisplayName(content: Record<string, unknown>): string {
+  const meta = content._metadata as Record<string, unknown> | undefined;
+  const seo = content.seo as Record<string, unknown> | undefined;
+  const name =
+    (typeof seo?.metaTitle === 'string' && seo.metaTitle) ||
+    (typeof content.heading === 'string' && content.heading) ||
+    (typeof content.name === 'string' && content.name) ||
+    (typeof meta?.displayName === 'string' && meta.displayName) ||
+    '';
+  return name;
+}
+
+// Map the resolved trail to the visible Breadcrumbs component's item shape.
+function toBreadcrumbItems(trail: BreadcrumbCrumb[]): BreadcrumbItem[] {
+  return trail.map((c) => ({ label: c.name, href: c.href ?? undefined }));
 }
 
 // notFound() must be called from generateMetadata AND the page component
@@ -59,10 +98,12 @@ async function PageJsonLd({
   content,
   locale,
   isLocaleRoot,
+  breadcrumbTrail,
 }: {
   content: NonNullable<Awaited<ReturnType<typeof getPageContent>>>;
   locale: string;
   isLocaleRoot: boolean;
+  breadcrumbTrail?: BreadcrumbCrumb[];
 }) {
   const siteSettings = await getSiteSettings(locale);
   const urlPath = ((content._metadata?.url as Record<string, unknown> | undefined)?.default as string | undefined) ?? null;
@@ -73,9 +114,53 @@ async function PageJsonLd({
     siteUrl: SITE_URL,
     pageUrl,
     isLocaleRoot,
+    breadcrumbTrail,
   });
   if (!data) return null;
   return <JsonLd data={data} />;
+}
+
+// Resolves the breadcrumb trail (Graph ancestor lookups) and renders the
+// visible <Breadcrumbs> + its BreadcrumbList JSON-LD together, so both share
+// one trail resolution. Lives in its own Suspense boundary because the ancestor
+// lookups are async; the trail self-suppresses when too shallow.
+async function PageBreadcrumbs({
+  content,
+  locale,
+  slug,
+  isLocaleRoot,
+}: {
+  content: NonNullable<Awaited<ReturnType<typeof getPageContent>>>;
+  locale: string;
+  slug?: string[];
+  isLocaleRoot: boolean;
+}) {
+  const record = content as Record<string, unknown>;
+  if (isLocaleRoot || !isBreadcrumbEligible(record)) {
+    // Still emit non-breadcrumb JSON-LD for this page.
+    return <PageJsonLd content={content} locale={locale} isLocaleRoot={isLocaleRoot} />;
+  }
+
+  const trail = await getBreadcrumbTrail(fullSlug(locale, slug), selfDisplayName(record), SITE_URL);
+  // A 2-crumb trail (Home → self, no resolved/indexable ancestors) is not a
+  // meaningful breadcrumb — skip the visible UI and the JSON-LD for it.
+  const showBreadcrumb = trail.length >= 3;
+
+  return (
+    <>
+      <PageJsonLd
+        content={content}
+        locale={locale}
+        isLocaleRoot={isLocaleRoot}
+        breadcrumbTrail={showBreadcrumb ? trail : undefined}
+      />
+      {showBreadcrumb && (
+        <Container size="narrow" className="pt-6">
+          <Breadcrumbs items={toBreadcrumbItems(trail)} />
+        </Container>
+      )}
+    </>
+  );
 }
 
 async function Page({ params }: Props) {
@@ -88,7 +173,12 @@ async function Page({ params }: Props) {
   return (
     <>
       <Suspense>
-        <PageJsonLd content={content} locale={locale} isLocaleRoot={isLocaleRoot} />
+        <PageBreadcrumbs
+          content={content}
+          locale={locale}
+          slug={slug}
+          isLocaleRoot={isLocaleRoot}
+        />
       </Suspense>
       {/*
         cacheComponents streams this dynamic content into the prerendered
