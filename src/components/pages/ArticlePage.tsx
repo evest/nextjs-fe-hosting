@@ -104,7 +104,7 @@ export default async function ArticlePage({ content }: Props) {
             <div className="flex flex-wrap items-center gap-3 mb-4">
               {categoryLabel && (
                 <span
-                  className="inline-block text-xs font-semibold uppercase tracking-[0.15em] text-primary-foreground bg-primary rounded-full px-3 py-1"
+                  className="inline-block text-xs font-semibold uppercase tracking-widest text-primary-foreground bg-primary rounded-full px-3 py-1"
                   {...pa('category')}
                 >
                   {categoryLabel}
@@ -119,7 +119,7 @@ export default async function ArticlePage({ content }: Props) {
 
               {content.eyebrow && (
                 <span
-                  className="text-sm font-semibold uppercase tracking-[0.18em] text-highlight-accessible"
+                  className="text-sm font-semibold uppercase tracking-tight text-highlight-accessible"
                   {...pa('eyebrow')}
                 >
                   {content.eyebrow}
@@ -137,7 +137,7 @@ export default async function ArticlePage({ content }: Props) {
 
           {content.ingress && (
             <p
-              className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-6"
+              className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-6 tracking-tight"
               {...pa('ingress')}
             >
               {content.ingress}
@@ -232,7 +232,10 @@ export default async function ArticlePage({ content }: Props) {
           )}
 
           {content.body && (
-            <Prose className="prose-h2:mt-[0.93em] prose-h2:mb-[0.53em]" {...pa('body')}>
+            <Prose
+              className="prose-headings:tracking-tight prose-h2:mt-[0.93em] prose-h2:mb-[0.4em] prose-h3:mb-[0.35em]"
+              {...pa('body')}
+            >
               <RichText content={decodeRichTextEntities(content.body?.json)} />
             </Prose>
           )}
