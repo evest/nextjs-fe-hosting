@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { getClient, type PreviewParams } from '@optimizely/cms-sdk';
 import { OptimizelyComponent, withAppContext } from '@optimizely/cms-sdk/react/server';
-import { PreviewComponent } from '@optimizely/cms-sdk/react/client';
+import { NextPreviewComponent } from '@optimizely/cms-sdk/react/nextjs';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
@@ -108,7 +108,17 @@ function Page({ searchParams }: Props) {
         strategy="beforeInteractive"
         id="optimizely-communication-injector"
       />
-      <PreviewComponent />
+      {/* On CMS save, soft-refreshes via router.refresh() (re-runs PreviewBody
+          on the server) instead of a full reload. The pill stays up until the
+          new RSC payload has landed. */}
+      <NextPreviewComponent>
+        <div
+          role="status"
+          className="fixed bottom-4 right-4 z-50 rounded-full bg-brand px-4 py-2 text-sm text-brand-foreground shadow-lg"
+        >
+          Updating preview…
+        </div>
+      </NextPreviewComponent>
       <Suspense>
         <PreviewBody searchParams={searchParams} />
       </Suspense>

@@ -53,6 +53,7 @@ export const ArticlePageCT = contentType({
         type: "content",
         allowedTypes: ["_component"],
       },
+      isLocalized: true,
       sortOrder: 40,
     },
     featuredImage: {

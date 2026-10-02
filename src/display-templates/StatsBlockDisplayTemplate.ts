@@ -1,4 +1,4 @@
-import { displayTemplate } from '@optimizely/cms-sdk';
+import { displayTemplate } from '@/lib/display-template';
 
 export const StatsBlockDisplayTemplate = displayTemplate({
   key: 'StatsBlockDisplayTemplate',

@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
-import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { ChevronDown } from "lucide-react";
 import { routing, type Locale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
@@ -12,8 +11,6 @@ export default function LocaleSwitcher() {
   const t = useTranslations("LocaleSwitcher");
   const locale = useLocale() as Locale;
   const router = useRouter();
-  const pathname = usePathname();
-  const params = useParams();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -31,14 +28,14 @@ export default function LocaleSwitcher() {
   const switchTo = (next: Locale) => {
     setOpen(false);
     if (next === locale) return;
-    // params is whatever the current dynamic segments are — pass them through
-    // so next-intl preserves [[...slug]] when swapping locales.
-    router.replace(
-      // @ts-expect-error -- pathname is typed as a Pathnames key; here we
-      // just pass the current path verbatim to preserve dynamic slugs.
-      { pathname, params },
-      { locale: next }
-    );
+    // Read the path at click time rather than via usePathname()/useParams():
+    // those hooks read request data during render, which (Next 16.3+) blocks
+    // prerendering of the header in the static shell. With localePrefix
+    // 'always' every path starts with /{locale}; strip it and let next-intl
+    // re-prefix with the new locale.
+    const current = window.location.pathname;
+    const path = current.replace(new RegExp(`^/${locale}(?=/|$)`), "") || "/";
+    router.replace(path, { locale: next });
   };
 
   return (

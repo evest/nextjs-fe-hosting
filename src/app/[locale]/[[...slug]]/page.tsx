@@ -28,6 +28,13 @@ export async function generateStaticParams() {
   return getAllPagesPaths();
 }
 
+// generateStaticParams only returns a placeholder (see all-pages.ts), so for
+// every real page `params` is runtime data and `await params` below blocks
+// navigation until the page is cache-filled. That's intentional, so opt out of
+// Next 16.3's dev-only instant-navigation validation for this segment rather
+// than restructuring the PPR shell (whose Suspense fallback is tuned for CLS).
+export const instant = false;
+
 function fullSlug(locale: string, slug?: string[]): string[] {
   return [locale, ...(slug ?? [])];
 }

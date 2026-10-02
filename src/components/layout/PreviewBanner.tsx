@@ -1,8 +1,8 @@
 'use client';
 
-// Shown only on the /preview route. The CMS editing iframe doesn't always
-// re-fetch on save, so a manual reload is the reliable way to pull the
-// latest draft.
+// Shown only on the /preview route. Saves normally soft-refresh via
+// NextPreviewComponent; the manual reload is a fallback for when an
+// update doesn't come through.
 export default function PreviewBanner() {
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 bg-brand px-4 py-2 text-center text-sm text-brand-foreground">

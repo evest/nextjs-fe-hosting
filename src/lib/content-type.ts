@@ -5,14 +5,18 @@
 // Use this in place of `import { contentType } from '@optimizely/cms-sdk'`
 // inside content-type definitions.
 
-import { contentType as sdkContentType, ContentTypes } from '@optimizely/cms-sdk';
+import {
+  contentType as sdkContentType,
+  AnyContentType,
+  ContentType,
+} from '@optimizely/cms-sdk';
 
-type WithDescription<T extends ContentTypes.AnyContentType> = T & {
+type WithDescription<T extends AnyContentType> = T & {
   description?: string;
 };
 
-export function contentType<T extends ContentTypes.AnyContentType>(
+export function contentType<T extends AnyContentType>(
   options: WithDescription<T>,
-): T & { __type: 'contentType' } {
+): ContentType<T> {
   return sdkContentType(options as T);
 }
