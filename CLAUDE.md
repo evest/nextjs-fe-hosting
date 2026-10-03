@@ -13,6 +13,7 @@ npm run dev                  # Dev server with HTTPS (uses certificates/ dir)
 npm run build                # Production build
 npm run lint                 # ESLint (flat config, core-web-vitals + typescript)
 npm run cms:login            # Authenticate with Optimizely CMS CLI
+npm run cms:diff             # Read-only: diff code vs CMS content types/templates (run before pushing)
 npm run cms:push-config      # Push content type definitions to CMS
 npm run cms:push-config-force  # Force push (overwrites existing types)
 npm run deploy-test2         # Deploy to Test2 (opticloud ship; credentials from `opticloud auth:login`)
@@ -112,7 +113,7 @@ Display templates (`src/display-templates/`) define **visual styling options** (
 4. Export from `src/components/index.ts`
 5. Add to resolver map in `src/optimizely.ts`
 6. Add file path to `optimizely.config.mjs` components array
-7. Run `npm run cms:push-config` to sync to CMS
+7. Run `npm run cms:diff`, then `npm run cms:push-config` to sync to CMS. Types are also edited in the CMS UI, so a push can be rejected as a "breaking change" when the CMS has properties the code lacks; never `--force` over CMS-only properties without checking who added them and why.
 
 ## Environment Variables
 
