@@ -55,3 +55,6 @@ next-env.d.ts
 certificates
 nextjs-fe-hosting.head.app.*
 .claude/settings.local.json
+
+# CMS content export packages (large; distributed as a GitHub release asset)
+*.episerverdata

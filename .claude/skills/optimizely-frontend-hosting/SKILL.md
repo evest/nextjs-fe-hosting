@@ -94,10 +94,9 @@ opticloud resolves credentials in this order:
 2. Environment variables — `OPTI_CLIENT_KEY`, `OPTI_CLIENT_SECRET`, `OPTI_PROJECT_ID`
 3. OS keychain — populated by `opticloud auth:login`
 
-**opticloud does not read `.env` files.** It has no dotenv loading; the `OPTI_*` variables
-must already be in the process environment. Storing them in a project `.env` and expecting
-`opticloud ship` to pick them up silently falls through to the keychain — which usually
-works, and so hides the misconception until it runs somewhere without a keychain (CI).
+**opticloud loads a `.env` file from the working directory on startup** (its entrypoint calls
+`require('dotenv').config()`, verified in v0.0.6), so `OPTI_*` values in a project `.env` count
+as environment variables. Keep that file out of the deployment package (`.zipignore`).
 
 - **Local development**: `opticloud auth:login` once. Nothing to configure per project.
 - **CI**: export `OPTI_*` from secrets, and add `--skip-validation` to avoid a needless

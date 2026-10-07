@@ -16,7 +16,7 @@ npm run cms:login            # Authenticate with Optimizely CMS CLI
 npm run cms:diff             # Read-only: diff code vs CMS content types/templates (run before pushing)
 npm run cms:push-config      # Push content type definitions to CMS
 npm run cms:push-config-force  # Force push (overwrites existing types)
-npm run deploy-test2         # Deploy to Test2 (opticloud ship; credentials from `opticloud auth:login`)
+npm run deploy-test2         # Deploy to Test2 (opticloud ship; credentials from OPTI_* in .env/env or the `opticloud auth:login` keychain)
 npm run lh                   # Lighthouse on Test2 (test.contentgurus.no/en), median of 3, stores result
 npm run lh:trim              # Agent-friendly markdown summary of the latest Lighthouse report
 npm run lh:history           # Score trend across runs (▲/▼ deltas)
@@ -57,14 +57,16 @@ Every new content type requires registration in all three places plus `optimizel
 
 ### Content Routing
 
-- `src/app/[...slug]/page.tsx` — Dynamic catch-all that fetches CMS content by URL path via `GraphClient.getContentByPath()` and renders with `<OptimizelyComponent>`
-- `src/app/preview/page.tsx` — Visual Builder preview route for in-context editing
-- `src/app/page.tsx` — Root `/` redirects to `/en`
+- `src/app/[locale]/[[...slug]]/page.tsx` — Localized catch-all (en/no/sv/da) that reads CMS content via the cached `getPageContent()` (`src/lib/optimizely/get-page.ts`) and renders with `<OptimizelyComponent>`
+- `src/app/preview/page.tsx` — Visual Builder preview route for in-context editing (uncached, outside the locale tree)
+- `src/proxy.ts` — next-intl middleware; handles locale routing, including `/` → the default locale
+- `src/app/hooks/graph/route.ts` — publish webhook (revalidation + CDN purge); see `docs/caching.md`
 
 ### Content Type Definitions (`src/content-types/`)
 
-Each file exports a `contentType()` call with a `CT` suffix (e.g., `CardBlockCT`). Two base types:
+Each file exports a `contentType()` call with a `CT` suffix (e.g., `CardBlockCT`). Base types:
 - `_page` — Page types (e.g., `ArticlePage`)
+- `_experience` — Visual Builder pages (`LandingPageExperience`)
 - `_component` — Blocks/elements with composition behaviors:
   - `sectionEnabled` — Can be placed in Visual Builder sections
   - `elementEnabled` — Can be placed as inline elements (restricted property types: no arrays with content, no component/json properties)
@@ -85,21 +87,26 @@ Barrel exports in `src/components/index.ts` must match content type keys used in
 ### Component Pattern
 
 ```typescript
-import { Infer } from '@optimizely/cms-sdk';
+import { ContentProps } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 
 type Props = {
-  opti: Infer<typeof SomeContentTypeCT>;
-  displaySettings?: Infer<typeof SomeDisplayTemplate>;
+  content: ContentProps<typeof SomeContentTypeCT>;
+  displaySettings?: ContentProps<typeof SomeDisplayTemplate>;
 };
 
-export default function MyComponent({ opti, displaySettings }: Props) {
-  const { pa, src } = getPreviewUtils(opti);
+export default function MyComponent({ content, displaySettings }: Props) {
+  const { pa, src } = getPreviewUtils(content);
   // pa('propertyName') — adds preview attributes for Visual Builder editing
-  // src(opti.image) — returns optimized image URL from CMS CDN
-  return <div {...pa('title')}>{opti.title}</div>;
+  // src(content.image) — returns the image URL (also resolves DAM assets, whose url.default is null)
+  return <div {...pa('title')}>{content.title}</div>;
 }
 ```
+
+Define content types with `contentType` from `@/lib/content-type` and display
+templates with `displayTemplate` from `@/lib/display-template`, not the SDK
+imports directly: the wrappers add `description` support and keep display
+template choices as literal types (otherwise select settings infer as `never`).
 
 ### Display Templates vs Content Type Properties
 

@@ -63,16 +63,9 @@ opticloud auth:logout && opticloud auth:login
 2. Environment variables — `OPTI_CLIENT_KEY`, `OPTI_CLIENT_SECRET`, `OPTI_PROJECT_ID`
 3. OS keychain
 
-**opticloud does not load `.env` files.** The `OPTI_*` variables are read from the process
-environment. Putting them in a project `.env` does nothing on its own — if deployment still
-works, it is falling through to the keychain. That distinction stays invisible until the
-same command runs somewhere without a keychain, such as CI.
-
-To use a `.env` file deliberately, load it explicitly:
-
-```bash
-node --env-file=.env node_modules/.bin/opticloud ship ./ --type=head --target=Test2
-```
+**opticloud loads `.env` from the working directory on startup** (via dotenv, verified in
+v0.0.6), so `OPTI_*` values there are used before the keychain. In CI, where there is
+neither a `.env` nor a keychain, export the `OPTI_*` variables from secrets.
 
 ## Step 3: Prepare the project
 

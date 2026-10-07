@@ -84,8 +84,8 @@ A few things worth knowing before reading too much into these numbers:
 
 1. **CDN edge HIT vs MISS.** Cloudflare currently serves HTML as
    `cf-cache-status: DYNAMIC` (HTML caching at the edge isn't enabled
-   yet — see the pending CF ticket in `optimizely-isr-feedback.md`
-   issue 8). So the 127 ms TTFB is **all origin** — the request still
+   yet — see [`todo-cdn-html-caching.md`](../todo-cdn-html-caching.md)).
+   So the 127 ms TTFB is **all origin** — the request still
    round-trips to Azure even though Redis serves it instantly there.
    Once the Cloudflare Cache Rule is enabled, expect TTFB to drop
    further as repeat requests get served by the nearest edge POP.

@@ -28,9 +28,9 @@ All three come from **PaaS Portal > Your Frontend Project > API tab > Add API Cr
 2. Environment variables — the `OPTI_*` names above, read from the process environment
 3. OS keychain — populated by `opticloud auth:login`
 
-**opticloud does not read `.env` files.** There is no dotenv loading; the variables must
-already be in the environment. A project `.env` containing `OPTI_*` does nothing on its own
-— if deployment works anyway, the keychain is what's serving the credentials.
+**opticloud loads `.env` from the working directory on startup** (via dotenv, verified in
+v0.0.6), so `OPTI_*` values in a project `.env` are picked up as environment variables and
+take precedence over the keychain.
 
 **Local development** — authenticate once, then forget about it:
 

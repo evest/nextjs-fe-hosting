@@ -1,24 +1,11 @@
 # Engineering a Fast Front-End on Optimizely SaaS CMS
 
-> **⚠️ Before publishing externally:** this draft contains internal identifiers
-> — the live host `test.contentgurus.no` and the asset hostname
-> `app-epsacmsguru2ad8jt002.cms.optimizely.com`. **Redact or generalize these**
-> (e.g. `https://example.com`, `https://<your-instance>.cms.optimizely.com`)
-> before sharing as a public blog post. They're fine for the internal/colleague
-> version. Also re-check that the numbers and "what's left" status are still
-> current at publish time.
-
 *How we took a Next.js 16 site on Optimizely Frontend Hosting from a 72 to the
 mid-90s on mobile Lighthouse — what worked, what didn't, and the one thing left
 that decides whether mobile "passes."*
 
-> **Suggested titles** (pick one for the blog version):
-> 1. *Engineering a Fast Front-End on Optimizely SaaS CMS*
-> 2. *Chasing 100: A Performance Story with Optimizely CMS, Next.js & Cloudflare*
-> 3. *The Last 600 Milliseconds: Why Edge Caching Is the Final Mile for a Dynamic CMS Site*
-> 4. *From 72 to 95: A Field Guide to Core Web Vitals on Optimizely Frontend Hosting*
-> 5. *Measure, Don't Guess: A Real Performance Investigation (and the Myth of the Hero Image)*
-> 6. *The Gold-Standard Front-End for Optimizely SaaS CMS*
+> Written in June 2026. For current scores and what has changed since, see
+> [performance](performance.md).
 
 ---
 
@@ -473,7 +460,7 @@ reference/"gold-standard" implementation.
 
 ---
 
-*Internal references: `docs/perf-mobile-lcp-analysis.md` (the LCP investigation
+*References: `docs/perf-mobile-lcp-analysis.md` (the LCP investigation
 + DevTools trace addendum), `docs/cdn-html-caching.md` and
 `docs/todo-cdn-html-caching.md` (the edge-caching design and the
 division of responsibility with Optimizely), `docs/new-build-checklist.md`

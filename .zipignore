@@ -64,3 +64,6 @@ desktop.ini
 # Misc
 README.md
 certificates
+
+# CMS content export packages
+*.episerverdata
