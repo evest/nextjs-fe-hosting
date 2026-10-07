@@ -1,9 +1,10 @@
 // Optimizely DXP shared Redis cache handler.
 //
-// Verbatim port of Optimizely's reference implementation from
-// docs/isr-documentation.md §2.2. Avoid ESLint-cleaning this file —
-// keeping it byte-for-byte aligned with the docs makes future updates
-// trivially mergeable.
+// Based on Optimizely's reference implementation in
+// docs/isr-documentation.md §2.2. Diverges in serialization (Buffer/Map
+// round-tripping) and tag invalidation (timestamps instead of deriving keys
+// from path tags) — both needed for Next 16.3. Keep the Redis connection code
+// aligned with the docs so upstream fixes stay easy to merge.
 
 import { createCluster } from "redis";
 import { EntraIdCredentialsProviderFactory, REDIS_SCOPE_DEFAULT } from "@redis/entraid";
@@ -111,8 +112,16 @@ async function connectToRedis(redisUrl) {
 // plain object as the response body — which coerces to the literal string
 // `[object Object]`. These reviver/replacer helpers round-trip Buffers (and any
 // nested ones) so Buffer-bodied routes survive the Redis cache intact.
+//
+// APP_PAGE entries also carry `segmentData: Map<string, Buffer>` (the
+// per-segment client prefetch payloads). `JSON.stringify` turns a Map into
+// `{}`, so every segment prefetch (`?_rsc=` with `next-router-segment-prefetch`)
+// of a cached page 500s. Maps are round-tripped as entry arrays.
 function serializeEntry(entry) {
   return JSON.stringify(entry, (_key, val) => {
+    if (val instanceof Map) {
+      return { __nextCacheMap: Array.from(val.entries()) };
+    }
     // A JSON replacer runs *after* the value's own `toJSON()`, so a real Buffer
     // arrives here already shaped as `{type:"Buffer",data:[...]}`. Match that
     // shape (not `instanceof Buffer`) to capture the original bytes.
@@ -127,6 +136,9 @@ function deserializeEntry(raw) {
   return JSON.parse(raw, (_key, val) => {
     if (val && typeof val === "object" && typeof val.__nextCacheBuffer === "string") {
       return Buffer.from(val.__nextCacheBuffer, "base64");
+    }
+    if (val && typeof val === "object" && Array.isArray(val.__nextCacheMap)) {
+      return new Map(val.__nextCacheMap);
     }
     return val;
   });
@@ -148,15 +160,62 @@ export async function getCluster() {
   return cluster;
 }
 
+// Tag invalidation is timestamp-based: revalidateTag() records when each tag
+// was revalidated, and get() treats an entry as a miss if any of its tags was
+// revalidated after the entry was written.
+//
+// The reference implementation instead mapped `_N_T_<path>` tags back to a
+// storage key and deleted it. That broke in Next 16.3, which scopes route
+// storage keys by source route (`/route-cache/APP_PAGE/<sha256>/$/en`), so the
+// derived `/en` key never matched and published pages stayed stale forever.
+// Timestamps don't depend on the key format at all.
+//
+// All tag timestamps live in one hash, so a lookup is a single HMGET (one slot,
+// safe in cluster mode).
+const TAGS_KEY = `${CACHE_PREFIX}__tags__`;
+const memoryTagTimes = new Map();
+
+// Page and route entries carry their tags (implicit `_N_T_` path/layout tags
+// plus any cacheTag() values) in the `x-next-cache-tags` header, not in the
+// set() context, so read both.
+function entryTags(entry, ctx) {
+  const tags = new Set([...(entry.tags ?? []), ...(ctx?.tags ?? []), ...(ctx?.softTags ?? [])]);
+  const header = entry.value?.headers?.["x-next-cache-tags"];
+  if (typeof header === "string") {
+    for (const tag of header.split(",")) if (tag) tags.add(tag);
+  }
+  return [...tags];
+}
+
+function isRevalidated(tagTimes, lastModified) {
+  return tagTimes.some((t) => t != null && Number(t) > lastModified);
+}
+
 export default class CacheHandler {
-  async get(key) {
-    const result = await withFallback(async (redis) => {
+  async get(key, ctx) {
+    const fromRedis = await withFallback(async (redis) => {
       const raw = await redis.get(`${CACHE_PREFIX}${key}`);
-      if (!raw) return null;
+      if (!raw) return { entry: null };
       const entry = deserializeEntry(raw);
-      return { value: entry.value, lastModified: entry.lastModified };
+      const tags = entryTags(entry, ctx);
+      if (tags.length > 0 && isRevalidated(await redis.hmGet(TAGS_KEY, tags), entry.lastModified)) {
+        return { entry: null };
+      }
+      return { entry };
     });
-    return result ?? memoryCache.get(key) ?? null;
+
+    let entry;
+    if (fromRedis) {
+      entry = fromRedis.entry;
+    } else {
+      entry = memoryCache.get(key) ?? null;
+      const tags = entry ? entryTags(entry, ctx) : [];
+      if (entry && isRevalidated(tags.map((t) => memoryTagTimes.get(t)), entry.lastModified)) {
+        memoryCache.delete(key);
+        entry = null;
+      }
+    }
+    return entry ? { value: entry.value, lastModified: entry.lastModified } : null;
   }
 
   async set(key, value, context) {
@@ -179,23 +238,15 @@ export default class CacheHandler {
 
   async revalidateTag(tags) {
     const tagList = Array.isArray(tags) ? tags : [tags];
-    const pathTags = tagList.filter(t => t.startsWith("_N_T_") && t !== "_N_T_/layout");
-    const pathKeys = pathTags.map(t => {
-      const path = t.replace("_N_T_", "");
-      return `${CACHE_PREFIX}${path === "/" ? "/index" : path}`;
-    });
-    const purged = await withFallback(async (redis) => {
-      for (const key of pathKeys) {
-        await redis.del(key);
-      }
+    if (tagList.length === 0) return;
+    const now = Date.now();
+    // Always record locally too, so this instance is consistent even if the
+    // Redis write fails.
+    for (const tag of tagList) memoryTagTimes.set(tag, now);
+    await withFallback(async (redis) => {
+      await redis.hSet(TAGS_KEY, Object.fromEntries(tagList.map((t) => [t, String(now)])));
       return true;
     });
-    if (!purged) {
-      for (const key of pathKeys) {
-        const cacheKey = key.slice(CACHE_PREFIX.length);
-        memoryCache.delete(cacheKey);
-      }
-    }
   }
 
   resetRequestCache() {
