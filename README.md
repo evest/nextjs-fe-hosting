@@ -196,6 +196,26 @@ credentials; the app registers its own publish webhook on startup.
 | `npm run lh` | Lighthouse against Test2, median of 3, stored in history |
 | `npm run lh:trim` / `lh:history` | Summarise the latest report / show the score trend |
 
+## Developer tools
+
+`/diagnostics` has a few server-rendered pages for inspecting what the
+running site sees, on any environment:
+
+| Page | Shows |
+|---|---|
+| `/diagnostics/env` | The environment variables the running instance has, with secrets masked — handy on Frontend Hosting, where the platform injects most of them |
+| `/diagnostics/raw-content?path=/en/` | The raw content the SDK gets from Graph for a page path |
+| `/diagnostics/sdk-query` | The GraphQL queries the SDK sends for a page |
+| `/diagnostics/cms-graph` | Whether Graph returns page URLs, which the publish webhook depends on |
+
+The section is protected with HTTP Basic Auth. Set `DIAGNOSTICS_USER` and
+`DIAGNOSTICS_PASSWORD` in `.env` locally, or under **App Settings** in the
+PaaS Portal on Frontend Hosting. If either is missing, `/diagnostics` returns
+404, so it's closed by default.
+
+The [Lighthouse harness](scripts/lighthouse/README.md) (`npm run lh`) is the
+other half of the tooling; see [performance](docs/performance.md).
+
 ## Project structure
 
 ```

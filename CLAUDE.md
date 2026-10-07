@@ -128,6 +128,7 @@ Copy `.env.template` to `.env`. Key variables:
 - `OPTIMIZELY_GRAPH_SINGLE_KEY` — Required for content fetching
 - `OPTIMIZELY_CMS_URL` — CMS instance URL
 - `OPTIMIZELY_GRAPH_GATEWAY` — Graph endpoint (defaults to `https://cg.optimizely.com`); handled by `src/lib/config.ts` `getGraphGatewayUrl()` which accounts for differences between local dev and Frontend Hosting runtime
+- `DIAGNOSTICS_USER` / `DIAGNOSTICS_PASSWORD` — Basic Auth for `/diagnostics/*` (checked in `src/proxy.ts`); if unset, `/diagnostics` 404s. `/diagnostics/env` replaces the old `/debug` route
 
 ## Path Alias
 

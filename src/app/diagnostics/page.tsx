@@ -19,6 +19,18 @@ export default function DiagnosticsIndex() {
       <ul className="space-y-2">
         <li>
           <Link
+            href="/diagnostics/env"
+            className="block rounded border border-gray-200 bg-white p-4 hover:border-blue-400 hover:bg-blue-50 transition"
+          >
+            <div className="font-semibold text-gray-900">Environment</div>
+            <div className="text-sm text-gray-600 mt-1">
+              Which environment variables the running instance has (secrets
+              masked) — checks what the platform injected.
+            </div>
+          </Link>
+        </li>
+        <li>
+          <Link
             href="/diagnostics/cms-graph"
             className="block rounded border border-gray-200 bg-white p-4 hover:border-blue-400 hover:bg-blue-50 transition"
           >
