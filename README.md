@@ -163,8 +163,7 @@ you start with exactly what's on [test.contentgurus.no](https://test.contentguru
 
 **Starting without the content package?** Skip step 1 and push the content
 model from code with `npm run cms:push-config`. You'll then need to create the
-pages yourself, starting with a `LandingPageExperience` as the start page for
-each language and a *Site Settings* item.
+pages yourself, starting with a `LandingPageExperience` translated into each language.
 
 Locally, CMS reads are cached for minutes rather than until the next publish,
 because Graph's publish webhook can't reach `localhost`.

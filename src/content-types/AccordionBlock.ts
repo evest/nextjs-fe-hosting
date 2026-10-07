@@ -25,6 +25,9 @@ export const AccordionBlockCT = contentType({
       type: 'array',
       displayName: 'Items',
       items: { type: 'component', contentType: AccordionItemCT },
+      // Localized so each language can have its own FAQ entries. Without it
+      // the list is shared across locales and translated items are dropped.
+      isLocalized: true,
       sortOrder: 30,
     },
   },

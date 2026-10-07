@@ -66,6 +66,11 @@ difference in one pass.
 - After the fix, Lighthouse mobile on `/en` (median of 3) scored
   94 / 100 / 100 / 100 (Performance / Accessibility / Best Practices / SEO),
   with an LCP of 3.0 s and CLS 0.
+- **FAQ items became translatable.** `AccordionBlock.items` was made
+  localized (see the 2026-06 entry for the problem). The CMS treats changing
+  localization on a property with content as breaking, so it needed
+  `--force`. Existing items stayed in English; the other languages started
+  with empty lists to be translated.
 - **Lesson:** a custom `cacheHandler` relies on Next.js internals that change
   between minor versions. After any Next.js upgrade, recheck the handler's
   contract (key shape, value shape, tag handling) and test on a deployed

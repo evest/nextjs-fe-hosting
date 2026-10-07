@@ -165,8 +165,6 @@ the content in them.
   The language is still declared correctly in JSON-LD (`inLanguage`),
   `og:locale` and `hreflang`. The proper fix is a root layout per locale; see
   [html lang and cacheComponents](html-lang-and-cachecomponents.md).
-- **Accordion items are not localized** in the content model, so FAQ markup
-  on translated pages uses the default-language questions and answers.
 - **Graph's `limit` maximum is 100**, so each content type in the LLM index is
   capped at 100 items per query. Fine for this site; a larger site would need
   paging.

@@ -348,9 +348,8 @@ function accordionItemToQuestion(item: unknown): Question | null {
 // no usable Q&A pairs (no accordion, or every item missing summary/body) so the
 // caller can skip it.
 //
-// NOTE: AccordionBlock.items are not localized (see project memory) — on a
-// non-default-locale page the questions/answers carry the canonical-locale
-// text. Acceptable: the schema still describes real on-page content.
+// AccordionBlock.items is localized, so each locale's FAQPage uses that
+// locale's own questions and answers.
 function buildFaqPage(content: Content): FAQPage | null {
   const blocks = (content.additionalContent as unknown[] | undefined) ?? [];
   const questions: Question[] = [];

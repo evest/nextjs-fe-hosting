@@ -187,9 +187,11 @@ components here pass them through explicitly
 - **Display template choice keys need at least two characters**, so
   `overlay0`, not `0`.
 - **A property that isn't localized is shared by all languages,** even if
-  the components inside it have localized fields. `AccordionBlock.items` is
-  one: translated FAQ items are silently dropped. Changing localization on a
-  property that already holds content is a breaking change in the CMS.
+  the components inside it have localized fields; translations written to it
+  are silently dropped. `AccordionBlock.items` had this problem until it was
+  made localized. Changing localization on a property that already holds
+  content is a breaking change: the push needs `--force`, existing values stay
+  in the default language, and the other languages start empty.
 - **URL properties are objects** (`{ default: … }`), not strings.
 - **Images from the DAM have `url.default` set to `null`.** Use the SDK's
   `src()` helper to resolve them, not the URL field.
