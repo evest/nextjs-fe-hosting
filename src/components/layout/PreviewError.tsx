@@ -32,17 +32,29 @@ type Props = {
 
 // --- Error type guards using the SDK's `name` property ---
 
+// The preview route passes a plain { name, message, ... } object, not an Error
+// instance (React redacts Error props crossing to the client in production),
+// so the guards check shape rather than `instanceof Error`.
+function isErrorLike(err: unknown): err is Error {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    typeof (err as Error).name === 'string' &&
+    typeof (err as Error).message === 'string'
+  );
+}
+
 function isOptimizelyGraphError(
   err: unknown
 ): err is Error & { name: string } {
-  return err instanceof Error && err.name.startsWith('Graph');
+  return isErrorLike(err) && err.name.startsWith('Graph');
 }
 
 function isMissingContentTypeError(
   err: unknown
 ): err is Error & { contentType: string } {
   return (
-    err instanceof Error && err.name === 'GraphMissingContentTypeError'
+    isErrorLike(err) && err.name === 'GraphMissingContentTypeError'
   );
 }
 
@@ -50,7 +62,7 @@ function isGraphResponseError(
   err: unknown
 ): err is Error & { request: GraphRequest } {
   return (
-    err instanceof Error &&
+    isErrorLike(err) &&
     (err.name === 'GraphResponseError' ||
       err.name === 'GraphHttpResponseError' ||
       err.name === 'GraphContentResponseError') &&
@@ -62,7 +74,7 @@ function isGraphHttpResponseError(
   err: unknown
 ): err is Error & { status: number; request: GraphRequest } {
   return (
-    err instanceof Error &&
+    isErrorLike(err) &&
     (err.name === 'GraphHttpResponseError' ||
       err.name === 'GraphContentResponseError') &&
     'status' in err
@@ -77,7 +89,7 @@ function isGraphContentResponseError(
   request: GraphRequest;
 } {
   return (
-    err instanceof Error &&
+    isErrorLike(err) &&
     err.name === 'GraphContentResponseError' &&
     'errors' in err
   );
@@ -285,7 +297,7 @@ export default function PreviewError({ error, params }: Props) {
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-2">Error Message</h2>
           <p className="text-gray-700 font-mono bg-gray-100 p-3 rounded text-sm">
-            {error instanceof Error
+            {isErrorLike(error)
               ? error.message
               : 'Unknown error occurred'}
           </p>

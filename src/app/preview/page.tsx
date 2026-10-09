@@ -25,6 +25,19 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
+// PreviewError is a client component. An Error instance passed as a prop is
+// redacted by React in production builds (the editor just sees "Minified React
+// error #441"), so hand it a plain object carrying the SDK error fields instead.
+function serializeError(err: unknown) {
+  if (!(err instanceof Error)) return { name: 'Error', message: String(err) };
+  const { request, status, errors, contentType } = err as Error & Record<string, unknown>;
+  // Drop absent fields: PreviewError's guards test with `'request' in err`.
+  const extra = Object.fromEntries(
+    Object.entries({ request, status, errors, contentType }).filter(([, v]) => v !== undefined),
+  );
+  return { name: err.name, message: err.message, ...extra };
+}
+
 async function PreviewBody({ searchParams }: Props) {
   const params = await searchParams;
 
@@ -39,6 +52,13 @@ async function PreviewBody({ searchParams }: Props) {
 
   const client = getClient();
 
+  // Media assets (ImageMedia etc.) aren't localized, so the CMS sends `loc=`
+  // (empty). The SDK forwards that verbatim as `metadataLocale: ""`, which
+  // matches nothing in Graph → "Content with key … could not be found".
+  // Omitting loc lets the by-key lookup match the locale-neutral asset.
+  const previewParams = { ...params } as PreviewParams;
+  if (!previewParams.loc) delete (previewParams as Partial<PreviewParams>).loc;
+
   let response;
   let error: unknown = null;
   const maxRetries = 3;
@@ -46,7 +66,7 @@ async function PreviewBody({ searchParams }: Props) {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       error = null;
-      response = await client.getPreviewContent(params as PreviewParams);
+      response = await client.getPreviewContent(previewParams);
       break;
     } catch (err: unknown) {
       error = err;
@@ -65,7 +85,7 @@ async function PreviewBody({ searchParams }: Props) {
       <NextIntlClientProvider locale={locale} messages={messages}>
         <Header />
         <main className="flex-1">
-          <PreviewError error={error} params={params} />
+          <PreviewError error={serializeError(error)} params={params} />
         </main>
         <Footer />
       </NextIntlClientProvider>
