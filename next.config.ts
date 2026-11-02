@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
   cacheHandler: resolve(process.cwd(), "cache-handler.mjs"),
   cacheMaxMemorySize: 0,
 
+  // @azure/identity >= 4.14 depends on `open@11` → `powershell-utils`, which
+  // references an absolute powershell.exe path that Turbopack fails to trace
+  // ("could not be resolved because a component does not exist"). Load it
+  // from node_modules at runtime instead of bundling it.
+  serverExternalPackages: ["@azure/identity"],
+
   images: {
     // Custom loader: resize at the Optimizely image CDNs (Cloudflare for CMS
     // assets, the CMP/DAM CDN for DAM assets) instead of the built-in
