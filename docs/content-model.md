@@ -68,7 +68,7 @@ components here.
 | `AccordionBlock` | | FAQ list of `AccordionItem`s; also emits FAQ structured data |
 | `ArticleListBlock` | ✓ | Latest articles under a parent page, queried from Graph |
 | `CardBlock` | ✓ | Image card with link |
-| `ContactFormBlock` | ✓ | Contact form, inline or in a modal dialog |
+| `ContactFormBlock` | ✓ | Contact form, inline or in a modal dialog; optional thank-you page gets an encrypted `?ref=` source-page token (see `src/lib/contact-ref.ts`) |
 
 **Elements** (placed in columns)
 

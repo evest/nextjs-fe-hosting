@@ -34,5 +34,13 @@ export const ContactFormBlockCT = contentType({
       isLocalized: true,
       sortOrder: 30,
     },
+    thankYouPage: {
+      type: 'contentReference',
+      displayName: 'Thank-you page',
+      description:
+        'Page the visitor is sent to after a successful submission. An encrypted reference to the page the form was on is added to the link for analytics. Leave empty to show the thank-you message in the form instead.',
+      allowedTypes: ['_page', '_experience'],
+      sortOrder: 40,
+    },
   },
 });

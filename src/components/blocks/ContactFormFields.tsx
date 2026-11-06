@@ -1,21 +1,26 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { CheckCircle2, Loader2, Send } from 'lucide-react';
 import { submitContact } from '@/lib/actions/submit-contact';
 import { cn } from '@/lib/utils';
+import { CONTACT_REF_PARAM } from '@/lib/contact-ref-param';
 
 type Props = {
   variant?: 'inline' | 'dialog';
+  /** CMS thank-you page; when set, a successful submit navigates there. */
+  thankYouHref?: string;
   onSuccess?: () => void;
 };
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
-export default function ContactFormFields({ variant = 'inline', onSuccess }: Props) {
+export default function ContactFormFields({ variant = 'inline', thankYouHref, onSuccess }: Props) {
   const t = useTranslations('ContactForm');
   const locale = useLocale();
+  const pathname = usePathname();
   const [status, setStatus] = useState<Status>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -34,8 +39,19 @@ export default function ContactFormFields({ variant = 'inline', onSuccess }: Pro
         phone: String(formData.get('phone') ?? '') || undefined,
         message: String(formData.get('message') ?? ''),
         locale,
+        pagePath: pathname,
       });
       if (result.ok) {
+        if (thankYouHref) {
+          const url = new URL(thankYouHref, window.location.origin);
+          if (result.ref) url.searchParams.set(CONTACT_REF_PARAM, result.ref);
+          // Full page load on purpose: a client-side router.push would not
+          // request the HTML, so the ref would never reach the edge logs the
+          // analytics reads (and the Ferdsel beacon drops query strings).
+          // Stay in 'submitting' so the button can't be clicked again meanwhile.
+          window.location.assign(url.toString());
+          return;
+        }
         setStatus('success');
         onSuccess?.();
       } else {

@@ -9,12 +9,13 @@ type Props = {
   buttonLabel: string;
   heading?: string;
   description?: string;
+  thankYouHref?: string;
 };
 
 // Uses the native <dialog> element rather than a shadcn/Radix Dialog
 // primitive — keeps Phase 5b dep-free. Native dialog supports showModal,
 // the Escape key, and the backdrop pseudo-element out of the box.
-export default function ContactFormDialog({ buttonLabel, heading, description }: Props) {
+export default function ContactFormDialog({ buttonLabel, heading, description, thankYouHref }: Props) {
   const t = useTranslations('ContactForm');
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const [open, setOpen] = useState(false);
@@ -88,7 +89,7 @@ export default function ContactFormDialog({ buttonLabel, heading, description }:
           </button>
         </div>
         <div className="px-6 py-6 overflow-y-auto">
-          <ContactFormFields variant="dialog" onSuccess={() => { /* keep dialog open; success state shows inside */ }} />
+          <ContactFormFields variant="dialog" thankYouHref={thankYouHref} onSuccess={() => { /* keep dialog open; success state shows inside */ }} />
         </div>
       </dialog>
     </>

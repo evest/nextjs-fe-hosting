@@ -27,6 +27,7 @@ export default async function ContactFormBlock({ content, displaySettings }: Pro
   const isCenter = alignment === 'center';
   const asPopup = !!content.asPopup;
   const popupLabel = content.popupButtonLabel || t('openFormButton');
+  const thankYouHref = content.thankYouPage?.url?.default ?? undefined;
 
   return (
     <section className={cn(surfaceClass[surface], 'py-16 md:py-24')}>
@@ -52,11 +53,12 @@ export default async function ContactFormBlock({ content, displaySettings }: Pro
               buttonLabel={popupLabel}
               heading={content.heading ?? undefined}
               description={content.description ?? undefined}
+              thankYouHref={thankYouHref}
             />
           </div>
         ) : (
           <div className="bg-card text-card-foreground p-6 md:p-10 border border-border rounded-lg">
-            <ContactFormFields variant="inline" />
+            <ContactFormFields variant="inline" thankYouHref={thankYouHref} />
           </div>
         )}
       </Container>
