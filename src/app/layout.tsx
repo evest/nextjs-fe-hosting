@@ -3,6 +3,7 @@ import { Instrument_Serif } from "next/font/google";
 // To restore the Manrope body font: re-add `Manrope` to this import.
 // import { Instrument_Serif, Manrope } from "next/font/google";
 import "./globals.css";
+import { FerdselBeacon } from "@ferdselanalytics/next";
 
 // Initialize Optimizely SDK registries
 import "@/optimizely";
@@ -141,6 +142,10 @@ export default async function RootLayout({
         className={`${instrumentSerif.variable} antialiased min-h-screen flex flex-col`}
       >
         {children}
+        {/* Ferdsel Analytics: one tiny same-origin request per in-app navigation, sent when the
+            browser is idle, so client-side page views reach the edge logs. Renders nothing;
+            skipped in the CMS preview iframe, on Save-Data and with Global Privacy Control. */}
+        <FerdselBeacon />
       </body>
     </html>
   );
