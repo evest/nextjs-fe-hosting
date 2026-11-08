@@ -2,8 +2,8 @@
 #
 #   push to master   → Test1 (dev.contentgurus.no)
 #   manual run       → any environment; Production (www.contentgurus.no) goes
-#                      through the "production" GitHub environment, so its
-#                      protection rules (required reviewers) apply.
+#                      through the "production" GitHub environment (master
+#                      only). The deployment API calls it "Production1".
 #
 # Secrets (repo settings → Secrets and variables → Actions):
 #   OPTI_PROJECT_ID, OPTI_CLIENT_KEY, OPTI_CLIENT_SECRET — from PaaS Portal > API.
@@ -30,13 +30,11 @@ on:
         options: [Test1, Test2, Production]
         default: Test1
 
-# One deployment at a time across ALL environments: the platform refuses to
-# start a deployment (HTTP 403 at "Starting deployment") while another one in
-# the same project is running, even to a different environment. Runs queue
-# instead of cancelling a deployment that's already running. GitHub keeps at
-# most one queued run per group, so a newer run replaces an older queued one.
-# Local `npm run deploy-*` doesn't see this queue: don't run one while a
-# workflow deploy is in progress.
+# One deployment at a time across all environments, so a manual run never
+# starts while the push-triggered one is still deploying. Runs queue instead of
+# cancelling a deployment that's already running; GitHub keeps at most one
+# queued run per group (a newer one replaces it). Local `npm run deploy-*`
+# doesn't see this queue.
 concurrency:
   group: deploy-frontend-hosting
   cancel-in-progress: false
@@ -72,5 +70,5 @@ jobs:
           npx --yes @kunalshetye/opticloud@0.0.6 ship ./
           --type=head
           --prefix=nextjs-fe-hosting
-          --target=${{ github.event.inputs.target || 'Test1' }}
+          --target=${{ (github.event.inputs.target || 'Test1') == 'Production' && 'Production1' || github.event.inputs.target || 'Test1' }}
           --skip-validation

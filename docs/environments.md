@@ -161,11 +161,16 @@ allows `master`. It has no required reviewers, because this is a demo site;
 add them if a production deploy should need approval (the run then waits for
 **Review deployments → Approve and deploy**).
 
-**Only one deployment can run at a time per project**, even to different
-environments. The platform refuses to start a second one with HTTP 403, after
-the package has already been uploaded. The workflow queues its runs so they
-never overlap. A deploy from your machine doesn't know about that queue, so
-don't start one while a workflow run is deploying.
+**The deployment API calls production `Production1`, not `Production`.**
+`--target=Production` gets HTTP 403 "Access is denied for source environment
+or target environment Production", after the package has already been
+uploaded. `deploy-prod` and the workflow use `Production1`; the workflow's
+menu still says *Production*. The test environments are `Test1` and
+`Test2` as expected.
+
+The workflow runs one deployment at a time across all environments, so a
+manual run waits for a push-triggered deploy to finish. A deploy from your
+machine doesn't know about that queue.
 
 Setting up a fork (all under the repository's **Settings**):
 

@@ -18,7 +18,7 @@ npm run cms:push-config      # Push content type definitions to CMS
 npm run cms:push-config-force  # Force push (overwrites existing types)
 npm run deploy-test1         # Deploy to Test1 = dev.contentgurus.no
 npm run deploy-test2         # Deploy to Test2 = test.contentgurus.no
-npm run deploy-prod          # Deploy to Production = www.contentgurus.no
+npm run deploy-prod          # Deploy to Production = www.contentgurus.no (API target name is "Production1", not "Production" → 403)
                              # (all via opticloud ship; credentials from OPTI_* in .env/env or the `opticloud auth:login` keychain)
 npm run lh                   # Lighthouse on Test2 (test.contentgurus.no/en), median of 3, stores result
 npm run lh:trim              # Agent-friendly markdown summary of the latest Lighthouse report

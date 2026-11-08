@@ -19,7 +19,7 @@
     "cms:pull-config": "node scripts/env.mjs optimizely-cms-cli config pull --output ./src/content-types --group",
     "deploy-test1": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Test1",
     "deploy-test2": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Test2",
-    "deploy-prod": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Production",
+    "deploy-prod": "opticloud ship ./ --type=head --prefix=nextjs-fe-hosting --target=Production1",
     "lh": "node scripts/lighthouse/run.mjs",
     "lh:desktop": "node scripts/lighthouse/run.mjs --desktop",
     "lh:trim": "node scripts/lighthouse/trim.mjs",
