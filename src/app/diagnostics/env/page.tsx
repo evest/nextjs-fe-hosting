@@ -52,6 +52,7 @@ const GROUPS: Group[] = [
     rows: [
       { name: 'NEXT_PUBLIC_SITE_URL', kind: 'public' },
       { name: 'NEXT_PUBLIC_SITE_NAME', kind: 'public' },
+      { name: 'OPTIMIZELY_ENVIRONMENT', kind: 'public', note: 'Only Production is indexable (src/proxy.ts)' },
     ],
   },
   {

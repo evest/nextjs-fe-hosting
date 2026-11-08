@@ -17,7 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SpanStatusCode, trace } from "@opentelemetry/api";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { purgeCdnCache } from "@/lib/cdn-cache";
+import { purgeCdnCache, purgeHostnames } from "@/lib/cdn-cache";
 import { CACHE_KEYS, getArticlesUnderTag, getPageTag, getSiteSettingsTag } from "@/lib/cache/cache-keys";
 import { getAllContentPaths } from "@/lib/optimizely/all-content-paths";
 import { routing } from "@/i18n/routing";
@@ -178,17 +178,21 @@ async function handlePublish(payload: { type: { subject: string; action: string 
       // 'layout') (done above) already cleared the Next.js cache for every
       // route; this clears the matching edge entries so visitors don't keep
       // getting the old snippet state from the CDN.
-      const hostname = process.env.OPTIMIZELY_SITE_HOSTNAME?.replace(/^https?:\/\//, "");
-      if (hostname) {
+      const hostnames = purgeHostnames();
+      if (hostnames.length > 0) {
         void (async () => {
           try {
-            const base = `https://${hostname}`;
             const paths = await getAllContentPaths();
-            // Dedupe: content URLs + every locale root + the bare root.
-            const urls = new Set<string>([`${base}/`]);
-            for (const l of routing.locales) urls.add(`${base}/${l}`);
-            for (const p of paths) {
-              urls.add(`${base}${p.url.endsWith("/") ? p.url.slice(0, -1) || "/" : p.url}`);
+            // Dedupe: content URLs + every locale root + the bare root, on
+            // every hostname the environment is served from.
+            const urls = new Set<string>();
+            for (const hostname of hostnames) {
+              const base = `https://${hostname}`;
+              urls.add(`${base}/`);
+              for (const l of routing.locales) urls.add(`${base}/${l}`);
+              for (const p of paths) {
+                urls.add(`${base}${p.url.endsWith("/") ? p.url.slice(0, -1) || "/" : p.url}`);
+              }
             }
             await purgeCdnCache([...urls]);
           } catch (err) {
@@ -200,12 +204,11 @@ async function handlePublish(payload: { type: { subject: string; action: string 
         })();
       }
     } else if (path) {
-      // Replace this with the public-facing hostname which should have its
-      // cache purged. The cache purge endpoint takes an array and multiple
-      // domains/paths can be purged.
-      const hostname = process.env.OPTIMIZELY_SITE_HOSTNAME?.replace(/^https?:\/\//, "");
-      if (hostname) {
-        purgeCdnCache([`https://${hostname}${path}`]).catch((err) =>
+      // Purge the path on both the platform hostname and the public domain
+      // (see purgeHostnames); the purge endpoint takes an array of URLs.
+      const hostnames = purgeHostnames();
+      if (hostnames.length > 0) {
+        purgeCdnCache(hostnames.map((hostname) => `https://${hostname}${path}`)).catch((err) =>
           console.error("[hooks] CDN cache purge failed:", err.message),
         );
       }

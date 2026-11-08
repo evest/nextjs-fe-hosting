@@ -6,10 +6,38 @@ import { routing } from './i18n/routing';
 const intlMiddleware = createMiddleware(routing);
 
 export default function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith('/diagnostics')) {
+  const { pathname } = request.nextUrl;
+  if (pathname === '/robots.txt') {
+    return isIndexable() ? NextResponse.next() : disallowAllRobots();
+  }
+  if (pathname.startsWith('/diagnostics')) {
     return guardDiagnostics(request);
   }
-  return intlMiddleware(request);
+  const response = intlMiddleware(request);
+  if (!isIndexable()) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+  return response;
+}
+
+// Only Production may be indexed by search engines; Test1 (dev.contentgurus.no),
+// Test2 (test.contentgurus.no) and local dev serve a disallow-all robots.txt
+// and an X-Robots-Tag: noindex header so they never compete with www.
+// OPTIMIZELY_ENVIRONMENT is set by Frontend Hosting at runtime ("Test2" on
+// Test2), and this check runs per request, so the decision follows the
+// environment that serves the request, not the one that built the package.
+function isIndexable(): boolean {
+  return /^production/i.test(process.env.OPTIMIZELY_ENVIRONMENT ?? '');
+}
+
+function disallowAllRobots() {
+  return new NextResponse('User-agent: *\nDisallow: /\n', {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600',
+      'X-Robots-Tag': 'noindex, nofollow',
+    },
+  });
 }
 
 // /diagnostics/* is developer tooling: HTTP Basic Auth with credentials from
@@ -64,8 +92,10 @@ export const config = {
   // Match all paths except API/CMS hooks, Next internals, static assets,
   // and the preview route, which lives outside the locale tree.
   // /diagnostics is matched so the auth guard above runs; it bypasses the
-  // locale middleware.
+  // locale middleware. /robots.txt is matched separately (the first pattern
+  // skips paths with a dot) so non-production environments can block crawlers.
   matcher: [
     '/((?!api|hooks|preview|_next|_vercel|.*\\..*).*)',
+    '/robots.txt',
   ],
 };

@@ -1,0 +1,65 @@
+# Deploys to Optimizely Frontend Hosting with opticloud.
+#
+#   push to master   → Test1 (dev.contentgurus.no)
+#   manual run       → any environment; Production (www.contentgurus.no) goes
+#                      through the "production" GitHub environment, so its
+#                      protection rules (required reviewers) apply.
+#
+# Secrets (repo settings → Secrets and variables → Actions):
+#   OPTI_PROJECT_ID, OPTI_CLIENT_KEY, OPTI_CLIENT_SECRET — from PaaS Portal > API.
+#
+# The platform runs `npm install` + `npm run build` itself, so this job only
+# packages and uploads the source. App settings (NEXT_PUBLIC_SITE_URL etc.)
+# live in the PaaS Portal per environment, not here.
+
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - 'scripts/lighthouse/**'
+      - '.claude/**'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Frontend Hosting environment
+        type: choice
+        options: [Test1, Test2, Production]
+        default: Test1
+
+# One deployment per environment at a time; a newer push waits rather than
+# cancelling a deployment that's already running on the platform.
+concurrency:
+  group: deploy-${{ github.event.inputs.target || 'Test1' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.target || 'Test1' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: ${{ (github.event.inputs.target || 'Test1') == 'Production' && 'production' || 'test' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Ship
+        env:
+          OPTI_PROJECT_ID: ${{ secrets.OPTI_PROJECT_ID }}
+          OPTI_CLIENT_KEY: ${{ secrets.OPTI_CLIENT_KEY }}
+          OPTI_CLIENT_SECRET: ${{ secrets.OPTI_CLIENT_SECRET }}
+        run: >
+          npx --yes @kunalshetye/opticloud@0.0.6 ship ./
+          --type=head
+          --prefix=nextjs-fe-hosting
+          --target=${{ github.event.inputs.target || 'Test1' }}
+          --skip-validation

@@ -10,7 +10,27 @@ import { ManagedIdentityCredential } from "@azure/identity";
 
 const API_URL = (process.env.OPTIMIZELY_CLOUDPLATFORM_API_URL ?? "").replace(/\/+$/, "");
 const RESOURCE_ID = process.env.OPTIMIZELY_CLOUDPLATFORM_API_RESOURCE_ID;
-const SITE_HOSTNAME = process.env.OPTIMIZELY_SITE_HOSTNAME;
+/**
+ * Hostnames whose edge cache a publish should purge. Frontend Hosting sets
+ * OPTIMIZELY_SITE_HOSTNAME to the environment's platform hostname
+ * (epsa…dxcloud.episerver.net), not the custom domain visitors use
+ * (dev/test/www.contentgurus.no), and it can't be overridden in the PaaS
+ * Portal. The edge caches per hostname, so purge both: the platform hostname
+ * and the public one from NEXT_PUBLIC_SITE_URL.
+ */
+export function purgeHostnames(): string[] {
+  const hosts = new Set<string>();
+  const platform = process.env.OPTIMIZELY_SITE_HOSTNAME?.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+  if (platform) hosts.add(platform);
+  try {
+    const pub = process.env.NEXT_PUBLIC_SITE_URL;
+    if (pub) hosts.add(new URL(pub).host);
+  } catch {
+    // Malformed NEXT_PUBLIC_SITE_URL: purge the platform hostname only.
+  }
+  hosts.delete("localhost:3000");
+  return [...hosts];
+}
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
@@ -39,11 +59,7 @@ export async function purgeCdnCache(urls?: string[]): Promise<void> {
     console.warn("CDN cache purge skipped: API URL or resource ID not configured");
     return;
   }
-  const purgeUrls =
-    urls ??
-    (SITE_HOSTNAME
-      ? [`https://${SITE_HOSTNAME.replace(/^https?:\/\//, "")}/`]
-      : []);
+  const purgeUrls = urls ?? purgeHostnames().map((host) => `https://${host}/`);
   if (purgeUrls.length === 0) {
     console.warn("CDN cache purge skipped: no URLs to purge");
     return;

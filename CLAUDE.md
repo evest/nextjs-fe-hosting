@@ -16,11 +16,36 @@ npm run cms:login            # Authenticate with Optimizely CMS CLI
 npm run cms:diff             # Read-only: diff code vs CMS content types/templates (run before pushing)
 npm run cms:push-config      # Push content type definitions to CMS
 npm run cms:push-config-force  # Force push (overwrites existing types)
-npm run deploy-test2         # Deploy to Test2 (opticloud ship; credentials from OPTI_* in .env/env or the `opticloud auth:login` keychain)
+npm run deploy-test1         # Deploy to Test1 = dev.contentgurus.no
+npm run deploy-test2         # Deploy to Test2 = test.contentgurus.no
+npm run deploy-prod          # Deploy to Production = www.contentgurus.no
+                             # (all via opticloud ship; credentials from OPTI_* in .env/env or the `opticloud auth:login` keychain)
 npm run lh                   # Lighthouse on Test2 (test.contentgurus.no/en), median of 3, stores result
 npm run lh:trim              # Agent-friendly markdown summary of the latest Lighthouse report
 npm run lh:history           # Score trend across runs (▲/▼ deltas)
 ```
+
+## Environments and deployment
+
+| Frontend Hosting env | Public host | Notes |
+|---|---|---|
+| Test1 | `dev.contentgurus.no` | No `CONTACT_REF_KEY` on purpose (tests the missing-key path) |
+| Test2 | `test.contentgurus.no` | Lighthouse target |
+| Production | `www.contentgurus.no` | Only environment that is indexable |
+
+`.github/workflows/deploy.yml` deploys every push to master to Test1. A manual
+run can target any environment; Production goes through the `production`
+GitHub environment (required reviewers). Per-environment settings
+(`NEXT_PUBLIC_SITE_URL`, which is inlined at build time, plus `CONTACT_REF_KEY`
+and `DIAGNOSTICS_*`) live in PaaS Portal > App Settings.
+
+- Search indexing is decided per request in `src/proxy.ts` from the
+  platform-set `OPTIMIZELY_ENVIRONMENT`: anything other than Production gets a
+  disallow-all `robots.txt` and `X-Robots-Tag: noindex`.
+- `OPTIMIZELY_SITE_HOSTNAME` and `OPTIMIZELY_GRAPH_CALLBACK_APIKEY` are set by
+  the platform and can't be overridden. The hostname is the `*.dxcloud.episerver.net`
+  origin, not the custom domain, so CDN purges cover both
+  (`purgeHostnames()` in `src/lib/cdn-cache.ts`).
 
 ## Performance testing (Lighthouse harness)
 

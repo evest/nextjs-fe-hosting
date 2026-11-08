@@ -61,6 +61,9 @@ desktop.ini
 # Claude skills (development only)
 .claude
 
+# CI workflows
+.github
+
 # Misc
 README.md
 certificates
