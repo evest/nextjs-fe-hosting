@@ -209,7 +209,7 @@ see traces and logs locally; see
 |---|---|---|---|
 | dev | [dev.contentgurus.no](https://dev.contentgurus.no) | Test1 | On every push to `master` (GitHub Actions) |
 | stage | [test.contentgurus.no](https://test.contentgurus.no) | Test2 | Manually |
-| prod | [www.contentgurus.no](https://www.contentgurus.no) | Production | Manually, with approval |
+| prod | [www.contentgurus.no](https://www.contentgurus.no) | Production | Manually |
 
 Each environment has its own CMS instance. Only production is open to search
 engines; the others serve `Disallow: /` and `noindex`.

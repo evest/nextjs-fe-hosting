@@ -9,7 +9,7 @@ at one of them, how to set up a new CMS instance, and how deployments work.
 |---|---|---|---|---|
 | `dev` | [dev.contentgurus.no](https://dev.contentgurus.no) | Test1 | Every push to `master` | No |
 | `stage` | [test.contentgurus.no](https://test.contentgurus.no) | Test2 | Manually | No |
-| `prod` | [www.contentgurus.no](https://www.contentgurus.no) | Production | Manually, with approval | Yes |
+| `prod` | [www.contentgurus.no](https://www.contentgurus.no) | Production | Manually | Yes |
 
 ## Local configuration: `.env` + `.env.<APP_ENV>`
 
@@ -156,8 +156,10 @@ what goes into the package. Keep `.env` and `.env.*` in it.**
 every push to `master` to Test1. Pushes that only change docs, Markdown or
 Lighthouse results are skipped. To deploy elsewhere, open the repository's
 **Actions** tab, choose **Deploy → Run workflow** and pick an environment.
-Production runs pause until a reviewer approves them (**Review deployments →
-Approve and deploy**).
+Production runs go through the `production` GitHub environment, which only
+allows `master`. It has no required reviewers, because this is a demo site;
+add them if a production deploy should need approval (the run then waits for
+**Review deployments → Approve and deploy**).
 
 Setting up a fork (all under the repository's **Settings**):
 
@@ -165,8 +167,8 @@ Setting up a fork (all under the repository's **Settings**):
    `OPTI_PROJECT_ID`, `OPTI_CLIENT_KEY` and `OPTI_CLIENT_SECRET` from PaaS
    Portal → API. Add them as repository secrets, not environment secrets.
 2. **Environments:** create `test`, which needs no rules, and `production`.
-   For `production`, add **Required reviewers** and restrict
-   **Deployment branches and tags** to `master`.
+   For `production`, restrict **Deployment branches and tags** to
+   `master`, and add **Required reviewers** if deploys should need approval.
 
 The workflow installs `libsecret` before running opticloud. opticloud loads
 its keychain library at startup even when the credentials come from

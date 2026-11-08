@@ -35,7 +35,7 @@ npm run lh:history           # Score trend across runs (▲/▼ deltas)
 
 `.github/workflows/deploy.yml` deploys every push to master to Test1. A manual
 run can target any environment; Production goes through the `production`
-GitHub environment (required reviewers). Per-environment settings
+GitHub environment (`master` only, no required reviewers: demo site). Per-environment settings
 (`NEXT_PUBLIC_SITE_URL`, which is inlined at build time, plus `CONTACT_REF_KEY`
 and `DIAGNOSTICS_*`) live in PaaS Portal > App Settings.
 

@@ -20,7 +20,7 @@ The site now runs in three Frontend Hosting environments: dev
 ([test.contentgurus.no](https://test.contentgurus.no), Test2) and production
 ([www.contentgurus.no](https://www.contentgurus.no)). Each has its own CMS
 instance. A GitHub Actions workflow deploys every push to `master` to dev;
-test and production are deployed manually, production with approval. See
+test and production are deployed manually. See
 [environments](environments.md).
 
 Side effects and lessons:
