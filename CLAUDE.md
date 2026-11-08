@@ -112,6 +112,11 @@ Each file exports a `contentType()` call with a `CT` suffix (e.g., `CardBlockCT`
 
 Content types are also registered as file paths (strings) in `optimizely.config.mjs` for the CMS CLI.
 
+`BuiltInTypes.ts` holds the CMS's standard types (BlankExperience, BlankSection,
+GenericMedia, ImageMedia, VideoMedia). Editors can delete them, so they're
+pushed to recreate them when missing. They're push-only: not exported from
+`index.ts`, and the SDK registry keeps its own built-ins.
+
 ### Component Structure (`src/components/`)
 
 Components are organized by their CMS role:

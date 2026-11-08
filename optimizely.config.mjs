@@ -2,6 +2,9 @@ import { buildConfig } from '@optimizely/cms-sdk';
 
 export default buildConfig({
   components: [
+    // CMS standard types (Blank experience/section, media); push-only, see file.
+    './src/content-types/BuiltInTypes.ts',
+
     './src/content-types/SeoBlock.ts',
     './src/content-types/SiteSettings.ts',
     './src/content-types/ArticlePage.ts',

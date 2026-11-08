@@ -1,7 +1,8 @@
 // Minimal content-type registration for the CMS built-in `ImageMedia` asset
 // type. This is NOT authored content — ImageMedia is a CMS-native media type —
-// so it has no properties to model and must NOT be pushed via the CLI (it's
-// intentionally absent from optimizely.config.mjs).
+// so it has no properties to model. This object is for the SDK registry only;
+// the definition pushed to the CMS (so a deleted ImageMedia gets recreated) is
+// ImageMediaCT in ./BuiltInTypes.ts.
 //
 // Why it's needed: the SDK's query builder (createQuery.js) treats any type
 // whose key doesn't start with `_` as a registered content type. `ImageMedia`
