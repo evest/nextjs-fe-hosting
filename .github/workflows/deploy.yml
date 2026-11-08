@@ -46,11 +46,17 @@ jobs:
     timeout-minutes: 45
     environment: ${{ (github.event.inputs.target || 'Test1') == 'Production' && 'production' || 'test' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
+
+      # opticloud loads keytar (OS keychain) at startup even when credentials
+      # come from OPTI_* variables, and keytar needs libsecret, which the
+      # Ubuntu runner image doesn't ship.
+      - name: Install libsecret
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libsecret-1-0
 
       - name: Ship
         env:
