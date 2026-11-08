@@ -10,11 +10,7 @@ node_modules
 
 # Environment files (should be configured in PaaS Portal instead)
 .env
-.env.local
-.env.development
-.env.test
-.env.production
-.env.*.local
+.env.*
 
 # Version control
 .git

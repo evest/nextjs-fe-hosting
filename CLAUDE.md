@@ -47,6 +47,20 @@ and `DIAGNOSTICS_*`) live in PaaS Portal > App Settings.
   origin, not the custom domain, so CDN purges cover both
   (`purgeHostnames()` in `src/lib/cdn-cache.ts`).
 
+### Local env files (current environment)
+
+Each Frontend Hosting environment has its **own CMS instance**, and the CMS
+CLI pushes to whichever instance `OPTIMIZELY_CMS_CLIENT_ID` belongs to. Local
+settings are therefore split: `.env` (common + `APP_ENV=dev|stage|prod`) and
+`.env.dev` / `.env.stage` / `.env.prod` (CMS credentials, Graph key, CMS URL,
+`NEXT_PUBLIC_SITE_URL`, `CONTACT_REF_KEY`, `APP_IN_*`). `scripts/env.mjs`
+merges them (shell > `.env.<APP_ENV>` > `.env`) and wraps `npm run dev` and
+the `cms:*` scripts; `npm run env -- <cmd>` runs anything else. Override per
+run with `APP_ENV=prod npm run cms:diff`; pushes to prod ask for confirmation.
+CMS credentials are refused in `.env`, so running the CLI without the wrapper
+fails instead of hitting an arbitrary CMS. Applications/hostnames are created
+once per CMS in the UI and deliberately kept out of `optimizely.config.mjs`.
+
 ## Performance testing (Lighthouse harness)
 
 `scripts/lighthouse/` runs the global `lighthouse` CLI against the **Test2
