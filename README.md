@@ -159,8 +159,8 @@ display templates, pages, blocks and images — from the content package, so
 you start with exactly what's on [test.contentgurus.no](https://test.contentgurus.no).
 
 1. **Import the site into the CMS.** Download
-   [`content-gurus-2026-10-07.episerverdata`](https://github.com/evest/nextjs-fe-hosting/releases/download/ContentPack/content-gurus-2026-10-07.episerverdata)
-   (about 130 MB) from the
+   [`Content-gurus-2026-11-08.episerverdata`](https://github.com/evest/nextjs-fe-hosting/releases/download/ContentPack/Content-gurus-2026-11-08.episerverdata)
+   (about 104 MB) from the
    [ContentPack release](https://github.com/evest/nextjs-fe-hosting/releases/tag/ContentPack)
    and import it under **Settings → Import Data** in the CMS. Make sure
    English, Norwegian, Swedish and Danish are enabled under
