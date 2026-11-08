@@ -30,10 +30,15 @@ on:
         options: [Test1, Test2, Production]
         default: Test1
 
-# One deployment per environment at a time; a newer push waits rather than
-# cancelling a deployment that's already running on the platform.
+# One deployment at a time across ALL environments: the platform refuses to
+# start a deployment (HTTP 403 at "Starting deployment") while another one in
+# the same project is running, even to a different environment. Runs queue
+# instead of cancelling a deployment that's already running. GitHub keeps at
+# most one queued run per group, so a newer run replaces an older queued one.
+# Local `npm run deploy-*` doesn't see this queue: don't run one while a
+# workflow deploy is in progress.
 concurrency:
-  group: deploy-${{ github.event.inputs.target || 'Test1' }}
+  group: deploy-frontend-hosting
   cancel-in-progress: false
 
 permissions:

@@ -161,6 +161,12 @@ allows `master`. It has no required reviewers, because this is a demo site;
 add them if a production deploy should need approval (the run then waits for
 **Review deployments → Approve and deploy**).
 
+**Only one deployment can run at a time per project**, even to different
+environments. The platform refuses to start a second one with HTTP 403, after
+the package has already been uploaded. The workflow queues its runs so they
+never overlap. A deploy from your machine doesn't know about that queue, so
+don't start one while a workflow run is deploying.
+
 Setting up a fork (all under the repository's **Settings**):
 
 1. **Secrets and variables → Actions → New repository secret:** add
