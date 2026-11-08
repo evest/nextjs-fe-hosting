@@ -164,6 +164,19 @@ npm run cms:diff          # read-only: what differs between code and the CMS
 npm run cms:push-config   # push the content types and display templates
 ```
 
+Both target the CMS of the current environment (`APP_ENV` in `.env`, shown in
+the banner at the start of each run). Each environment has its own CMS
+instance, so push to each one: `APP_ENV=prod npm run cms:push-config`. See
+[environments](environments.md).
+
+The push includes the CMS's standard types (`BlankExperience`, `BlankSection`,
+`GenericMedia`, `ImageMedia` and `VideoMedia`, in
+[`BuiltInTypes.ts`](../src/content-types/BuiltInTypes.ts)), copied from what a
+new instance contains. Editors can delete them like any other type, and a CMS
+without `ImageMedia` can't take image uploads, so the push recreates them when
+they're missing. They're only used for pushing: the SDK's registry keeps its
+own built-ins, so rendering doesn't change.
+
 **Run `cms:diff` before every push.** Content types can also be edited in the
 CMS UI, and a push is rejected as a breaking change when the CMS has changes
 the code lacks, such as a property made localized or a property added there.

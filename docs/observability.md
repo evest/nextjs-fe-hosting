@@ -115,6 +115,13 @@ Reader** role on the resource: get a token with the client-credentials flow
 and the scope `https://api.applicationinsights.io/.default`, then POST
 `{"query": "..."}` to `https://api.applicationinsights.io/v1/apps/{appId}/query`.
 
+Each environment has its own Application Insights resource. Keep the
+credentials in that environment's file as `APP_IN_Tenant_ID`,
+`APP_IN_Application_Insights_ID`, `APP_IN_Client_ID` and
+`APP_IN_Client_Secret` (for example in `.env.stage` for Test2), and run
+scripts with `APP_ENV=<env> npm run env -- node your-script.mjs`. See
+[environments](environments.md).
+
 Queries we've found useful:
 
 ```kusto

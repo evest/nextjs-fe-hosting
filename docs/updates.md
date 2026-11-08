@@ -13,6 +13,37 @@ For the current state of things, see [caching](caching.md),
 
 ---
 
+## 2026-11 — dev, test and production environments
+
+The site now runs in three Frontend Hosting environments: dev
+([dev.contentgurus.no](https://dev.contentgurus.no), Test1), test
+([test.contentgurus.no](https://test.contentgurus.no), Test2) and production
+([www.contentgurus.no](https://www.contentgurus.no)). Each has its own CMS
+instance. A GitHub Actions workflow deploys every push to `master` to dev;
+test and production are deployed manually, production with approval. See
+[environments](environments.md).
+
+Side effects and lessons:
+- **The CMS CLI has no environments.** It pushes to whichever CMS the client
+  credentials belong to, and `cms:login` stores nothing. Local settings are
+  now split into `.env` plus `.env.dev`, `.env.stage` and `.env.prod`, merged
+  by a small wrapper. The CMS credentials are only allowed in the
+  per-environment files, so running the CLI directly fails instead of pushing
+  to whatever `.env` pointed at.
+- **The CMS's standard types can be deleted.** The new dev CMS had no
+  `BlankSection`, `BlankExperience` or media types, so our section display
+  template failed to push and images couldn't be uploaded. They're now
+  defined in code and pushed like our own types.
+- **`OPTIMIZELY_SITE_HOSTNAME` isn't the public domain.** The platform sets
+  it to the environment's internal `*.dxcloud.episerver.net` hostname, and it
+  can't be overridden. CDN purges now cover both that and the public host.
+- **Only production is indexed.** Every other environment serves
+  `Disallow: /` and `noindex`, decided at request time from
+  `OPTIMIZELY_ENVIRONMENT`.
+- **opticloud needs `libsecret` in CI.** It loads its keychain library even
+  when the credentials come from environment variables, and without
+  `libsecret` it crashes on GitHub's Ubuntu runners.
+
 ## 2026-10 — Observability with OpenTelemetry and Application Insights
 
 The site now sends OpenTelemetry traces, metrics and logs to Application

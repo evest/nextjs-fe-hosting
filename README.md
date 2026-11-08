@@ -1,7 +1,9 @@
 # Content Gurus — Next.js on Optimizely SaaS CMS
 
-The source code for [test.contentgurus.no](https://test.contentgurus.no), the
-website of Content Gurus, a Nordic content studio. It's a headless
+The source code for [www.contentgurus.no](https://www.contentgurus.no), the
+website of Content Gurus, a Nordic content studio (with
+[dev](https://dev.contentgurus.no) and [test](https://test.contentgurus.no)
+environments). It's a headless
 **Next.js 16** frontend for **Optimizely SaaS CMS**, built with the
 [Content JS SDK](https://github.com/episerver/content-js-sdk) and deployed to
 **Optimizely Frontend Hosting**. Content is written, translated and enriched
@@ -60,7 +62,8 @@ Editors build pages from sections, blocks and elements in Visual Builder, and
 style them with display templates — surface colours, heading levels,
 alignment, spacing — without touching code. The model has 26 content types
 and 18 display templates, all defined in TypeScript and pushed to the CMS with
-the CLI, plus a read-only `npm run cms:diff` that catches changes made in the
+the CLI, along with the CMS's own standard types so a push recreates them if
+an editor deletes them. There's also a read-only `npm run cms:diff` that catches changes made in the
 CMS UI before they turn into rejected pushes.
 
 **→ [Content model](docs/content-model.md):** how a page is put together, every
@@ -169,13 +172,20 @@ you start with exactly what's on [test.contentgurus.no](https://test.contentguru
    preview.
 3. **Index.** Run a full Graph index under **Settings** in the CMS, so the
    imported content is available through Graph.
-4. **Configure.** Copy `.env.template` to `.env` and fill in the CMS URL, the
-   Graph single key and the CMS API client credentials. The variables marked
-   as provided by the platform are only needed on Frontend Hosting.
+4. **Configure.** Settings are split into `.env` (shared settings, plus
+   `APP_ENV`, which picks the current environment) and one `.env.<APP_ENV>`
+   file per environment holding that CMS's values. For a single CMS:
+   - Copy `.env.template` to `.env` and set `APP_ENV=dev`.
+   - Create `.env.dev` and move the CMS URL, the Graph single key and the CMS
+     API client credentials into it.
+
+   The CMS credentials must be in `.env.dev`, not `.env`. The variables marked
+   as provided by the platform are only needed on Frontend Hosting. See
+   [environments](docs/environments.md) for the full layout.
 5. **Install and check.**
    ```bash
    npm install              # npm is enforced
-   npm run cms:login
+   npm run cms:login        # checks the credentials of the current environment
    npm run cms:diff         # should report that code and CMS are in sync
    ```
 6. **Run.** `npm run dev` and open <https://localhost:3000>. The dev server
@@ -193,33 +203,51 @@ because Graph's publish webhook can't reach `localhost`.
 see traces and logs locally; see
 [observability](docs/observability.md). Without it, telemetry is off.
 
-## Deploying to Frontend Hosting
+## Environments and deploying
+
+| Environment | Host | Frontend Hosting | Deployed |
+|---|---|---|---|
+| dev | [dev.contentgurus.no](https://dev.contentgurus.no) | Test1 | On every push to `master` (GitHub Actions) |
+| stage | [test.contentgurus.no](https://test.contentgurus.no) | Test2 | Manually |
+| prod | [www.contentgurus.no](https://www.contentgurus.no) | Production | Manually, with approval |
+
+Each environment has its own CMS instance. Only production is open to search
+engines; the others serve `Disallow: /` and `noindex`.
 
 ```bash
-npm run deploy-test2
+npm run deploy-test1     # or deploy-test2 / deploy-prod, from your machine
 ```
 
-This runs [`opticloud`](https://www.npmjs.com/package/@kunalshetye/opticloud)
-(a dev dependency) to package the app, upload it and deploy it to the Test2
-environment. Deployment credentials come from `OPTI_*` variables in `.env`
-or the environment, or from the OS keychain after `npx opticloud auth:login`.
-**`.zipignore` controls what goes into the package — keep `.env` in it.**
+These run [`opticloud`](https://www.npmjs.com/package/@kunalshetye/opticloud)
+(a dev dependency), which packages your working folder, uploads it and
+deploys it. The [Deploy workflow](.github/workflows/deploy.yml) does the same
+in GitHub Actions; run it from the **Actions** tab to pick an environment.
+Deployment credentials come from `OPTI_*` variables in `.env` or the
+environment, or from the OS keychain after `npx opticloud auth:login`.
+**`.zipignore` controls what goes into the package — keep `.env` and `.env.*`
+in it.**
 
 The platform provides Redis, the managed identity, the Graph webhook
 credentials and the Application Insights connection string. The app
 registers its own publish webhook on startup, and sends telemetry as soon as
-the connection string is present.
+the connection string is present. Each environment needs
+`NEXT_PUBLIC_SITE_URL` under App Settings before its first deploy.
+
+**→ [Environments](docs/environments.md):** local `.env` files per
+environment, setting up a new CMS instance, app settings, search indexing and
+the GitHub Actions setup.
 
 ## Scripts
 
 | Command | |
 |---|---|
-| `npm run dev` | Dev server with HTTPS |
+| `npm run dev` | Dev server with HTTPS, against the current `APP_ENV` |
 | `npm run build` / `npm start` | Production build and server |
 | `npm run lint` | ESLint |
 | `npm run cms:diff` | Compare content types in code with the CMS (read-only) |
-| `npm run cms:push-config` | Push content types and display templates |
-| `npm run deploy-test2` | Deploy to the Test2 environment |
+| `npm run cms:push-config` | Push content types and display templates (asks before pushing to prod) |
+| `npm run env -- <cmd>` | Run any command with the current environment's settings loaded |
+| `npm run deploy-test1` / `deploy-test2` / `deploy-prod` | Deploy to dev / test / production |
 | `npm run lh` | Lighthouse against Test2, median of 3, stored in history |
 | `npm run lh:trim` / `lh:history` | Summarise the latest report / show the score trend |
 | `npm run aspire` / `aspire:stop` | Start / stop the local Aspire Dashboard for telemetry (Docker) |
@@ -255,11 +283,12 @@ src/
   display-templates/   Display templates
   lib/                 Graph reads, JSON-LD, SEO metadata, image loader, cache tags, fetch timeout
   optimizely.ts        SDK registries and component resolver
-  proxy.ts             Locale routing middleware, /diagnostics auth
+  proxy.ts             Locale routing middleware, /diagnostics auth, noindex outside production
   instrumentation.ts   Startup: telemetry, fetch timeout, Graph publish webhook
   instrumentation.node.ts  OpenTelemetry setup (Application Insights or OTLP)
 cache-handler.mjs      Shared Redis cache handler
-scripts/               cms:diff and the Lighthouse harness
+scripts/               env.mjs (per-environment settings), cms:diff and the Lighthouse harness
+.github/workflows/     Deploy workflow (GitHub Actions)
 docs/                  Documentation
 ```
 
@@ -272,6 +301,7 @@ docs/                  Documentation
 | [Performance](docs/performance.md) | Scores, measurement, what worked and what didn't |
 | [Caching](docs/caching.md) | Cache layers, publish flow, testing invalidation |
 | [Observability](docs/observability.md) | Telemetry setup, Aspire locally, querying Application Insights, prerendering rules |
+| [Environments](docs/environments.md) | dev / stage / prod, local `.env` files, CMS setup, app settings, deploying |
 | [Updates](docs/updates.md) | Project history and lessons learned |
 
 ## Learn more
