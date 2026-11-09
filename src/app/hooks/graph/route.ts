@@ -6,8 +6,11 @@
 // path, calls revalidatePath() to invalidate the Next.js cache, and
 // fires a CDN purge for the affected URL.
 //
-// Always returns 200 (with `received: true` or an `error` field) so
-// Optimizely doesn't retry on transient downstream failures.
+// Returns 200 once the cache is revalidated; a failed CDN purge doesn't change
+// that, since it's fire-and-forget. The exception is the shared cache: if Redis
+// is unreachable, revalidating would only reach this instance and the others
+// would keep serving the old page, so the webhook answers 503 and Graph
+// retries the delivery.
 //
 // Each publish is traced as a `graph.webhook` span (see docs/observability.md)
 // with what was published, the path it resolved to, how many cache tags were
@@ -21,6 +24,7 @@ import { purgeCdnCache, purgeHostnames } from "@/lib/cdn-cache";
 import { CACHE_KEYS, getArticlesUnderTag, getPageTag, getSiteSettingsTag } from "@/lib/cache/cache-keys";
 import { getAllContentPaths } from "@/lib/optimizely/all-content-paths";
 import { routing } from "@/i18n/routing";
+import { isSharedCacheAvailable } from "../../../../cache-handler.mjs";
 
 const CALLBACK_API_KEY = process.env.OPTIMIZELY_GRAPH_CALLBACK_APIKEY;
 const singleKey = process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!;
@@ -167,6 +171,13 @@ async function handlePublish(payload: { type: { subject: string; action: string 
   const docId = payload.data?.docId;
   span?.setAttributes({ "webhook.subject": subject, "webhook.action": action, "webhook.doc_id": docId ?? "" });
   if (subject === "doc" && (action === "updated" || action === "expired") && docId) {
+    // Next.js applies revalidateTag() after this response is sent, so a Redis
+    // failure then can't change the status code. Check up front instead.
+    if (!(await isSharedCacheAvailable())) {
+      span?.setStatus({ code: SpanStatusCode.ERROR, message: "Shared cache unavailable" });
+      console.error(`[hooks] ${action} ${docId}: shared cache (Redis) unavailable, answering 503 so Graph retries`);
+      return NextResponse.json({ error: "Shared cache unavailable" }, { status: 503 });
+    }
     const path = await revalidateDocId(docId);
     const purge = path === SITE_SETTINGS_FULL_PURGE ? "full" : path ? "single" : "none";
     span?.setAttribute("cdn.purge", purge);

@@ -230,6 +230,26 @@ export async function getCluster() {
   return cluster;
 }
 
+/**
+ * For the publish webhook: can a tag revalidation reach every instance right
+ * now? True without REDIS_URL (local dev: one process, nothing to share).
+ * With REDIS_URL, false when Redis can't be reached, so the webhook answers
+ * 503 and Graph retries, instead of a 200 that leaves the other instances
+ * stale until the entries' TTL.
+ */
+export async function isSharedCacheAvailable() {
+  if (!process.env.REDIS_URL) return true;
+  const redis = await getClient();
+  if (!redis) return false;
+  try {
+    await redis.exists(TAGS_KEY);
+    return true;
+  } catch (err) {
+    console.error("[cache] Redis check failed:", err?.message);
+    return false;
+  }
+}
+
 /** For /diagnostics/redis: this deployment's key prefix and the TTL cap. */
 export const cacheSettings = { prefix: CACHE_PREFIX, maxTtlSeconds: MAX_TTL_SECONDS };
 
@@ -268,6 +288,46 @@ function isRevalidated(tagTimes, lastModified) {
   return tagTimes.some((t) => t != null && Number(t) > lastModified);
 }
 
+// An entry is stamped with the time its render STARTED, not the time it was
+// written. Otherwise a render that read old content from Graph, overlapped a
+// publish, and finished after the webhook would be stamped later than its tags
+// and served as fresh until the next publish or its TTL.
+//
+// The handler never sees the render itself, so the start is approximated by
+// the cache miss that caused it: get() notes when a key missed, set() uses
+// that time and clears it. Next.js already merges concurrent renders of one
+// key on an instance, so one start per key is enough. A miss that is never
+// followed by a write (the render failed or wasn't cacheable) is ignored after
+// RENDER_START_MAX_AGE_MS, so it can't backdate a much later write.
+//
+// Background revalidations of a time-expired entry start from a hit, not a
+// miss, and fall back to the write time. Our pages use cacheLife('max') and
+// only change through tags, so that case is limited to the short-lived
+// sitemap and error entries.
+//
+// Approach from Piotr Nowak's "Visual Builder without Next.js, part 2"
+// (pino-labs.com), which also found the Next 16.3.8 key change above.
+const RENDER_START_MAX_AGE_MS = 2 * 60 * 1000;
+const renderStarts = new Map();
+
+function noteRenderStart(key) {
+  const now = Date.now();
+  const started = renderStarts.get(key);
+  if (started === undefined || now - started > RENDER_START_MAX_AGE_MS) {
+    renderStarts.set(key, now);
+  }
+  if (renderStarts.size > 10_000) {
+    for (const [k, t] of renderStarts) if (now - t > RENDER_START_MAX_AGE_MS) renderStarts.delete(k);
+  }
+}
+
+function takeRenderStart(key) {
+  const now = Date.now();
+  const started = renderStarts.get(key);
+  renderStarts.delete(key);
+  return started !== undefined && now - started <= RENDER_START_MAX_AGE_MS ? started : now;
+}
+
 export default class CacheHandler {
   async get(key, ctx) {
     const fromRedis = await withFallback("get", async (redis) => {
@@ -300,12 +360,13 @@ export default class CacheHandler {
       store: fromRedis ? "redis" : "memory",
       result,
     });
+    if (!entry) noteRenderStart(key);
     return entry ? { value: entry.value, lastModified: entry.lastModified } : null;
   }
 
   async set(key, value, context) {
     const tags = context?.tags ?? [];
-    const entry = { value, lastModified: Date.now(), tags };
+    const entry = { value, lastModified: takeRenderStart(key), tags };
     const stored = await withFallback("set", async (redis) => {
       // Next.js passes the lifetime as context.cacheControl, not
       // context.revalidate (which the reference handler read, so it never set
@@ -325,11 +386,19 @@ export default class CacheHandler {
     // Always record locally too, so this instance is consistent even if the
     // Redis write fails.
     for (const tag of tagList) memoryTagTimes.set(tag, now);
-    await withFallback("revalidateTag", async (redis) => {
+    const stored = await withFallback("revalidateTag", async (redis) => {
       await redis.hSet(TAGS_KEY, Object.fromEntries(tagList.map((t) => [t, String(now)])));
       await redis.expire(TAGS_KEY, MAX_TTL_SECONDS);
       return true;
     });
+    // Next.js runs this after the webhook has already answered, so throwing
+    // wouldn't reach Graph. The webhook checks the cache up front instead
+    // (isSharedCacheAvailable); this covers Redis failing in between.
+    if (!stored && process.env.REDIS_URL) {
+      console.error(
+        `[cache] Tag revalidation not shared: only this instance knows; others keep serving the old entries (${tagList.join(", ")})`,
+      );
+    }
   }
 
   resetRequestCache() {

@@ -124,7 +124,12 @@ The webhook ([`src/app/hooks/graph/route.ts`](../src/app/hooks/graph/route.ts)):
      affect every page.
 4. **Purges** the URL from the CDN through Optimizely's Cloud Platform
    Services API, without waiting for the result.
-5. **Always returns 200**, so Graph doesn't retry on downstream failures.
+5. **Returns 200**, even if the CDN purge fails. The exception is the shared
+   cache: if Redis can't be reached, the webhook returns **503** before
+   revalidating anything, so Graph retries. Otherwise only the instance that
+   got the webhook would know about the publish, and the other instances would
+   keep serving the old page until it expires. This has to be checked up
+   front: Next.js applies `revalidateTag()` after the response has been sent.
 
 The webhook is **registered automatically** at startup in
 [`src/instrumentation.ts`](../src/instrumentation.ts). It lists Graph's
@@ -142,11 +147,20 @@ Next.js gives the cache handler a `revalidateTag(tags)` call and expects
 - **On `get`**, reads the entry's tags — for pages they're in the entry's
   `x-next-cache-tags` header, which includes path tags such as `_N_T_/en` and
   every `cacheTag()` the page used — and looks up their times with a single
-  `HMGET`. If any tag was revalidated after the entry was written, it's a
-  miss, and Next.js re-renders.
+  `HMGET`. If any tag was revalidated after the entry's render started, it's
+  a miss, and Next.js re-renders.
 
 This doesn't depend on how Next.js names its cache keys, which is exactly
 what broke in Next.js 16.3 (below).
+
+An entry is stamped with the time its render **started**, not the time it was
+written. A render can read the old content from Graph, overlap the publish,
+and finish after the webhook. Stamped with its write time, that entry would
+look newer than the publish, and the old page would be served until the next
+publish or its TTL. The handler can't see the render itself, so it uses the
+cache miss that caused it: `get()` notes when a key missed, and `set()` uses
+that time. This approach comes from
+[Piotr Nowak's write-up](https://pino-labs.com/blog/visual-builder-without-nextjs-part-2-strangler-astro-nextjs-cms-13/).
 
 ## Testing invalidation locally
 
